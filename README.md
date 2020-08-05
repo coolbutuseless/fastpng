@@ -14,6 +14,8 @@
 There’s nothing much here yet except for basic decoding of PNG bytes to
 a raw vector.
 
+  - [libpng API docs](https://libspng.org/docs/api/)
+
 ## Installation
 
 You can install from [GitHub](https://github.com/coolbutuseless/spng)
@@ -53,6 +55,34 @@ png_data[1:100]
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get info about the PNG 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(png_info <- spng::png_info(png_data))
+#> Dimensions: width: 100,   height: 76
+#> $width
+#> [1] 100
+#> 
+#> $height
+#> [1] 76
+#> 
+#> $bit_depth
+#> [1] 8
+#> 
+#> $color_type
+#> [1] 6
+#> 
+#> $compression_method
+#> [1] 0
+#> 
+#> $filter_method
+#> [1] 0
+#> 
+#> $interlace_method
+#> [1] 0
+```
+
+``` r
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Unpack the raw PNG bytes into ABGR32 (I think) packed pixel format
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 img_data <- spng::depng(png_data)
@@ -69,17 +99,14 @@ img_data[1:200]
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# I cheated here and got the image dimensions from {magick}
-# I can probably get them from 'libspng'
-#
 # Pick the green channel and plot as greyscale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 4)], nrow = 100, ncol = 76)
+mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$height)
 plot(as.raster(mat))
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="30%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="30%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,14 +118,14 @@ arr <- array(
     img_data[seq(2, N, 4)], # G
     img_data[seq(3, N, 4)]  # B
   ),
-  dim = c(100, 76, 3)
+  dim = c(png_info$width, png_info$height, 3)
   
 )
 
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="30%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="30%" />
 
 ## Related Software
 

@@ -4,11 +4,12 @@
 #include <Rinternals.h>
 
 extern SEXP depng_();
+extern SEXP png_info_();
 
 static const R_CallMethodDef CEntries[] = {
 
   {"depng_", (DL_FUNC) &depng_, 1},
-
+  {"png_info_", (DL_FUNC) &png_info_, 1},
   {NULL , NULL, 0}
 };
 
