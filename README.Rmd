@@ -1,0 +1,108 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+library(spng)
+```
+
+# spng
+
+
+<!-- badges: start -->
+![](https://img.shields.io/badge/cool-useless-green.svg)
+<!-- badges: end -->
+
+`spng` is an R wrapper for the [libspng](https://github.com/randy408/libspng).
+
+There's nothing much here yet except for basic decoding of PNG bytes to a raw vector.
+
+## Installation
+
+You can install from [GitHub](https://github.com/coolbutuseless/spng) with:
+
+``` r
+# install.package('remotes')
+remotes::install_github('coolbutuseless/spng')
+```
+
+## Example: Decompress a PNG in memory
+
+```{r example, out.width="30%"}
+library(spng)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# A PNG file everyone should have!
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+png_file <- system.file("img", "Rlogo.png", package="png")
+img <- magick::image_read(png_file)
+img
+```
+
+
+```{r out.width="30%"}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Read in the raw bytes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+png_data <- readBin(png_file, 'raw', n = file.size(png_file))
+png_data[1:100]
+```
+
+
+```{r out.width="30%"}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Unpack the raw PNG bytes into ABGR32 (I think) packed pixel format
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+img_data <- spng::depng(png_data)
+img_data[1:200]
+```
+
+
+```{r out.width="30%"}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# I cheated here and got the image dimensions from {magick}
+# I can probably get them from 'libspng'
+#
+# Pick the green channel and plot as greyscale
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+N <- length(img_data)
+mat <- matrix(img_data[seq(2, N, 4)], nrow = 100, ncol = 76)
+plot(as.raster(mat))
+```
+
+
+```{r out.width="30%"}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Construct an array by plucking the relevant bytes.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arr <- array(
+  c(
+    img_data[seq(1, N, 4)], # R
+    img_data[seq(2, N, 4)], # G
+    img_data[seq(3, N, 4)]  # B
+  ),
+  dim = c(100, 76, 3)
+  
+)
+
+plot(as.raster(arr))
+```
+
+
+## Related Software
+
+
+## Acknowledgements
+
+* R Core for developing and maintaining the language.
+* CRAN maintainers, for patiently shepherding packages onto CRAN and maintaining
+  the repository
