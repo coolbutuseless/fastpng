@@ -1,4 +1,15 @@
 
+color_types <- list()
+
+color_types[[0 + 1]] <- "Grayscale"
+color_types[[2 + 1]] <- "RGB"
+color_types[[3 + 1]] <- "Paletted color"
+color_types[[4 + 1]] <- "Grayscale + Alpha"
+color_types[[6 + 1]] <- "RGB + Alpha"
+
+
+
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Get information about a PNG file
@@ -8,5 +19,9 @@
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 png_info <- function(raw_vec) {
-  .Call('png_info_', raw_vec)
+  res <- .Call('png_info_', raw_vec)
+
+  res$color_desc <- color_types[[res$color_type + 1L]]
+
+  res
 }

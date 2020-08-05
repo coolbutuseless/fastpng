@@ -8,7 +8,7 @@ extern SEXP png_info_();
 
 static const R_CallMethodDef CEntries[] = {
 
-  {"depng_", (DL_FUNC) &depng_, 1},
+  {"depng_", (DL_FUNC) &depng_, 3},
   {"png_info_", (DL_FUNC) &png_info_, 1},
   {NULL , NULL, 0}
 };

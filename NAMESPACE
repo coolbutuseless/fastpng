@@ -2,4 +2,6 @@
 
 export(depng)
 export(png_info)
+export(spng_decode_flags)
+export(spng_format)
 useDynLib(spng, .registration=TRUE)

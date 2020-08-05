@@ -1,7 +1,7 @@
 Package: spng
 Type: Package
 Title: Decompress PNG Files in Memory
-Version: 0.1.1
+Version: 0.1.2
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: Decompress PNG files in memory.

@@ -39,6 +39,7 @@ SEXP png_info_(SEXP raw_vec_) {
   struct spng_ihdr ihdr;
   int r = spng_get_ihdr(ctx, &ihdr);
   if (r) {
+    spng_ctx_free(ctx);
     error("spng_get_ihdr() error: %s\n", spng_strerror(r));
   }
 

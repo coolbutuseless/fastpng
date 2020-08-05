@@ -4,11 +4,22 @@
 \alias{depng}
 \title{Decompress a PNG in memory}
 \usage{
-depng(raw_vec)
+depng(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0)
 }
 \arguments{
-\item{raw_vec}{raw vector}
+\item{raw_vec}{raw vector containing encoded PNG data}
+
+\item{fmt}{what format the decoded bytes should be in. default: \code{SPNG_FMT_RGBA8}.
+See \code{?spng_format} for other formats.}
+
+\item{flags}{flags. default: 0. See \code{?spng_decode_flags} for other
+options.  Must be an integer.}
+}
+\value{
+vector of raw bytes representing pixel data in the requested format.
+        Note that the pixels will be in row-major format
 }
 \description{
-Decompress a PNG in memory
+See \url{https://libspng.org/docs/decode/} for more information on which
+combinations of formats and flags are permissable.
 }

@@ -7,7 +7,7 @@
 png_info(raw_vec)
 }
 \arguments{
-\item{raw_vec}{raw vector}
+\item{raw_vec}{raw vector containing encoded PNG data}
 }
 \description{
 Get information about a PNG file

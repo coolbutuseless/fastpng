@@ -8,11 +8,15 @@
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 <!-- badges: end -->
 
-`spng` is an R wrapper for the
-[libspng](https://github.com/randy408/libspng).
+`spng` offers in-memory decompression of PNG images to vectors of raw
+values.
 
-There’s nothing much here yet except for basic decoding of PNG bytes to
-a raw vector.
+This is useful if you have bytes representing a PNG image (e.g. from a
+database) and need to decompress these to an array representation within
+R.
+
+`spng` is a R wrapper for
+[libspng](https://github.com/randy408/libspng).
 
   - [libpng API docs](https://libspng.org/docs/api/)
 
@@ -25,6 +29,17 @@ with:
 # install.package('remotes')
 remotes::install_github('coolbutuseless/spng')
 ```
+
+## What’s in the box
+
+  - `depng(raw_vec, fmt, flags)` - convert a vector of raw values
+    containing a PNG image into a vector of raw bytes representing
+    individual pixel values.
+
+  - `get_info(raw_vec)` - interrogate a vector of raw values containing
+    a PNG image to determine image information i.e. width, height,
+    bit\_depth, color\_type, compression\_method, filter\_method,
+    interlace\_method.
 
 ## Example: Decompress a PNG in memory
 
@@ -58,7 +73,6 @@ png_data[1:100]
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (png_info <- spng::png_info(png_data))
-#> Dimensions: width: 100,   height: 76
 #> $width
 #> [1] 100
 #> 
@@ -79,22 +93,25 @@ png_data[1:100]
 #> 
 #> $interlace_method
 #> [1] 0
+#> 
+#> $color_desc
+#> [1] "RGB + Alpha"
 ```
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Unpack the raw PNG bytes into ABGR32 (I think) packed pixel format
+# Unpack the raw PNG bytes into RGB 8-bits-per-color packed format. 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::depng(png_data)
+img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGB8)
 img_data[1:200]
 #>   [1] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [26] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [51] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [76] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [101] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [126] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [151] 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 01 98 9b 96 13 8f 93 8c 31 87 8b 84
-#> [176] 48 83 87 80 5d 81 85 7e 6e 80 84 7d 7c 7e 82 7a 84 81 85 7e 92 7e 83 7b 95
+#> [101] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 98 9b
+#> [126] 96 8f 93 8c 87 8b 84 83 87 80 81 85 7e 80 84 7d 7e 82 7a 81 85 7e 7e 83 7b
+#> [151] 7e 83 7b 7e 83 7b 78 7d 75 80 85 7d 7e 82 7b 80 84 7d 81 85 7e 88 8c 85 9a
+#> [176] 9d 97 be bf bc 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 ```
 
 ``` r
@@ -102,8 +119,18 @@ img_data[1:200]
 # Pick the green channel and plot as greyscale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$height)
-plot(as.raster(mat))
+mat <- matrix(img_data[seq(2, N, 3)], nrow = png_info$width, ncol = png_info$height)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Image had an alpha channel, let's replace that with white background
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mat[mat == 0] <- as.raw(255)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PNG bytes are in row-major order. R is in column major order
+# so need to transpose to view correctly
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+plot(as.raster(t(mat)))
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="60%" />
@@ -114,20 +141,27 @@ plot(as.raster(mat))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 arr <- array(
   c(
-    img_data[seq(1, N, 4)], # R
-    img_data[seq(2, N, 4)], # G
-    img_data[seq(3, N, 4)]  # B
+    img_data[seq(1, N, 3)], # R
+    img_data[seq(2, N, 3)], # G
+    img_data[seq(3, N, 3)]  # B
   ),
   dim = c(png_info$width, png_info$height, 3)
-  
 )
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This array had an alpha channel. Let's replace the background with white.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arr[arr == 0] <- as.raw(255)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PNG bytes are in row-major order. R is in column major order
+# so need to transpose to view correctly
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
-
-## Related Software
 
 ## Acknowledgements
 
