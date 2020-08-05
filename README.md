@@ -39,7 +39,7 @@ img <- magick::image_read(png_file)
 img
 ```
 
-<img src="man/figures/README-example-1.png" width="30%" />
+<img src="man/figures/README-example-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,7 +106,7 @@ mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$hei
 plot(as.raster(mat))
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="30%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +125,7 @@ arr <- array(
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="30%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
 
 ## Related Software
 
