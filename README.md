@@ -100,18 +100,18 @@ png_data[1:100]
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Unpack the raw PNG bytes into RGB 8-bits-per-color packed format. 
+# Unpack the raw PNG bytes into RGBA 8-bits-per-color packed format. 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGB8)
+img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
 img_data[1:200]
 #>   [1] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [26] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [51] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [76] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [101] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 98 9b
-#> [126] 96 8f 93 8c 87 8b 84 83 87 80 81 85 7e 80 84 7d 7e 82 7a 81 85 7e 7e 83 7b
-#> [151] 7e 83 7b 7e 83 7b 78 7d 75 80 85 7d 7e 82 7b 80 84 7d 81 85 7e 88 8c 85 9a
-#> [176] 9d 97 be bf bc 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+#> [101] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+#> [126] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+#> [151] 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 01 98 9b 96 13 8f 93 8c 31 87 8b 84
+#> [176] 48 83 87 80 5d 81 85 7e 6e 80 84 7d 7c 7e 82 7a 84 81 85 7e 92 7e 83 7b 95
 ```
 
 ``` r
@@ -119,7 +119,7 @@ img_data[1:200]
 # Pick the green channel and plot as greyscale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 3)], nrow = png_info$width, ncol = png_info$height)
+mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$height)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Image had an alpha channel, let's replace that with white background
@@ -141,17 +141,13 @@ plot(as.raster(t(mat)))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 arr <- array(
   c(
-    img_data[seq(1, N, 3)], # R
-    img_data[seq(2, N, 3)], # G
-    img_data[seq(3, N, 3)]  # B
+    img_data[seq(1, N, 4)], # R
+    img_data[seq(2, N, 4)], # G
+    img_data[seq(3, N, 4)], # B
+    img_data[seq(4, N, 4)]  # A
   ),
-  dim = c(png_info$width, png_info$height, 3)
+  dim = c(png_info$width, png_info$height, 4)
 )
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# This array had an alpha channel. Let's replace the background with white.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr[arr == 0] <- as.raw(255)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PNG bytes are in row-major order. R is in column major order
@@ -162,6 +158,30 @@ plot(as.raster(arr))
 ```
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
+
+# Use with `pixelweaver`
+
+To avoid manually constructing an array and transposing the data,
+`{pixelweaver}` v0.1.1 now supports the ABGR32 pixel format output by
+`libspng`
+
+``` r
+library(pixelweaver)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert data to a memory pointer
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+packed_ptr <- pixelweaver::raw_to_packed(img_data, width = png_info$width, height = png_info$height)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# convert the packed format directly into an R array for 4 channels (RGBA)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arr4 <- pixelweaver::packed_to_planar(packed_ptr, format = pack_fmt$ABGR32, nchannel = 4)
+
+plot(as.raster(arr4))
+```
+
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
 
 ## Acknowledgements
 

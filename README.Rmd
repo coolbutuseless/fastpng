@@ -136,12 +136,22 @@ plot(as.raster(arr))
 ```
 
 
+# Use with `pixelweaver`
 
-```{r echo=FALSE, eval=FALSE}
+To avoid manually constructing an array and transposing the data, `{pixelweaver}`
+v0.1.1 now supports the ABGR32 pixel format output by `libspng`
+
+```{r}
 library(pixelweaver)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert data to a memory pointer
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 packed_ptr <- pixelweaver::raw_to_packed(img_data, width = png_info$width, height = png_info$height)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# convert the packed format directly into an R array for 4 channels (RGBA)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 arr4 <- pixelweaver::packed_to_planar(packed_ptr, format = pack_fmt$ABGR32, nchannel = 4)
 
 plot(as.raster(arr4))
