@@ -12,7 +12,8 @@ RoxygenNote: 7.1.0
 Suggests: 
     knitr,
     rmarkdown,
-    pixelweaver
+    pixelweaver,
+    png
 VignetteBuilder: knitr
 Remotes:
   coolbutuseless/pixelweaver
