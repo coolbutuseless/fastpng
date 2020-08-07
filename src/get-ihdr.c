@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-//#include "R-finalizers.h"
 
 
 #include "spng.h"
@@ -17,7 +16,6 @@
 
 SEXP png_info_(SEXP raw_vec_) {
 
-  size_t out_size;
   int buf_size = length(raw_vec_);
 
   unsigned char *buf = (unsigned char *)RAW(raw_vec_);

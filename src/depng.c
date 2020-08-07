@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-//#include "R-finalizers.h"
-
 
 #include "spng.h"
 
