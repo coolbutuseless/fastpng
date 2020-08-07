@@ -34,7 +34,7 @@ remotes::install_github('coolbutuseless/spng')
 
   - `depng(raw_vec, fmt, flags)` - convert a vector of raw values
     containing a PNG image into a vector of raw bytes representing
-    individual pixel values.
+    packed color values i.e. ABGR32 format
 
   - `get_info(raw_vec)` - interrogate a vector of raw values containing
     a PNG image to determine image information i.e. width, height,
@@ -161,23 +161,44 @@ plot(as.raster(arr))
 
 # Use with `pixelweaver`
 
-To avoid manually constructing an array and transposing the data,
-`{pixelweaver}` v0.1.1 now supports the ABGR32 pixel format output by
-`libspng`
+The vector of raw packed colour data returned by `{spng}` is in ABGR32
+format.
+
+`{pixelweaver}` v0.1.2 now supports the format and can directly ingest
+the vector of raw values and convert to an array.
 
 ``` r
+library(spng)
 library(pixelweaver)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Convert data to a memory pointer
+# Read in raw bytes representing a PNG image
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-packed_ptr <- pixelweaver::raw_to_packed(img_data, width = png_info$width, height = png_info$height)
+png_file <- system.file("img", "Rlogo.png", package="png")
+png_data <- readBin(png_file, 'raw', n = file.size(png_file))
+png_info <- spng::png_info(png_data)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# convert the packed format directly into an R array for 4 channels (RGBA)
+# Decode the PNG data to image data in-memory. Returned data is 
+# packed color in ABGR32 format.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr4 <- pixelweaver::packed_to_planar(packed_ptr, format = pack_fmt$ABGR32, nchannel = 4)
+img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert the packed color directly into an R array with 4 channels (RGBA)
+# This will also transpose the result into column-major representation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+arr4 <- pixelweaver::packed_to_planar(
+  packed_data = img_data, 
+  format      = packed_fmt$ABGR32, # Packed color format
+  nchannel    = 4,                 # Output array color depth
+  width       = png_info$width, 
+  height      = png_info$height
+)
+
+
+dim(arr4)
+#> [1]  76 100   4
 plot(as.raster(arr4))
 ```
 
