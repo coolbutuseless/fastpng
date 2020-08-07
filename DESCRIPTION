@@ -14,3 +14,5 @@ Suggests:
     rmarkdown,
     pixelweaver
 VignetteBuilder: knitr
+Remotes:
+  coolbutuseless/pixelweaver
