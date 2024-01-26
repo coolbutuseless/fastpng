@@ -3,8 +3,8 @@
 #include <R.h>
 #include <Rinternals.h>
 
-extern SEXP depng_();
-extern SEXP png_info_();
+extern SEXP depng_(SEXP raw_vec_, SEXP fmt_, SEXP flags_);
+extern SEXP png_info_(SEXP raw_vec_);
 
 static const R_CallMethodDef CEntries[] = {
 

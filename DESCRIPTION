@@ -1,14 +1,14 @@
 Package: spng
 Type: Package
 Title: Decompress PNG Files in Memory
-Version: 0.1.2
+Version: 0.1.2.9000
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: Decompress PNG files in memory.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.3.0
 Suggests: 
     knitr,
     rmarkdown,

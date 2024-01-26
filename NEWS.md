@@ -1,3 +1,8 @@
+
+# spng 0.1.2.9000  2024-01-26
+
+* Re-visit, Update, Re-factor
+
 # spng 0.1.2
 
 * Allow user to choose `fmt` and `flags` for PNG decoding
