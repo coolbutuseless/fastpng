@@ -17,9 +17,9 @@ database) and need to decompress these to an array representation within
 R.
 
 `spng` is a R wrapper for
-[libspng](https://github.com/randy408/libspng).
+[libspng](https://github.com/randy408/libspng) - current v0.7.4
 
-  - [libpng API docs](https://libspng.org/docs/api/)
+- [libspng API docs](https://libspng.org/docs/api/)
 
 ## Installation
 
@@ -33,14 +33,14 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What’s in the box
 
-  - `depng(raw_vec, fmt, flags)` - convert a vector of raw values
-    containing a PNG image into a vector of raw bytes representing
-    packed color values i.e. ABGR32 format
+- `depng(raw_vec, fmt, flags)` - convert a vector of raw values
+  containing a PNG image into a vector of raw bytes representing packed
+  color values i.e. ABGR32 format
 
-  - `get_info(raw_vec)` - interrogate a vector of raw values containing
-    a PNG image to determine image information i.e. width, height,
-    bit\_depth, color\_type, compression\_method, filter\_method,
-    interlace\_method.
+- `get_info(raw_vec)` - interrogate a vector of raw values containing a
+  PNG image to determine image information i.e. width, height,
+  bit_depth, color_type, compression_method, filter_method,
+  interlace_method.
 
 ## Example: Decompress a PNG in memory
 
@@ -207,6 +207,6 @@ plot(as.raster(arr4))
 
 ## Acknowledgements
 
-  - R Core for developing and maintaining the language.
-  - CRAN maintainers, for patiently shepherding packages onto CRAN and
-    maintaining the repository
+- R Core for developing and maintaining the language.
+- CRAN maintainers, for patiently shepherding packages onto CRAN and
+  maintaining the repository

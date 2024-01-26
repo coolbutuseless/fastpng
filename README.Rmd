@@ -28,11 +28,11 @@ library(spng)
 This is useful if you have bytes representing a PNG image (e.g. from a database)
 and need to decompress these to an array representation within R.
 
-`spng` is a R wrapper for [libspng](https://github.com/randy408/libspng).
+`spng` is a R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 
 
-* [libpng API docs](https://libspng.org/docs/api/)
+* [libspng API docs](https://libspng.org/docs/api/)
 
 
 ## Installation
