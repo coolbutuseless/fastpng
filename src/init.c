@@ -3,13 +3,13 @@
 #include <R.h>
 #include <Rinternals.h>
 
-extern SEXP depng_(SEXP raw_vec_, SEXP fmt_, SEXP flags_);
-extern SEXP png_info_(SEXP raw_vec_);
+extern SEXP read_png_raw_(SEXP raw_vec_, SEXP fmt_, SEXP flags_);
+extern SEXP extrac_png_info_(SEXP raw_vec_);
 
 static const R_CallMethodDef CEntries[] = {
 
-  {"depng_", (DL_FUNC) &depng_, 3},
-  {"png_info_", (DL_FUNC) &png_info_, 1},
+  {"read_png_raw_", (DL_FUNC) &read_png_raw_, 3},
+  {"extrac_png_info_", (DL_FUNC) &extrac_png_info_, 1},
   {NULL , NULL, 0}
 };
 

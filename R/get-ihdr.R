@@ -14,7 +14,7 @@ color_types[[6 + 1]] <- "RGB + Alpha"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Get information about a PNG file
 #'
-#' @inheritParams depng
+#' @inheritParams read_png_raw
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

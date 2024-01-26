@@ -17,6 +17,6 @@
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-depng <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0) {
-  .Call(depng_, raw_vec, as.integer(fmt), as.integer(flags))
+read_png_raw <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0) {
+  .Call(read_png_raw_, raw_vec, as.integer(fmt), as.integer(flags))
 }

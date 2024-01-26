@@ -13,9 +13,9 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// dpng
+// Read image data from PNG stored in a raw vector
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP depng_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
+SEXP read_png_raw_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
 
   size_t out_size;
   int buf_size = length(raw_vec_);

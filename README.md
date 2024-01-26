@@ -33,7 +33,7 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What’s in the box
 
-- `depng(raw_vec, fmt, flags)` - convert a vector of raw values
+- `read_png_raw(raw_vec, fmt, flags)` - convert a vector of raw values
   containing a PNG image into a vector of raw bytes representing packed
   color values i.e. ABGR32 format
 
@@ -103,7 +103,7 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Unpack the raw PNG bytes into RGBA 8-bits-per-color packed format. 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
+img_data <- spng::read_png_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
 img_data[1:200]
 #>   [1] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [26] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -183,7 +183,7 @@ png_info <- spng::png_info(png_data)
 # Decode the PNG data to image data in-memory. Returned data is 
 # packed color in ABGR32 format.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::depng(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
+img_data <- spng::read_png_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Convert the packed color directly into an R array with 4 channels (RGBA)

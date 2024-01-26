@@ -13,8 +13,10 @@
 #include "spng.h"
 
 
-
-SEXP png_info_(SEXP raw_vec_) {
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Extract PNG header information
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP extrac_png_info_(SEXP raw_vec_) {
 
   int buf_size = length(raw_vec_);
 
