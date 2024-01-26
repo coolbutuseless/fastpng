@@ -28,3 +28,11 @@ read_png_raw <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0) {
 read_png_nara <- function(raw_vec, flags = 0) {
   .Call(read_png_nara_, raw_vec, as.integer(flags))
 }
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' @rdname read_png_raw
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+read_png_raster <- function(raw_vec, flags = 0) {
+  .Call(read_png_raster_, raw_vec, as.integer(flags))
+}

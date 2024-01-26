@@ -108,6 +108,15 @@ grid::grid.raster(nara, interpolate = FALSE)
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="60%" />
 
+### Read PNG as raster
+
+``` r
+ras <- read_png_raster(png_data)
+plot(ras, interpolate = FALSE)
+```
+
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+
 ### Read PNG as raw vector
 
 ``` r
@@ -145,7 +154,7 @@ mat[mat == 0] <- as.raw(255)
 plot(as.raster(t(mat)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -169,52 +178,7 @@ arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
-
-# Use with `pixelweaver`
-
-The vector of raw packed colour data returned by `{spng}` is in ABGR32
-format.
-
-`{pixelweaver}` v0.1.2 now supports the format and can directly ingest
-the vector of raw values and convert to an array.
-
-``` r
-library(spng)
-library(pixelweaver)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Read in raw bytes representing a PNG image
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-png_file <- system.file("img", "Rlogo.png", package="png")
-png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-extract_png_info <- spng::extract_png_info(png_data)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Decode the PNG data to image data in-memory. Returned data is 
-# packed color in ABGR32 format.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::read_png_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Convert the packed color directly into an R array with 4 channels (RGBA)
-# This will also transpose the result into column-major representation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr4 <- pixelweaver::packed_to_planar(
-  packed_data = img_data, 
-  format      = packed_fmt$ABGR32, # Packed color format
-  nchannel    = 4,                 # Output array color depth
-  width       = extract_png_info$width, 
-  height      = extract_png_info$height
-)
-
-
-dim(arr4)
-#> [1]  76 100   4
-plot(as.raster(arr4))
-```
-
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="60%" />
 
 ## Acknowledgements
 

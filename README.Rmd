@@ -98,9 +98,32 @@ grid::grid.raster(nara, interpolate = FALSE)
 library(png)
 bench::mark(
   read_png_nara(png_data),
-  readPNG(png_data, native = TRUE)
+  read_png_raster(png_data),
+  readPNG(png_data, native = FALSE),
+  readPNG(png_data, native = TRUE),
+  check = FALSE
 )
 ```
+
+
+
+```{r echo=FALSE, eval = FALSE}
+
+im <- matrix("#445566FF", 100, 150)
+as.raster(im)
+grid.raster(im)
+```
+
+
+### Read PNG as raster
+
+```{r}
+ras <- read_png_raster(png_data)
+plot(ras, interpolate = FALSE)
+```
+
+
+
 
 
 ### Read PNG as raw vector
@@ -155,50 +178,6 @@ arr <- array(
 arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
-
-
-# Use with `pixelweaver`
-
-The vector of raw packed colour data returned by `{spng}` is in ABGR32 format.
-
-`{pixelweaver}` v0.1.2 now supports the format and can 
-directly ingest the vector of raw values and convert to an array.
-
-
-```{r}
-library(spng)
-library(pixelweaver)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Read in raw bytes representing a PNG image
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-png_file <- system.file("img", "Rlogo.png", package="png")
-png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-extract_png_info <- spng::extract_png_info(png_data)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Decode the PNG data to image data in-memory. Returned data is 
-# packed color in ABGR32 format.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::read_png_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Convert the packed color directly into an R array with 4 channels (RGBA)
-# This will also transpose the result into column-major representation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr4 <- pixelweaver::packed_to_planar(
-  packed_data = img_data, 
-  format      = packed_fmt$ABGR32, # Packed color format
-  nchannel    = 4,                 # Output array color depth
-  width       = extract_png_info$width, 
-  height      = extract_png_info$height
-)
-
-
-dim(arr4)
-plot(as.raster(arr4))
-```
-
 
 
 

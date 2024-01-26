@@ -4,6 +4,8 @@
 * Re-visit, Update, Re-factor
 * Rename `depng()` to `read_png_raw()`
 * Add `read_png_nara()` to decode to native raster
+* Add `read_png_raster()` to decode to image raster (with colours
+  represented as hex strings e.g. `#445566FF`)
 
 # spng 0.1.2
 

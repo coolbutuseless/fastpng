@@ -110,11 +110,9 @@ SEXP read_png_nara_(SEXP raw_vec_, SEXP flags_) {
   /* Free context memory */
   spng_ctx_free(ctx);
   
-  // dim(nara) <- c(76, 100)
-  //   class(nara) <- 'nativeRaster'
-  // attr(nara, 'channels') <- 4L
-  // grid::grid.raster(nara, interpolate = FALSE)
-  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
   INTEGER(dims_)[0] = ihdr.height;
   INTEGER(dims_)[1] = ihdr.width;
@@ -132,7 +130,88 @@ SEXP read_png_nara_(SEXP raw_vec_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_rgba_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
+SEXP read_png_raster_(SEXP raw_vec_, SEXP flags_) {
+  size_t out_size;
+  int buf_size = length(raw_vec_);
+  
+  unsigned char *buf = (unsigned char *)RAW(raw_vec_);
+  int fmt   = SPNG_FMT_RGBA8;
+  int flags = INTEGER(flags_)[0];
+  
+  
+  /* Create a context */
+  spng_ctx *ctx = spng_ctx_new(0);
+  
+  
+  /* Set memory usage limits for storing standard and unknown chunks,
+   this is important when reading arbitrary files! */
+  size_t limit = 1024 * 1024 * 64;
+  spng_set_chunk_limits(ctx, limit, limit);
+  
+  /* Set an input buffer */
+  spng_set_png_buffer(ctx, buf, buf_size);
+  
+  /* Determine output image size */
+  spng_decoded_image_size(ctx, fmt, &out_size);
+  
+  
+  unsigned char * out = (unsigned char *)malloc(out_size);
+  if (out == NULL) {
+    error("Couldn't allocate PNG buffer");
+  }
+  
+  // get info
+  struct spng_ihdr ihdr;
+  int r = spng_get_ihdr(ctx, &ihdr);
+  if (r) {
+    spng_ctx_free(ctx);
+    error("spng_get_ihdr() error: %s\n", spng_strerror(r));
+  }
+  
+  /* Decode to 8-bit RGBA */
+  r = spng_decode_image(ctx, out, out_size, fmt, flags);
+  if (r) {
+    spng_ctx_free(ctx);
+    error("spng_decode_image() error: %s\n", spng_strerror(r));
+  }
+  
+  /* Free context memory */
+  spng_ctx_free(ctx);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Format raw bytes as #RRGGBBAA string
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP out_ = PROTECT(allocVector(STRSXP, out_size >> 2));
+  
+  uint8_t *ptr = (uint8_t *)out;
+  
+  for (int i = 0; i < length(out_); i++) {
+    static char col[10];
+    snprintf(col, 10, "#%02X%02X%02X%02X", ptr[0], ptr[1], ptr[2], ptr[3]);
+    SET_STRING_ELT(out_, i, mkChar(col));
+    ptr += 4;
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
+  INTEGER(dims_)[0] = ihdr.height;
+  INTEGER(dims_)[1] = ihdr.width;
+  
+  setAttrib(out_, R_DimSymbol, dims_);
+  setAttrib(out_, R_ClassSymbol, mkString("raster"));
+  
+  UNPROTECT(2);
+  return out_;
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Read PNG as RGBA array
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_rgb_(SEXP raw_vec_, SEXP flags_) {
   return R_NilValue;
 }
 
@@ -140,22 +219,7 @@ SEXP read_png_rgba_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_rgb_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
+SEXP read_png_grey_(SEXP raw_vec_, SEXP flags_) {
   return R_NilValue;
 }
 
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Read PNG as RGBA array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_grey_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
-  return R_NilValue;
-}
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Read PNG as RGBA array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_raster_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
-  return R_NilValue;
-}
