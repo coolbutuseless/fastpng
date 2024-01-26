@@ -73,7 +73,7 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(png_info <- spng::png_info(png_data))
+(extract_png_info <- spng::extract_png_info(png_data))
 #> $width
 #> [1] 100
 #> 
@@ -99,6 +99,17 @@ png_data[1:100]
 #> [1] "RGB + Alpha"
 ```
 
+### Read PNG as native raster
+
+``` r
+nara <- read_png_nara(png_data)
+grid::grid.raster(nara, interpolate = FALSE)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="60%" />
+
+### Read PNG as raw vector
+
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Unpack the raw PNG bytes into RGBA 8-bits-per-color packed format. 
@@ -120,7 +131,7 @@ img_data[1:200]
 # Pick the green channel and plot as greyscale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$height)
+mat <- matrix(img_data[seq(2, N, 4)], nrow = extract_png_info$width, ncol = extract_png_info$height)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Image had an alpha channel, let's replace that with white background
@@ -134,7 +145,7 @@ mat[mat == 0] <- as.raw(255)
 plot(as.raster(t(mat)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -147,7 +158,7 @@ arr <- array(
     img_data[seq(3, N, 4)], # B
     img_data[seq(4, N, 4)]  # A
   ),
-  dim = c(png_info$width, png_info$height, 4)
+  dim = c(extract_png_info$width, extract_png_info$height, 4)
 )
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,7 +169,7 @@ arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
 
 # Use with `pixelweaver`
 
@@ -177,7 +188,7 @@ library(pixelweaver)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 png_file <- system.file("img", "Rlogo.png", package="png")
 png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-png_info <- spng::png_info(png_data)
+extract_png_info <- spng::extract_png_info(png_data)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Decode the PNG data to image data in-memory. Returned data is 
@@ -193,8 +204,8 @@ arr4 <- pixelweaver::packed_to_planar(
   packed_data = img_data, 
   format      = packed_fmt$ABGR32, # Packed color format
   nchannel    = 4,                 # Output array color depth
-  width       = png_info$width, 
-  height      = png_info$height
+  width       = extract_png_info$width, 
+  height      = extract_png_info$height
 )
 
 
@@ -203,7 +214,7 @@ dim(arr4)
 plot(as.raster(arr4))
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
 
 ## Acknowledgements
 

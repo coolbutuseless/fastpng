@@ -2,6 +2,8 @@
 # spng 0.1.2.9000  2024-01-26
 
 * Re-visit, Update, Re-factor
+* Rename `depng()` to `read_png_raw()`
+* Add `read_png_nara()` to decode to native raster
 
 # spng 0.1.2
 

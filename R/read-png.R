@@ -1,7 +1,7 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Decompress a PNG in memory
+#' Read a PNG from a raw vector in memory
 #'
 #' See \url{https://libspng.org/docs/decode/} for more information on which
 #' combinations of formats and flags are permissable.
@@ -19,4 +19,12 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 read_png_raw <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0) {
   .Call(read_png_raw_, raw_vec, as.integer(fmt), as.integer(flags))
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' @rdname read_png_raw
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+read_png_nara <- function(raw_vec, flags = 0) {
+  .Call(read_png_nara_, raw_vec, as.integer(flags))
 }

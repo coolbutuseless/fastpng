@@ -16,7 +16,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Extract PNG header information
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP extrac_png_info_(SEXP raw_vec_) {
+SEXP extract_png_info_(SEXP raw_vec_) {
 
   int buf_size = length(raw_vec_);
 

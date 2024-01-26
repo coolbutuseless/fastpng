@@ -82,9 +82,28 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(png_info <- spng::png_info(png_data))
+(extract_png_info <- spng::extract_png_info(png_data))
 ```
 
+
+### Read PNG as native raster
+
+```{r}
+nara <- read_png_nara(png_data)
+grid::grid.raster(nara, interpolate = FALSE)
+```
+
+
+```{r eval=FALSE, echo=FALSE}
+library(png)
+bench::mark(
+  read_png_nara(png_data),
+  readPNG(png_data, native = TRUE)
+)
+```
+
+
+### Read PNG as raw vector
 
 ```{r}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,7 +119,7 @@ img_data[1:200]
 # Pick the green channel and plot as greyscale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 4)], nrow = png_info$width, ncol = png_info$height)
+mat <- matrix(img_data[seq(2, N, 4)], nrow = extract_png_info$width, ncol = extract_png_info$height)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Image had an alpha channel, let's replace that with white background
@@ -126,7 +145,7 @@ arr <- array(
     img_data[seq(3, N, 4)], # B
     img_data[seq(4, N, 4)]  # A
   ),
-  dim = c(png_info$width, png_info$height, 4)
+  dim = c(extract_png_info$width, extract_png_info$height, 4)
 )
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,7 +174,7 @@ library(pixelweaver)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 png_file <- system.file("img", "Rlogo.png", package="png")
 png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-png_info <- spng::png_info(png_data)
+extract_png_info <- spng::extract_png_info(png_data)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Decode the PNG data to image data in-memory. Returned data is 
@@ -171,8 +190,8 @@ arr4 <- pixelweaver::packed_to_planar(
   packed_data = img_data, 
   format      = packed_fmt$ABGR32, # Packed color format
   nchannel    = 4,                 # Output array color depth
-  width       = png_info$width, 
-  height      = png_info$height
+  width       = extract_png_info$width, 
+  height      = extract_png_info$height
 )
 
 
