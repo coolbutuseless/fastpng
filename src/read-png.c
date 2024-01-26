@@ -158,6 +158,8 @@ SEXP read_png_as_nara_(SEXP raw_vec_, SEXP flags_) {
 }
 
 
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,9 +201,20 @@ SEXP read_png_as_raster_(SEXP raw_vec_, SEXP flags_) {
   
   uint8_t *buf_ptr = (uint8_t *)decode_buf;
   
+  unsigned char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
+  char col[10] = "#00000000"; // template
+  
   for (int i = 0; i < length(res_); i++) {
-    static char col[10];
-    snprintf(col, 10, "#%02X%02X%02X%02X", buf_ptr[0], buf_ptr[1], buf_ptr[2], buf_ptr[3]);
+    // snprintf(col, 10, "#%02X%02X%02X%02X", buf_ptr[0], buf_ptr[1], buf_ptr[2], buf_ptr[3]);
+    col[1] = hex_lookup[(buf_ptr[0] >> 4) & 0x0F];
+    col[2] = hex_lookup[(buf_ptr[0]     ) & 0x0F];
+    col[3] = hex_lookup[(buf_ptr[1] >> 4) & 0x0F];
+    col[4] = hex_lookup[(buf_ptr[1]     ) & 0x0F];
+    col[5] = hex_lookup[(buf_ptr[2] >> 4) & 0x0F];
+    col[6] = hex_lookup[(buf_ptr[2]     ) & 0x0F];
+    col[7] = hex_lookup[(buf_ptr[3] >> 4) & 0x0F];
+    col[8] = hex_lookup[(buf_ptr[3]     ) & 0x0F];
+    
     SET_STRING_ELT(res_, i, mkChar(col));
     buf_ptr += 4;
   }

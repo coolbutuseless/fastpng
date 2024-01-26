@@ -43,9 +43,9 @@ remotes::install_github('coolbutuseless/spng')
 
 - `read_png_as_rgb(raw_vec, flags)`
 
-- `get_info(raw_vec)` - interrogate a vector of raw values containing a
-  PNG image to determine image information i.e. width, height,
-  bit_depth, color_type, compression_method, filter_method,
+- `extract_png_info(raw_vec)` - interrogate a vector of raw values
+  containing a PNG image to determine image information i.e. width,
+  height, bit_depth, color_type, compression_method, filter_method,
   interlace_method.
 
 ## Example: Decompress a PNG in memory
