@@ -33,9 +33,15 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What’s in the box
 
-- `read_png_raw(raw_vec, fmt, flags)` - convert a vector of raw values
-  containing a PNG image into a vector of raw bytes representing packed
-  color values i.e. ABGR32 format
+- `read_png_as_raw(raw_vec, fmt, flags)`
+
+- `read_png_as_nara(raw_vec, flags)`
+
+- `read_png_as_raster(raw_vec, flags)`
+
+- `read_png_as_rgba(raw_vec, flags)`
+
+- `read_png_as_rgb(raw_vec, flags)`
 
 - `get_info(raw_vec)` - interrogate a vector of raw values containing a
   PNG image to determine image information i.e. width, height,
@@ -102,7 +108,7 @@ png_data[1:100]
 ### Read PNG as native raster
 
 ``` r
-nara <- read_png_nara(png_data)
+nara <- read_png_as_nara(png_data)
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
@@ -111,7 +117,7 @@ grid::grid.raster(nara, interpolate = FALSE)
 ### Read PNG as raster
 
 ``` r
-ras <- read_png_raster(png_data)
+ras <- read_png_as_raster(png_data)
 plot(ras, interpolate = FALSE)
 ```
 
@@ -120,7 +126,7 @@ plot(ras, interpolate = FALSE)
 ### Read PNG as RGBA array
 
 ``` r
-arr <- read_png_rgba(png_data)
+arr <- read_png_as_rgba(png_data)
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
@@ -131,7 +137,7 @@ plot(as.raster(arr), interpolate = FALSE)
 Ignoring any alpha channel in the image.
 
 ``` r
-arr <- read_png_rgb(png_data)
+arr <- read_png_as_rgb(png_data)
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
@@ -143,7 +149,7 @@ plot(as.raster(arr), interpolate = FALSE)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Unpack the raw PNG bytes into RGBA 8-bits-per-color packed format. 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::read_png_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
+img_data <- spng::read_png_as_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
 img_data[1:200]
 #>   [1] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 #>  [26] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -154,51 +160,6 @@ img_data[1:200]
 #> [151] 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 01 98 9b 96 13 8f 93 8c 31 87 8b 84
 #> [176] 48 83 87 80 5d 81 85 7e 6e 80 84 7d 7c 7e 82 7a 84 81 85 7e 92 7e 83 7b 95
 ```
-
-``` r
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Pick the green channel and plot as greyscale
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-N <- length(img_data)
-mat <- matrix(img_data[seq(2, N, 4)], nrow = extract_png_info$width, ncol = extract_png_info$height)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Image had an alpha channel, let's replace that with white background
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mat[mat == 0] <- as.raw(255)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PNG bytes are in row-major order. R is in column major order
-# so need to transpose to view correctly
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-plot(as.raster(t(mat)))
-```
-
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="60%" />
-
-``` r
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Construct an array by plucking the relevant bytes.
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr <- array(
-  c(
-    img_data[seq(1, N, 4)], # R
-    img_data[seq(2, N, 4)], # G
-    img_data[seq(3, N, 4)], # B
-    img_data[seq(4, N, 4)]  # A
-  ),
-  dim = c(extract_png_info$width, extract_png_info$height, 4)
-)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PNG bytes are in row-major order. R is in column major order
-# so need to transpose to view correctly
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-arr <- aperm(arr, c(2, 1, 3))
-plot(as.raster(arr))
-```
-
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="60%" />
 
 ## Acknowledgements
 

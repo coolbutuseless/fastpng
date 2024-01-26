@@ -17,38 +17,38 @@
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png_raw <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0) {
-  .Call(read_png_raw_, raw_vec, as.integer(fmt), as.integer(flags))
+read_png_as_raw <- function(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0L) {
+  .Call(read_png_as_raw_, raw_vec, fmt, flags)
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' @rdname read_png_raw
+#' @rdname read_png_as_raw
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png_nara <- function(raw_vec, flags = 0) {
-  .Call(read_png_nara_, raw_vec, as.integer(flags))
+read_png_as_nara <- function(raw_vec, flags = 0L) {
+  .Call(read_png_as_nara_, raw_vec, flags)
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' @rdname read_png_raw
+#' @rdname read_png_as_raw
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png_raster <- function(raw_vec, flags = 0) {
-  .Call(read_png_raster_, raw_vec, as.integer(flags))
+read_png_as_raster <- function(raw_vec, flags = 0L) {
+  .Call(read_png_as_raster_, raw_vec, flags)
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' @rdname read_png_raw
+#' @rdname read_png_as_raw
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png_rgba <- function(raw_vec, flags = 0) {
-  .Call(read_png_rgba_, raw_vec, as.integer(flags))
+read_png_as_rgba <- function(raw_vec, flags = 0L) {
+  .Call(read_png_as_rgba_, raw_vec, flags)
 }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' @rdname read_png_raw
+#' @rdname read_png_as_raw
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png_rgb <- function(raw_vec, flags = 0) {
-  .Call(read_png_rgb_, raw_vec, as.integer(flags))
+read_png_as_rgb <- function(raw_vec, flags = 0L) {
+  .Call(read_png_as_rgb_, raw_vec, flags)
 }
