@@ -6,6 +6,7 @@
 * Add `read_png_nara()` to decode to native raster
 * Add `read_png_raster()` to decode to image raster (with colours
   represented as hex strings e.g. `#445566FF`)
+* Add `read_png_rgba()` to decode as numeric array with 4 planes.
 
 # spng 0.1.2
 

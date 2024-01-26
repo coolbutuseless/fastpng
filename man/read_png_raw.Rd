@@ -4,6 +4,7 @@
 \alias{read_png_raw}
 \alias{read_png_nara}
 \alias{read_png_raster}
+\alias{read_png_rgba}
 \title{Read a PNG from a raw vector in memory}
 \usage{
 read_png_raw(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0)
@@ -11,6 +12,8 @@ read_png_raw(raw_vec, fmt = spng_format$SPNG_FMT_RGBA8, flags = 0)
 read_png_nara(raw_vec, flags = 0)
 
 read_png_raster(raw_vec, flags = 0)
+
+read_png_rgba(raw_vec, flags = 0)
 }
 \arguments{
 \item{raw_vec}{raw vector containing encoded PNG data}

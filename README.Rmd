@@ -99,6 +99,7 @@ library(png)
 bench::mark(
   read_png_nara(png_data),
   read_png_raster(png_data),
+  read_png_rgba(png_data),
   readPNG(png_data, native = FALSE),
   readPNG(png_data, native = TRUE),
   check = FALSE
@@ -122,6 +123,13 @@ ras <- read_png_raster(png_data)
 plot(ras, interpolate = FALSE)
 ```
 
+
+### Read PNG as RGBA array
+
+```{r}
+arr <- read_png_rgba(png_data)
+plot(as.raster(arr), interpolate = FALSE)
+```
 
 
 

@@ -117,6 +117,15 @@ plot(ras, interpolate = FALSE)
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
 
+### Read PNG as RGBA array
+
+``` r
+arr <- read_png_rgba(png_data)
+plot(as.raster(arr))
+```
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
+
 ### Read PNG as raw vector
 
 ``` r
@@ -154,7 +163,7 @@ mat[mat == 0] <- as.raw(255)
 plot(as.raster(t(mat)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,7 +187,7 @@ arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="60%" />
 
 ## Acknowledgements
 
