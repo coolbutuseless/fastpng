@@ -44,3 +44,11 @@ read_png_raster <- function(raw_vec, flags = 0) {
 read_png_rgba <- function(raw_vec, flags = 0) {
   .Call(read_png_rgba_, raw_vec, as.integer(flags))
 }
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' @rdname read_png_raw
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+read_png_rgb <- function(raw_vec, flags = 0) {
+  .Call(read_png_rgb_, raw_vec, as.integer(flags))
+}

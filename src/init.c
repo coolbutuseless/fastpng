@@ -7,6 +7,7 @@ extern SEXP read_png_raw_   (SEXP raw_vec_, SEXP fmt_, SEXP flags_);
 extern SEXP read_png_nara_  (SEXP raw_vec_, SEXP flags_);
 extern SEXP read_png_raster_(SEXP raw_vec_, SEXP flags_);
 extern SEXP read_png_rgba_  (SEXP raw_vec_, SEXP flags_);
+extern SEXP read_png_rgb_   (SEXP raw_vec_, SEXP flags_);
 
 extern SEXP extract_png_info_(SEXP raw_vec_);
 
@@ -16,6 +17,7 @@ static const R_CallMethodDef CEntries[] = {
   {"read_png_nara_"  , (DL_FUNC) &read_png_nara_  , 2},
   {"read_png_raster_", (DL_FUNC) &read_png_raster_, 2},
   {"read_png_rgba_"  , (DL_FUNC) &read_png_rgba_  , 2},
+  {"read_png_rgb_"   , (DL_FUNC) &read_png_rgb_   , 2},
   
   
   

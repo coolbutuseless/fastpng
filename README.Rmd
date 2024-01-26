@@ -133,6 +133,16 @@ plot(as.raster(arr), interpolate = FALSE)
 
 
 
+### Read PNG as RGB array
+
+Ignoring any alpha channel in the image.
+
+```{r}
+arr <- read_png_rgb(png_data)
+plot(as.raster(arr), interpolate = FALSE)
+```
+
+
 
 ### Read PNG as raw vector
 

@@ -121,10 +121,21 @@ plot(ras, interpolate = FALSE)
 
 ``` r
 arr <- read_png_rgba(png_data)
-plot(as.raster(arr))
+plot(as.raster(arr), interpolate = FALSE)
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
+
+### Read PNG as RGB array
+
+Ignoring any alpha channel in the image.
+
+``` r
+arr <- read_png_rgb(png_data)
+plot(as.raster(arr), interpolate = FALSE)
+```
+
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
 
 ### Read PNG as raw vector
 
@@ -163,7 +174,7 @@ mat[mat == 0] <- as.raw(255)
 plot(as.raster(t(mat)))
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="60%" />
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,7 +198,7 @@ arr <- aperm(arr, c(2, 1, 3))
 plot(as.raster(arr))
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="60%" />
 
 ## Acknowledgements
 
