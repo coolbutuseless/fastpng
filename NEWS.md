@@ -3,16 +3,16 @@
 
 * Re-visit, Update, Re-factor
 * `read_png_as_X()`
-    * Rename `depng()` to `read_png_as_raw()`
-    * Add `read_png_as_nara()` to decode to native raster
-    * Add `read_png_as_raster()` to decode to image raster (with colours
-      represented as hex strings e.g. `#445566FF`)
-    * Add `read_png_as_rgba()` to decode as numeric array with 4 planes (RGBA)
-    * Add `read_png_as_rgb()` to decode as numeric array with 3 planes (RGB)
-* `write_png_from_X()`
-    * `write_png_from_raw()`
-    * `write_png_from_nara()`
-    * `write_png_from_raster()`
+    * `read_png_as_raw()`
+    * `read_png_as_nara()`
+    * `read_png_as_raster()`
+    * `read_png_as_rgba()` 
+    * `read_png_as_rgb()`
+* `write_png()` to write:
+    * Native Raster (integer matrix with class 'nativeRaster')
+    * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
+    * RGBA 3D numeric array values in [0, 1]
+    * RGB 3D numeric array values in [0, 1]
 
 # spng 0.1.2
 

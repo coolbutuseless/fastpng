@@ -21,6 +21,16 @@ R.
 
 - [libspng API docs](https://libspng.org/docs/api/)
 
+## To Do
+
+- Test Image Suite
+  - <http://www.schaik.com/pngsuite/>
+- Read from `file` as well as `raw`
+- Implement functions `write_png()` and `read_png()` which will dispatch
+  on R object type.
+- `raster` images can be RGB or RGBA. RGBA rasters are supported. Add
+  support for RGB rasters
+
 ## Installation
 
 You can install from [GitHub](https://github.com/coolbutuseless/spng)

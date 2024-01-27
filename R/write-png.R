@@ -3,8 +3,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Write PNG
 #' 
-#' @param raw_vec raw vector containing RGBA bytes
-#' @param width,height dimensions of the image
+#' @param image image data.  raster, rgba array, rgb array, nativeraster object
+#' @param file If NULL then return result as raw vector, otherwise write
+#'        to the given filepath.
 #' @param use_filter Use PNG filtering to help reduce size. Default: TRUE.
 #'        If FALSE, then filtering will be disabled which can make 
 #'        image writing faster.
@@ -17,65 +18,12 @@
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png_from_raw <- function(raw_vec, width, height, use_filter = TRUE, 
-                               compression_level = -1L) {
-  .Call(write_png_from_raw_, raw_vec, width, height, use_filter, compression_level);
+write_png <- function(image, file = NULL, use_filter = TRUE, 
+                      compression_level = -1L) {
+  .Call(write_png_, image, file, use_filter, compression_level)
 }
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Write PNG from NativeRaster
-#' 
-#' @inheritParams write_png_from_raw
-#' @param nara native raster object. I.e.  An integer matrix.
-#' @param file If NULL then return result as raw vector, otherwise write
-#'        to the given filepath.
-#' @export
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png_from_nara <- function(nara, file = NULL, use_filter = TRUE, compression_level = -1L) {
-  .Call(write_png_from_nara_, nara, file, use_filter, compression_level);
-}
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Write PNG from Raster (character matrix of hex colours)
-#' 
-#' @inheritParams write_png_from_raw
-#' @inheritParams write_png_from_nara
-#' @param ras raster object. I.e.  A character matrix.
-#' 
-#' @export
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png_from_raster <- function(ras, file = NULL, use_filter = TRUE, compression_level = -1L) {
-  .Call(write_png_from_raster_, ras, file, use_filter, compression_level);
-}
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Write PNG from RGBA array
-#' 
-#' @inheritParams write_png_from_raw
-#' @inheritParams write_png_from_nara
-#' @param arr 3D array with RGBA data and numeric values in range [0, 1]
-#' 
-#' @export
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png_from_rgba <- function(arr, file = NULL, use_filter = TRUE, compression_level = -1L) {
-  .Call(write_png_from_rgba_, arr, file, use_filter, compression_level);
-}
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Write PNG from RGB array
-#' 
-#' @inheritParams write_png_from_rgba
-#' @param arr 3D array with RGB data and numeric values in range [0, 1]
-#' 
-#' @export
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png_from_rgb <- function(arr, file = NULL, use_filter = TRUE, compression_level = -1L) {
-  .Call(write_png_from_rgb_, arr, file, use_filter, compression_level);
-}
 
 
 
@@ -91,72 +39,15 @@ if (FALSE) {
   rgba <- read_png_as_rgba(png_data)
   rgb  <- read_png_as_rgb(png_data)
   
-  write_png_from_rgb(rgb, "working/rgb.png")
   
   
   bench::mark(
-    write_png_from_nara(nara, compression_level = 0),
-    write_png_from_raster(ras, compression_level = 0),
+    write_png(nara, compression_level = 0),
+    write_png(nara, compression_level = 0, use_filter = FALSE),
+    write_png(ras, compression_level = 0),
+    write_png(ras, compression_level = 0, use_filter = FALSE),
     writePNG(rgba),
     check = FALSE
   )
-  
-  
-  write_png_from_raster(ras, "working/ras.png")
-  
-  
-  grid.newpage()
-  grid.raster(im, interpolate = FALSE)
-  
-  
-  png2 <- write_png_from_nara(im) 
-  
-  im2 <- read_png_as_nara(png2)
-  grid.newpage()
-  grid.raster(im2, interpolate = FALSE)
-  
-  writeBin(png2, "working/test.png")
-  
-  im3 <- read_png_as_rgba(png2)
-  
-  library(png)
-  bench::mark(
-    # write_png_from_raw(im, width = info$width, height = info$height),
-    # # write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9),
-    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE),
-    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = TRUE , compression_level = 0),
-    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE, compression_level = 0),
-    write_png_from_nara(im, use_filter = FALSE, compression_level = 0),
-    writePNG(im3),
-    check = FALSE,
-    relative = TRUE
-  ) [,c(1,4)]
-  
-  
-  writePNG(im3) |> length()
-  write_png_from_raw(im, width = info$width, height = info$height) |> length()
-  write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9) |> length()
-  write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE) |> length()
-  write_png_from_raw(im, width = info$width, height = info$height, use_filter = TRUE , compression_level = 0) |> length()
-  write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE, compression_level = 0) |> length()
-  
-  
-  identical(
-    writePNG(im3),
-    write_png_from_raw(im, width = info$width, height = info$height)
-  )
-  
-  
-  file <- "working/test.png"
-  bench::mark(
-    write_png_from_nara(im, file),
-    write_png_from_nara(im, file, use_filter=FALSE, compression_level = 0),
-    writePNG(im3, file)
-  )  
-  
-  
-  
-  
-  
   
 }
