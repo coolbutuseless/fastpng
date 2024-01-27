@@ -29,7 +29,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int bit_depth = 8;
+  uint8_t bit_depth = 8;
   int use_filter        = asLogical(use_filter_);
   int compression_level = asInteger(compression_level_);
   if (compression_level < -1 || compression_level > 9) {
@@ -91,7 +91,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ihdr.width      = width;
   ihdr.height     = height;
-  ihdr.color_type = color_type;
+  ihdr.color_type = (uint8_t)color_type;
   ihdr.bit_depth  = bit_depth;
   spng_set_ihdr(ctx, &ihdr);
   
@@ -136,7 +136,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Copy into R raw vector
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(RAWSXP, png_size));
+  SEXP res_ = PROTECT(allocVector(RAWSXP, (R_xlen_t)png_size));
   memcpy(RAW(res_), png_buf, png_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,7 +160,7 @@ SEXP write_png_from_raw_(SEXP src_, SEXP file_, SEXP width_, SEXP height_,
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = length(src_);
+  size_t nbytes = (size_t)length(src_);
   uint32_t width = (uint32_t)asInteger(width_);
   uint32_t height = (uint32_t)asInteger(height_);
   void *image = (void *)RAW(src_);
@@ -185,7 +185,7 @@ SEXP write_png_from_nara_(SEXP nara_, SEXP file_, SEXP use_filter_, SEXP compres
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void *image = (void *)INTEGER(nara_);
-  size_t nbytes = length(nara_) * 4;
+  size_t nbytes = (size_t)(length(nara_) * 4.0);
   SEXP dims_ = getAttrib(nara_, R_DimSymbol);
   uint32_t width  = (uint32_t)INTEGER(dims_)[1];
   uint32_t height = (uint32_t)INTEGER(dims_)[0];
@@ -199,12 +199,12 @@ SEXP write_png_from_nara_(SEXP nara_, SEXP file_, SEXP use_filter_, SEXP compres
 }
 
 
-static unsigned int hexdigit(int digit) {
-  if('0' <= digit && digit <= '9') return      digit - '0';
-  if('A' <= digit && digit <= 'F') return 10 + digit - 'A';
-  if('a' <= digit && digit <= 'f') return 10 + digit - 'a';
+static unsigned char hexdigit(int digit) {
+  if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
+  if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
+  if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
   error("invalid hex: %i", digit);
-  return digit; 
+  return (unsigned char)digit; 
 }
 
 
@@ -216,7 +216,7 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes   = length(ras_) * 4;
+  size_t nbytes   = (size_t)(length(ras_) * 4.0);
   SEXP dims_      = getAttrib(ras_, R_DimSymbol);
   uint32_t width  = (uint32_t)INTEGER(dims_)[1];
   uint32_t height = (uint32_t)INTEGER(dims_)[0];
@@ -231,10 +231,10 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
   unsigned char *im_ptr = image;
   for (int i = 0; i < Rf_xlength(ras_); i++) {
     const char *col = CHAR(STRING_ELT(ras_, i));
-    *im_ptr++ = (hexdigit(col[1]) << 4) + hexdigit(col[2]); // R
-    *im_ptr++ = (hexdigit(col[3]) << 4) + hexdigit(col[4]); // G
-    *im_ptr++ = (hexdigit(col[5]) << 4) + hexdigit(col[6]); // B
-    *im_ptr++ = (hexdigit(col[7]) << 4) + hexdigit(col[8]); // A
+    *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
+    *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
+    *im_ptr++ = (unsigned char)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+    *im_ptr++ = (unsigned char)( (hexdigit(col[7]) << 4) + hexdigit(col[8]) ); // A
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -267,7 +267,7 @@ SEXP write_png_from_rgba_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compress
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = length(arr_);
+  size_t nbytes = (size_t)(length(arr_));
   SEXP dims_    = getAttrib(arr_, R_DimSymbol);
   if (length(dims_) != 3) {
     error("Must be 3d array");
@@ -293,10 +293,10 @@ SEXP write_png_from_rgba_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compress
     double *b = REAL(arr_) + row + (width * height) * 2;
     double *a = REAL(arr_) + row + (width * height) * 3;
     for (int col = 0; col < width; col++) {
-      *im_ptr++ = *r * 255;
-      *im_ptr++ = *g * 255;
-      *im_ptr++ = *b * 255;
-      *im_ptr++ = *a * 255;
+      *im_ptr++ = (unsigned char)(*r * 255.0);
+      *im_ptr++ = (unsigned char)(*g * 255.0);
+      *im_ptr++ = (unsigned char)(*b * 255.0);
+      *im_ptr++ = (unsigned char)(*a * 255.0);
       r += height;
       g += height;
       b += height;
@@ -334,7 +334,7 @@ SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compressi
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = length(arr_);
+  size_t nbytes = (size_t)length(arr_);
   SEXP dims_    = getAttrib(arr_, R_DimSymbol);
   if (length(dims_) != 3) {
     error("Must be 3d array");
@@ -359,9 +359,9 @@ SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compressi
     double *g = REAL(arr_) + row + (width * height) * 1;
     double *b = REAL(arr_) + row + (width * height) * 2;
     for (int col = 0; col < width; col++) {
-      *im_ptr++ = *r * 255;
-      *im_ptr++ = *g * 255;
-      *im_ptr++ = *b * 255;
+      *im_ptr++ = (unsigned char)(*r * 255.0);
+      *im_ptr++ = (unsigned char)(*g * 255.0);
+      *im_ptr++ = (unsigned char)(*b * 255.0);
       r += height;
       g += height;
       b += height;

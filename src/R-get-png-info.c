@@ -33,11 +33,11 @@ SEXP get_png_info_(SEXP src_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set an input buffer 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int buf_size = 0;
+  size_t buf_size = 0;
   unsigned char *buf = 0;
   FILE *fp = NULL;
   if (TYPEOF(src_) == RAWSXP) {
-    buf_size = length(src_);
+    buf_size = (size_t)length(src_);
     buf = (unsigned char *)RAW(src_);
     spng_set_png_buffer(ctx, buf, buf_size);
   } else if (TYPEOF(src_) == STRSXP) {
@@ -76,8 +76,8 @@ SEXP get_png_info_(SEXP src_) {
   // Create an R list
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP res_ = PROTECT(allocVector(VECSXP, 7));
-  SET_VECTOR_ELT(res_, 0, ScalarInteger(ihdr.width));
-  SET_VECTOR_ELT(res_, 1, ScalarInteger(ihdr.height));
+  SET_VECTOR_ELT(res_, 0, ScalarInteger((int)ihdr.width));
+  SET_VECTOR_ELT(res_, 1, ScalarInteger((int)ihdr.height));
   SET_VECTOR_ELT(res_, 2, ScalarInteger(ihdr.bit_depth));
   SET_VECTOR_ELT(res_, 3, ScalarInteger(ihdr.color_type));
   SET_VECTOR_ELT(res_, 4, ScalarInteger(ihdr.compression_method));

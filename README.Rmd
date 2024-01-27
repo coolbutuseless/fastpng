@@ -13,6 +13,18 @@ knitr::opts_chunk$set(
 )
 
 library(spng)
+
+# Makevars options to do some deep testing for CRAN
+
+# Type conversions are sane
+# PKG_FLAG=-Wconversion
+
+# Pointer overflow checks i.e. dodgy pointer arithmetic
+# PKG_CFLAGS+=-fsanitize=pointer-overflow -fsanitize-trap=pointer-overflow
+# Then run in the debugger:
+# R -d lldb 
+# run
+# testthat::test_local()
 ```
 
 # spng
@@ -20,7 +32,6 @@ library(spng)
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-[![R build status](https://github.com/coolbutuseless/spng/workflows/R-CMD-check/badge.svg)](https://github.com/coolbutuseless/spng/actions)
 <!-- badges: end -->
 
 `spng` offers in-memory decompression of PNG images to vectors of raw values.

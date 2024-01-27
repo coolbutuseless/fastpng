@@ -17,7 +17,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, int *width, int *height, size_t *out_size) {
+spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, uint32_t *width, uint32_t *height, size_t *out_size) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create context
@@ -34,10 +34,10 @@ spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, int *width, int *height, s
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set an input buffer 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int buf_size = 0;
+  size_t buf_size = 0;
   unsigned char *buf = 0;
   if (TYPEOF(src_) == RAWSXP) {
-    buf_size = length(src_);
+    buf_size = (size_t)length(src_);
     buf = (unsigned char *)RAW(src_);
     spng_set_png_buffer(ctx, buf, buf_size);
   } else if (TYPEOF(src_) == STRSXP) {
@@ -96,15 +96,15 @@ SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int width  = 0;
-  int height = 0;
+  uint32_t width  = 0;
+  uint32_t height = 0;
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(RAWSXP, out_size));
+  SEXP res_ = PROTECT(allocVector(RAWSXP, (R_xlen_t)out_size));
   unsigned char *decode_buf = (unsigned char *)RAW(res_);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,15 +144,15 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int width  = 0;
-  int height = 0;
+  uint32_t width  = 0;
+  uint32_t height = 0;
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(INTSXP, out_size >> 2));
+  SEXP res_ = PROTECT(allocVector(INTSXP, (R_xlen_t)(out_size >> 2)));
   unsigned char *decode_buf = (unsigned char *)INTEGER(res_);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,8 +170,8 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   // Set attributs on return value
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
-  INTEGER(dims_)[0] = height;
-  INTEGER(dims_)[1] = width;
+  INTEGER(dims_)[0] = (int)height;
+  INTEGER(dims_)[1] = (int)width;
   
   setAttrib(res_, R_DimSymbol, dims_);
   setAttrib(res_, R_ClassSymbol, mkString("nativeRaster"));
@@ -202,8 +202,8 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int width  = 0;
-  int height = 0;
+  uint32_t width  = 0;
+  uint32_t height = 0;
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
@@ -231,11 +231,11 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Format raw bytes as #RRGGBBAA string
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(STRSXP, out_size >> 2));
+  SEXP res_ = PROTECT(allocVector(STRSXP, (R_xlen_t)(out_size >> 2)));
   
   uint32_t *buf_ptr = (uint32_t *)decode_buf;
   
-  unsigned char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
+  char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
   char col[10] = "#00000000"; // template
   
   for (int i = 0; i < length(res_); i++) {
@@ -257,8 +257,8 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   // Set attributes on result
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
-  INTEGER(dims_)[0] = height;
-  INTEGER(dims_)[1] = width;
+  INTEGER(dims_)[0] = (int)height;
+  INTEGER(dims_)[1] = (int)width;
   
   setAttrib(res_, R_DimSymbol, dims_);
   setAttrib(res_, R_ClassSymbol, mkString("raster"));
@@ -287,8 +287,8 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int width  = 0;
-  int height = 0;
+  uint32_t width  = 0;
+  uint32_t height = 0;
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
@@ -316,7 +316,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Format raw bytes as 3D array:  width, height, depth
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(REALSXP, out_size));
+  SEXP res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)out_size));
   
   double *res_ptr = REAL(res_);
   unsigned char *buf_ptr = decode_buf;
@@ -347,8 +347,8 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   // Set attributes on result
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
-  INTEGER(dims_)[0] = height;
-  INTEGER(dims_)[1] = width;
+  INTEGER(dims_)[0] = (int)height;
+  INTEGER(dims_)[1] = (int)width;
   INTEGER(dims_)[2] = 4;
   
   setAttrib(res_, R_DimSymbol, dims_);
@@ -381,8 +381,8 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int width  = 0;
-  int height = 0;
+  uint32_t width  = 0;
+  uint32_t height = 0;
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
@@ -410,7 +410,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Format raw bytes as 3D array:  width, height, depth
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(REALSXP, out_size));
+  SEXP res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)out_size));
   
   double *res_ptr = REAL(res_);
   unsigned char *buf_ptr = decode_buf;
@@ -418,7 +418,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Need to switch from raw data (row-major) to R array (column-major)
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int npixels = width * height;
+  int npixels = (int)(width * height);
   
   for (int row = 0; row < height; row++) {
     
@@ -441,8 +441,8 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   // Set attributes on result
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
-  INTEGER(dims_)[0] = height;
-  INTEGER(dims_)[1] = width;
+  INTEGER(dims_)[0] = (int)height;
+  INTEGER(dims_)[1] = (int)width;
   INTEGER(dims_)[2] = 3;
   
   setAttrib(res_, R_DimSymbol, dims_);
