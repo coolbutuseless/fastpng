@@ -51,6 +51,33 @@ write_png_from_raster <- function(ras, file = NULL, use_filter = TRUE, compressi
 }
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Write PNG from RGBA array
+#' 
+#' @inheritParams write_png_from_raw
+#' @inheritParams write_png_from_nara
+#' @param arr 3D array with RGBA data and numeric values in range [0, 1]
+#' 
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write_png_from_rgba <- function(arr, file = NULL, use_filter = TRUE, compression_level = -1L) {
+  .Call(write_png_from_rgba_, arr, file, use_filter, compression_level);
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Write PNG from RGB array
+#' 
+#' @inheritParams write_png_from_rgba
+#' @param arr 3D array with RGB data and numeric values in range [0, 1]
+#' 
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write_png_from_rgb <- function(arr, file = NULL, use_filter = TRUE, compression_level = -1L) {
+  .Call(write_png_from_rgb_, arr, file, use_filter, compression_level);
+}
+
+
 
 if (FALSE) {
   library(png)
@@ -62,6 +89,10 @@ if (FALSE) {
   nara <- read_png_as_nara(png_data)
   ras  <- read_png_as_raster(png_data)
   rgba <- read_png_as_rgba(png_data)
+  rgb  <- read_png_as_rgb(png_data)
+  
+  write_png_from_rgb(rgb, "working/rgb.png")
+  
   
   bench::mark(
     write_png_from_nara(nara, compression_level = 0),
