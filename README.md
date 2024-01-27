@@ -4,7 +4,9 @@
 # spng
 
 <!-- badges: start -->
+
 ![](https://img.shields.io/badge/cool-useless-green.svg)
+[![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `spng` offers in-memory decompression of PNG images to vectors of raw
