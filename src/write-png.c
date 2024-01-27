@@ -57,6 +57,7 @@ SEXP write_png_from_raw_(SEXP raw_vec_, SEXP width_, SEXP height_,
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (!use_filter) {
     spng_set_option(ctx, SPNG_FILTER_CHOICE, SPNG_FILTER_CHOICE_NONE);
+    spng_set_option(ctx, SPNG_IMG_COMPRESSION_STRATEGY, 0); // Z_DEFAULT_STRATEGY = 0
   }
   spng_set_option(ctx, SPNG_IMG_COMPRESSION_LEVEL , compression_level);
   spng_set_option(ctx, SPNG_TEXT_COMPRESSION_LEVEL, compression_level);

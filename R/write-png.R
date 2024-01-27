@@ -40,7 +40,7 @@ if (FALSE) {
   library(png)
   bench::mark(
     write_png_from_raw(im, width = info$width, height = info$height),
-    write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9),
+    # write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9),
     write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE),
     write_png_from_raw(im, width = info$width, height = info$height, use_filter = TRUE , compression_level = 0),
     write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE, compression_level = 0),
