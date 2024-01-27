@@ -17,7 +17,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-spng_ctx *read_png_core(SEXP src_, int fmt, int *width, int *height, size_t *out_size) {
+spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, int *width, int *height, size_t *out_size) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create context
@@ -36,7 +36,6 @@ spng_ctx *read_png_core(SEXP src_, int fmt, int *width, int *height, size_t *out
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int buf_size = 0;
   unsigned char *buf = 0;
-  FILE *fp;
   if (TYPEOF(src_) == RAWSXP) {
     buf_size = length(src_);
     buf = (unsigned char *)RAW(src_);
@@ -89,7 +88,8 @@ spng_ctx *read_png_core(SEXP src_, int fmt, int *width, int *height, size_t *out
 // Read image data from PNG stored in a raw vector
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
-
+  
+  FILE *fp = NULL;
   int fmt   = asInteger(fmt_);
   int flags = asInteger(flags_);
 
@@ -99,7 +99,7 @@ SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -112,6 +112,7 @@ SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
+    if (fp) fclose(fp);
     spng_ctx_free(ctx);
     UNPROTECT(1);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
@@ -121,6 +122,7 @@ SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
   spng_ctx_free(ctx);
   UNPROTECT(1);
   return res_;
@@ -135,6 +137,7 @@ SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   
+  FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
   
@@ -144,7 +147,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -157,6 +160,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
+    if (fp) fclose(fp);
     spng_ctx_free(ctx);
     UNPROTECT(1);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
@@ -177,6 +181,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
   spng_ctx_free(ctx);
   UNPROTECT(2);
   return res_;
@@ -190,6 +195,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   
+  FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
   
@@ -199,13 +205,14 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    if (fp) fclose(fp);
     spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
@@ -215,6 +222,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
+    if (fp) fclose(fp);
     free(decode_buf);
     spng_ctx_free(ctx);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
@@ -225,24 +233,23 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP res_ = PROTECT(allocVector(STRSXP, out_size >> 2));
   
-  uint8_t *buf_ptr = (uint8_t *)decode_buf;
+  uint32_t *buf_ptr = (uint32_t *)decode_buf;
   
   unsigned char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
   char col[10] = "#00000000"; // template
   
   for (int i = 0; i < length(res_); i++) {
-    // snprintf(col, 10, "#%02X%02X%02X%02X", buf_ptr[0], buf_ptr[1], buf_ptr[2], buf_ptr[3]);
-    col[1] = hex_lookup[(buf_ptr[0] >> 4) & 0x0F];
-    col[2] = hex_lookup[(buf_ptr[0]     ) & 0x0F];
-    col[3] = hex_lookup[(buf_ptr[1] >> 4) & 0x0F];
-    col[4] = hex_lookup[(buf_ptr[1]     ) & 0x0F];
-    col[5] = hex_lookup[(buf_ptr[2] >> 4) & 0x0F];
-    col[6] = hex_lookup[(buf_ptr[2]     ) & 0x0F];
-    col[7] = hex_lookup[(buf_ptr[3] >> 4) & 0x0F];
-    col[8] = hex_lookup[(buf_ptr[3]     ) & 0x0F];
+    col[1] = hex_lookup[(*buf_ptr >>  4) & 0x0F];
+    col[2] = hex_lookup[(*buf_ptr >>  0) & 0x0F];
+    col[3] = hex_lookup[(*buf_ptr >> 12) & 0x0F];
+    col[4] = hex_lookup[(*buf_ptr >>  8) & 0x0F];
+    col[5] = hex_lookup[(*buf_ptr >> 20) & 0x0F];
+    col[6] = hex_lookup[(*buf_ptr >> 16) & 0x0F];
+    col[7] = hex_lookup[(*buf_ptr >> 28) & 0x0F];
+    col[8] = hex_lookup[(*buf_ptr >> 24) & 0x0F];
     
     SET_STRING_ELT(res_, i, mkChar(col));
-    buf_ptr += 4;
+    buf_ptr++;
   }
   
   
@@ -260,6 +267,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
   spng_ctx_free(ctx);
   free(decode_buf);
   UNPROTECT(2);
@@ -272,6 +280,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   
+  FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
   
@@ -281,13 +290,14 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    if (fp) fclose(fp);
     spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
@@ -297,6 +307,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
+    if (fp) fclose(fp);
     free(decode_buf);
     spng_ctx_free(ctx);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
@@ -347,6 +358,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
   spng_ctx_free(ctx);
   free(decode_buf);
   UNPROTECT(2);
@@ -362,6 +374,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   
+  FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGB8;
   int flags = asInteger(flags_);
   
@@ -371,13 +384,14 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    if (fp) fclose(fp);
     spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
@@ -387,6 +401,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
+    if (fp) fclose(fp);
     free(decode_buf);
     spng_ctx_free(ctx);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
@@ -437,6 +452,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
   spng_ctx_free(ctx);
   free(decode_buf);
   UNPROTECT(2);

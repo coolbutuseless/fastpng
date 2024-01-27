@@ -51,7 +51,10 @@ if (FALSE) {
     read_png(png_file, type = 'rgb'),
     readPNG(png_file),
     readPNG(png_file, native = TRUE),
-    
+    check = FALSE
+  )[, c(1, 4)]
+   
+  bench::mark( 
     read_png(png_data, type = 'nara'),
     read_png(png_data, type = 'raster'),
     read_png(png_data, type = 'rgba'),
@@ -59,6 +62,6 @@ if (FALSE) {
     readPNG(png_data),
     readPNG(png_data, native = TRUE),
     check = FALSE
-  )
+  )[, c(1, 4)]
   
 }
