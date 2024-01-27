@@ -9,6 +9,8 @@ extern SEXP read_png_as_raster_(SEXP raw_vec_, SEXP flags_);
 extern SEXP read_png_as_rgba_  (SEXP raw_vec_, SEXP flags_);
 extern SEXP read_png_as_rgb_   (SEXP raw_vec_, SEXP flags_);
 
+extern SEXP write_png_from_raw_(SEXP raw_vec_, SEXP width_, SEXP height_, SEXP use_filter_, SEXP compression_level_);
+
 extern SEXP extract_png_info_(SEXP raw_vec_);
 
 static const R_CallMethodDef CEntries[] = {
@@ -18,6 +20,8 @@ static const R_CallMethodDef CEntries[] = {
   {"read_png_as_raster_", (DL_FUNC) &read_png_as_raster_, 2},
   {"read_png_as_rgba_"  , (DL_FUNC) &read_png_as_rgba_  , 2},
   {"read_png_as_rgb_"   , (DL_FUNC) &read_png_as_rgb_   , 2},
+  
+  {"write_png_from_raw_", (DL_FUNC) &write_png_from_raw_, 5},
   
   
   
