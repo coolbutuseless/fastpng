@@ -16,11 +16,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Extract PNG header information
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP extract_png_info_(SEXP raw_vec_) {
+SEXP extract_png_info_(SEXP src_) {
 
-  int buf_size = length(raw_vec_);
+  int buf_size = length(src_);
 
-  unsigned char *buf = (unsigned char *)RAW(raw_vec_);
+  unsigned char *buf = (unsigned char *)RAW(src_);
 
   /* Create a context */
   spng_ctx *ctx = spng_ctx_new(0);

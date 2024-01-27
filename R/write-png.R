@@ -34,10 +34,10 @@ if (FALSE) {
   png_file <- system.file("img", "Rlogo.png", package="png")
   png_data <- readBin(png_file, 'raw', n = file.size(png_file))
   
-  nara <- read_png_as_nara(png_data)
-  ras  <- read_png_as_raster(png_data)
-  rgba <- read_png_as_rgba(png_data)
-  rgb  <- read_png_as_rgb(png_data)
+  nara <- read_png(png_data, type = 'nara')
+  ras  <- read_png(png_data, type = 'raster')
+  rgba <- read_png(png_data, type = 'rgba')
+  rgb  <- read_png(png_data, type = 'rgb')
   
   
   

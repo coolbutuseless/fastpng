@@ -14,12 +14,12 @@ color_types[[6 + 1]] <- "RGB + Alpha"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Get information about a PNG file
 #'
-#' @inheritParams read_png_as_raw
+#' @param src filename or raw vector containing PNG data
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-extract_png_info <- function(raw_vec) {
-  res <- .Call('extract_png_info_', raw_vec)
+extract_png_info <- function(src) {
+  res <- .Call('extract_png_info_', src)
 
   res$color_desc <- color_types[[res$color_type + 1L]]
 

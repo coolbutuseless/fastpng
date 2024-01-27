@@ -23,13 +23,12 @@ R.
 
 ## To Do
 
-- Test Image Suite
-  - <http://www.schaik.com/pngsuite/>
-- Read from `file` as well as `raw`
-- Implement functions `write_png()` and `read_png()` which will dispatch
-  on R object type.
-- `raster` images can be RGB or RGBA. RGBA rasters are supported. Add
-  support for RGB rasters
+- `read_png()`
+  - add support for reading from files
+- `write.png()`
+  - Add support for RGB `raster` images
+- `extract_png_info()`
+  - Add support for reading info from files
 
 ## Installation
 
@@ -43,16 +42,8 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What’s in the box
 
-- `read_png_as_raw(raw_vec, fmt, flags)`
-
-- `read_png_as_nara(raw_vec, flags)`
-
-- `read_png_as_raster(raw_vec, flags)`
-
-- `read_png_as_rgba(raw_vec, flags)`
-
-- `read_png_as_rgb(raw_vec, flags)`
-
+- `read_png(raw_vec, type, flags)`
+- `write_png()`
 - `extract_png_info(raw_vec)` - interrogate a vector of raw values
   containing a PNG image to determine image information i.e. width,
   height, bit_depth, color_type, compression_method, filter_method,
@@ -118,7 +109,7 @@ png_data[1:100]
 ### Read PNG as native raster
 
 ``` r
-nara <- read_png_as_nara(png_data)
+nara <- read_png(png_data, type = 'nara')
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
@@ -127,7 +118,7 @@ grid::grid.raster(nara, interpolate = FALSE)
 ### Read PNG as raster
 
 ``` r
-ras <- read_png_as_raster(png_data)
+ras <- read_png(png_data, type = 'raster')
 plot(ras, interpolate = FALSE)
 ```
 
@@ -136,7 +127,7 @@ plot(ras, interpolate = FALSE)
 ### Read PNG as RGBA array
 
 ``` r
-arr <- read_png_as_rgba(png_data)
+arr <- read_png(png_data, type = 'rgba')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
@@ -147,29 +138,11 @@ plot(as.raster(arr), interpolate = FALSE)
 Ignoring any alpha channel in the image.
 
 ``` r
-arr <- read_png_as_rgb(png_data)
+arr <- read_png(png_data, type = 'rgb')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
-
-### Read PNG as raw vector
-
-``` r
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Unpack the raw PNG bytes into RGBA 8-bits-per-color packed format. 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-img_data <- spng::read_png_as_raw(png_data, fmt = spng_format$SPNG_FMT_RGBA8)
-img_data[1:200]
-#>   [1] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#>  [26] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#>  [51] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#>  [76] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [101] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [126] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-#> [151] 00 00 00 00 00 00 00 00 00 00 c6 c8 c5 01 98 9b 96 13 8f 93 8c 31 87 8b 84
-#> [176] 48 83 87 80 5d 81 85 7e 6e 80 84 7d 7c 7e 82 7a 84 81 85 7e 92 7e 83 7b 95
-```
 
 ## Acknowledgements
 

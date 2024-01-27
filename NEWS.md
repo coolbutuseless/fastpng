@@ -2,12 +2,11 @@
 # spng 0.1.2.9000  2024-01-26
 
 * Re-visit, Update, Re-factor
-* `read_png_as_X()`
-    * `read_png_as_raw()`
-    * `read_png_as_nara()`
-    * `read_png_as_raster()`
-    * `read_png_as_rgba()` 
-    * `read_png_as_rgb()`
+* `read_png(type = X)`
+    * Native Raster (integer matrix with class 'nativeRaster')
+    * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
+    * RGBA 3D numeric array values in [0, 1]
+    * RGB 3D numeric array values in [0, 1]
 * `write_png()` to write:
     * Native Raster (integer matrix with class 'nativeRaster')
     * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"

@@ -15,7 +15,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-spng_ctx *init_read_png(SEXP raw_vec_, int fmt, int *width, int *height, size_t *out_size) {
+spng_ctx *read_png_core(SEXP src_, int fmt, int *width, int *height, size_t *out_size) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create context
@@ -32,8 +32,8 @@ spng_ctx *init_read_png(SEXP raw_vec_, int fmt, int *width, int *height, size_t 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set an input buffer 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int buf_size = length(raw_vec_);
-  unsigned char *buf = (unsigned char *)RAW(raw_vec_);
+  int buf_size = length(src_);
+  unsigned char *buf = (unsigned char *)RAW(src_);
   spng_set_png_buffer(ctx, buf, buf_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +63,7 @@ spng_ctx *init_read_png(SEXP raw_vec_, int fmt, int *width, int *height, size_t 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read image data from PNG stored in a raw vector
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_raw_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
+SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
 
   int fmt   = asInteger(fmt_);
   int flags = asInteger(flags_);
@@ -74,7 +74,7 @@ SEXP read_png_as_raw_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = init_read_png(raw_vec_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -108,7 +108,7 @@ SEXP read_png_as_raw_(SEXP raw_vec_, SEXP fmt_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as a nativeraster
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_nara_(SEXP raw_vec_, SEXP flags_) {
+SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
@@ -119,7 +119,7 @@ SEXP read_png_as_nara_(SEXP raw_vec_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = init_read_png(raw_vec_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -163,7 +163,7 @@ SEXP read_png_as_nara_(SEXP raw_vec_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_raster_(SEXP raw_vec_, SEXP flags_) {
+SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
@@ -174,7 +174,7 @@ SEXP read_png_as_raster_(SEXP raw_vec_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = init_read_png(raw_vec_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -244,7 +244,7 @@ SEXP read_png_as_raster_(SEXP raw_vec_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_rgba_(SEXP raw_vec_, SEXP flags_) {
+SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
@@ -255,7 +255,7 @@ SEXP read_png_as_rgba_(SEXP raw_vec_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = init_read_png(raw_vec_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -333,7 +333,7 @@ SEXP read_png_as_rgba_(SEXP raw_vec_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_rgb_(SEXP raw_vec_, SEXP flags_) {
+SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   
   int fmt   = SPNG_FMT_RGB8;
   int flags = asInteger(flags_);
@@ -344,7 +344,7 @@ SEXP read_png_as_rgb_(SEXP raw_vec_, SEXP flags_) {
   int width  = 0;
   int height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = init_read_png(raw_vec_, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -414,3 +414,30 @@ SEXP read_png_as_rgb_(SEXP raw_vec_, SEXP flags_) {
   UNPROTECT(2);
   return res_;
 }
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_) {
+  
+  const char *image_type = CHAR(STRING_ELT(type_, 0));
+  
+  if (strcmp(image_type, "nara") == 0) {
+    return read_png_as_nara_(src_, flags_);
+  } else if (strcmp(image_type, "raster") == 0) {
+    return read_png_as_raster_(src_, flags_);
+  } else if (strcmp(image_type, "rgba") == 0) {
+    return read_png_as_rgba_(src_, flags_);
+  } else if (strcmp(image_type, "rgb") == 0) {
+    return read_png_as_rgb_(src_, flags_);
+  }
+  
+  error("image type not understood: %s", image_type);
+  return R_NilValue;
+}
+
+
+
+
+

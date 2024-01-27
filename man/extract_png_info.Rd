@@ -4,10 +4,10 @@
 \alias{extract_png_info}
 \title{Get information about a PNG file}
 \usage{
-extract_png_info(raw_vec)
+extract_png_info(src)
 }
 \arguments{
-\item{raw_vec}{raw vector containing encoded PNG data}
+\item{src}{filename or raw vector containing PNG data}
 }
 \description{
 Get information about a PNG file

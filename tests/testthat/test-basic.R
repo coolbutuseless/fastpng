@@ -26,10 +26,10 @@ test_that("Write PNG works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Read in as specific formats
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  nara <- read_png_as_nara  (png_data)
-  ras  <- read_png_as_raster(png_data)
-  rgb  <- read_png_as_rgb   (png_data)
-  rgba <- read_png_as_rgba  (png_data)
+  nara <- read_png(png_data, type = 'nara')
+  ras  <- read_png(png_data, type = 'raster')
+  rgb  <- read_png(png_data, type = 'rgb')
+  rgba <- read_png(png_data, type = 'rgba')
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Vanilla 'write_png' works
@@ -43,10 +43,10 @@ test_that("Write PNG works", {
   expect_identical(png_data_nara, png_data_rgba)
   
   
-  nara3 <- read_png_as_nara  (png_data_nara)
-  ras3  <- read_png_as_raster(png_data_ras)
-  rgb3  <- read_png_as_rgb   (png_data_rgb)
-  rgba3 <- read_png_as_rgba  (png_data_rgba)
+  nara3 <- read_png(png_data_nara, type = 'nara')
+  ras3  <- read_png(png_data_ras , type = 'raster')
+  rgb3  <- read_png(png_data_rgb , type = 'rgb')
+  rgba3 <- read_png(png_data_rgba, type = 'rgba')
   
   expect_identical(nara, nara3)
   expect_identical(ras, ras3)
