@@ -11,6 +11,7 @@
     * Add `read_png_as_rgb()` to decode as numeric array with 3 planes (RGB)
 * `write_png_from_X()`
     * `write_png_from_raw()`
+    * `write_png_from_nara()`
 
 # spng 0.1.2
 

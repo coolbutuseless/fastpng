@@ -18,32 +18,55 @@
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png_from_raw <- function(raw_vec, width, height, use_filter = TRUE, 
-                               compression_level = -1) {
+                               compression_level = -1L) {
   .Call(write_png_from_raw_, raw_vec, width, height, use_filter, compression_level);
 }
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Write PNG from NativeRaster
+#' 
+#' @inheritParams write_png_from_raw
+#' @param nara native raster object. I.e.  An integer matrix.
+#' @param file If NULL then return result as raw vector, otherwise write
+#'        to the given filepath.
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write_png_from_nara <- function(nara, file = NULL, use_filter = TRUE, compression_level = -1L) {
+  .Call(write_png_from_nara_, nara, file, use_filter, compression_level);
+}
+
+
+
 if (FALSE) {
+  library(png)
+  library(grid)
+  
   png_file <- system.file("img", "Rlogo.png", package="png")
   png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-  im <- read_png_as_raw(png_data)  
- 
-  info <- extract_png_info(png_data)
+  im <- read_png_as_nara(png_data)
+  grid.newpage()
+  grid.raster(im, interpolate = FALSE)
   
-  png2 <- write_png_from_raw(im, width = info$width, height = info$height) 
   
-  im2 <- read_png_as_raster(png2)
-  plot(im2)
+  png2 <- write_png_from_nara(im) 
+  
+  im2 <- read_png_as_nara(png2)
+  grid.newpage()
+  grid.raster(im2, interpolate = FALSE)
+  
+  writeBin(png2, "working/test.png")
   
   im3 <- read_png_as_rgba(png2)
   
   library(png)
   bench::mark(
-    write_png_from_raw(im, width = info$width, height = info$height),
-    # write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9),
-    write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE),
-    write_png_from_raw(im, width = info$width, height = info$height, use_filter = TRUE , compression_level = 0),
-    write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE, compression_level = 0),
+    # write_png_from_raw(im, width = info$width, height = info$height),
+    # # write_png_from_raw(im, width = info$width, height = info$height, compression_level = 9),
+    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE),
+    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = TRUE , compression_level = 0),
+    # write_png_from_raw(im, width = info$width, height = info$height, use_filter = FALSE, compression_level = 0),
+    write_png_from_nara(im, use_filter = FALSE, compression_level = 0),
     writePNG(im3),
     check = FALSE,
     relative = TRUE
@@ -62,4 +85,18 @@ if (FALSE) {
     writePNG(im3),
     write_png_from_raw(im, width = info$width, height = info$height)
   )
+  
+  
+  file <- "working/test.png"
+  bench::mark(
+    write_png_from_nara(im, file),
+    write_png_from_nara(im, file, use_filter=FALSE, compression_level = 0),
+    writePNG(im3, file)
+  )  
+  
+  
+  
+  
+  
+  
 }
