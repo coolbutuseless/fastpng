@@ -37,12 +37,16 @@ and need to decompress these to an array representation within R.
 
 ## To Do
 
-* `read_png()` 
-    * add support for reading from files
+* `read_png()`
+    * Properly describe `flags`
 * `write.png()`
     * Add support for RGB `raster` images 
-* `extract_png_info()`
-    * Add support for reading info from files
+    * Handle R colour names in `raster` images. e.g. `white` instead of `#FFFFFFFF`
+    * Extend compression level and filter settings to match PNG standard
+* `get_png_info()`
+    * Add descriptions for all the codes e.g. `compression_method`
+* Docs
+    * Benchmark with compression level and filter settings against `{png}`
 
 ## Installation
 
@@ -57,7 +61,7 @@ remotes::install_github('coolbutuseless/spng')
 
 * `read_png(raw_vec, type, flags)` 
 * `write_png()`
-* `extract_png_info(raw_vec)` - interrogate a vector of raw values containing a PNG image
+* `get_png_info(raw_vec)` - interrogate a vector of raw values containing a PNG image
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
   
@@ -69,17 +73,9 @@ library(spng)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # A PNG file everyone should have!
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-png_file <- system.file("img", "Rlogo.png", package="png")
-img <- magick::image_read(png_file)
-img
-```
-
-
-```{r }
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Read in the raw bytes
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+png_file <- system.file("img", "Rlogo.png", package="png")
 png_data <- readBin(png_file, 'raw', n = file.size(png_file))
 png_data[1:100]
 ```
@@ -89,7 +85,7 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(extract_png_info <- spng::extract_png_info(png_data))
+(get_png_info <- spng::get_png_info(png_data))
 ```
 
 

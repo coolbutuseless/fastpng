@@ -18,8 +18,8 @@ color_types[[6 + 1]] <- "RGB + Alpha"
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-extract_png_info <- function(src) {
-  res <- .Call('extract_png_info_', src)
+get_png_info <- function(src) {
+  res <- .Call('get_png_info_', src)
 
   res$color_desc <- color_types[[res$color_type + 1L]]
 

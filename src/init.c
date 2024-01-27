@@ -5,14 +5,14 @@
 
 extern SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_);
 extern SEXP write_png_(SEXP image_ , SEXP file_, SEXP use_filter_, SEXP compression_level_);
-extern SEXP extract_png_info_(SEXP src_);
+extern SEXP get_png_info_(SEXP src_);
 
 
 static const R_CallMethodDef CEntries[] = {
   {"read_png_"   , (DL_FUNC) &read_png_ , 3},
   {"write_png_"  , (DL_FUNC) &write_png_, 4},
 
-  {"extract_png_info_", (DL_FUNC) &extract_png_info_, 1},
+  {"get_png_info_", (DL_FUNC) &get_png_info_, 1},
   {NULL , NULL, 0}
 };
 

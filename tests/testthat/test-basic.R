@@ -53,3 +53,27 @@ test_that("Write PNG works", {
   expect_identical(rgb, rgb3)
   expect_identical(rgba, rgba3)
 })
+
+
+test_that("Read PNG works", {
+  
+  png_file <- testthat::test_path("image/rainbow.png")
+  png_data <- readBin(png_file, raw(), n = file.size(png_file))
+  
+  nara <- read_png(png_data, type = 'nara')
+  ras  <- read_png(png_data, type = 'raster')
+  rgba <- read_png(png_data, type = 'rgba')
+  rgb  <- read_png(png_data, type = 'rgb')
+  
+  nara2 <- read_png(png_file, type = 'nara')
+  ras2  <- read_png(png_file, type = 'raster')
+  rgba2 <- read_png(png_file, type = 'rgba')
+  rgb2  <- read_png(png_file, type = 'rgb')
+  
+  expect_identical(nara, nara2)
+  expect_identical(ras, ras2)
+  expect_identical(rgba, rgba2)
+  expect_identical(rgb, rgb2)
+  
+  
+})

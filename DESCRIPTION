@@ -1,17 +1,18 @@
 Package: spng
 Type: Package
-Title: Decompress PNG Files in Memory
+Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
 Version: 0.1.2.9000
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
-Description: Decompress PNG files in memory.
+Description: Read and write PNG image data from raw vectors and files.
+    Compression level when writing is configurable, thus allowing for 
+    a tradeoff between file size and writing speed.
 License: MIT + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.3.0
 Suggests: 
     knitr,
     rmarkdown,
-    png,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3

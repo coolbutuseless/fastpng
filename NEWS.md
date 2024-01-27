@@ -2,12 +2,10 @@
 # spng 0.1.2.9000  2024-01-26
 
 * Re-visit, Update, Re-factor
-* `read_png(type = X)`
-    * Native Raster (integer matrix with class 'nativeRaster')
-    * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
-    * RGBA 3D numeric array values in [0, 1]
-    * RGB 3D numeric array values in [0, 1]
-* `write_png()` to write:
+* `read_png()` read from files or raw vectors
+* `write_png()` write to files or raw vectors
+* `get_png_info()` fetch a named list of information about the PNG
+* Types supported:
     * Native Raster (integer matrix with class 'nativeRaster')
     * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
     * RGBA 3D numeric array values in [0, 1]

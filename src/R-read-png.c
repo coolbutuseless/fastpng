@@ -12,6 +12,8 @@
 #include "spng.h"
 
 
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,9 +34,32 @@ spng_ctx *read_png_core(SEXP src_, int fmt, int *width, int *height, size_t *out
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set an input buffer 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int buf_size = length(src_);
-  unsigned char *buf = (unsigned char *)RAW(src_);
-  spng_set_png_buffer(ctx, buf, buf_size);
+  int buf_size = 0;
+  unsigned char *buf = 0;
+  FILE *fp;
+  if (TYPEOF(src_) == RAWSXP) {
+    buf_size = length(src_);
+    buf = (unsigned char *)RAW(src_);
+    spng_set_png_buffer(ctx, buf, buf_size);
+  } else if (TYPEOF(src_) == STRSXP) {
+    const char *filename = CHAR(STRING_ELT(src_, 0));
+    fp = fopen(filename, "rb");
+    if (fp == NULL) {
+      spng_ctx_free(ctx);
+      error("read_png_core(): Couldn't open file '%s'", filename);
+    }
+    
+    int err = spng_set_png_file(ctx, fp); 
+    if (err) {
+      fclose(fp);
+      spng_ctx_free(ctx);
+      error("read_png_core(): Couldn't set file for input: %s", filename);
+    }
+    
+  } else {
+    spng_ctx_free(ctx);
+    error("read_png_core(): Data source not handled");
+  }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // get info
@@ -181,6 +206,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
   
@@ -262,6 +288,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
   
@@ -351,6 +378,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char *decode_buf = (unsigned char *)malloc(out_size);
   if (decode_buf == NULL) {
+    spng_ctx_free(ctx);
     error("Couldn't allocate PNG buffer");
   }
   

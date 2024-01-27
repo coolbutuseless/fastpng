@@ -24,11 +24,16 @@ R.
 ## To Do
 
 - `read_png()`
-  - add support for reading from files
+  - Properly describe `flags`
 - `write.png()`
   - Add support for RGB `raster` images
-- `extract_png_info()`
-  - Add support for reading info from files
+  - Handle R colour names in `raster` images. e.g. `white` instead of
+    `#FFFFFFFF`
+  - Extend compression level and filter settings to match PNG standard
+- `get_png_info()`
+  - Add descriptions for all the codes e.g. `compression_method`
+- Docs
+  - Benchmark with compression level and filter settings against `{png}`
 
 ## Installation
 
@@ -44,7 +49,7 @@ remotes::install_github('coolbutuseless/spng')
 
 - `read_png(raw_vec, type, flags)`
 - `write_png()`
-- `extract_png_info(raw_vec)` - interrogate a vector of raw values
+- `get_png_info(raw_vec)` - interrogate a vector of raw values
   containing a PNG image to determine image information i.e. width,
   height, bit_depth, color_type, compression_method, filter_method,
   interlace_method.
@@ -56,18 +61,9 @@ library(spng)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # A PNG file everyone should have!
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-png_file <- system.file("img", "Rlogo.png", package="png")
-img <- magick::image_read(png_file)
-img
-```
-
-<img src="man/figures/README-example-1.png" width="60%" />
-
-``` r
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Read in the raw bytes
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+png_file <- system.file("img", "Rlogo.png", package="png")
 png_data <- readBin(png_file, 'raw', n = file.size(png_file))
 png_data[1:100]
 #>   [1] 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 64 00 00 00 4c 08
@@ -80,7 +76,7 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(extract_png_info <- spng::extract_png_info(png_data))
+(get_png_info <- spng::get_png_info(png_data))
 #> $width
 #> [1] 100
 #> 
@@ -113,7 +109,7 @@ nara <- read_png(png_data, type = 'nara')
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="60%" />
 
 ### Read PNG as raster
 
@@ -122,7 +118,7 @@ ras <- read_png(png_data, type = 'raster')
 plot(ras, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
 
 ### Read PNG as RGBA array
 
@@ -131,7 +127,7 @@ arr <- read_png(png_data, type = 'rgba')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
 
 ### Read PNG as RGB array
 
@@ -142,7 +138,7 @@ arr <- read_png(png_data, type = 'rgb')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
 
 ## Acknowledgements
 
