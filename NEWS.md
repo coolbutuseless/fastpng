@@ -12,6 +12,7 @@
 * `write_png_from_X()`
     * `write_png_from_raw()`
     * `write_png_from_nara()`
+    * `write_png_from_raster()`
 
 # spng 0.1.2
 

@@ -37,6 +37,20 @@ write_png_from_nara <- function(nara, file = NULL, use_filter = TRUE, compressio
 }
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Write PNG from Raster (character matrix of hex colours)
+#' 
+#' @inheritParams write_png_from_raw
+#' @inheritParams write_png_from_nara
+#' @param ras raster object. I.e.  A character matrix.
+#' 
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write_png_from_raster <- function(ras, file = NULL, use_filter = TRUE, compression_level = -1L) {
+  .Call(write_png_from_raster_, ras, file, use_filter, compression_level);
+}
+
+
 
 if (FALSE) {
   library(png)
@@ -44,7 +58,22 @@ if (FALSE) {
   
   png_file <- system.file("img", "Rlogo.png", package="png")
   png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-  im <- read_png_as_nara(png_data)
+  
+  nara <- read_png_as_nara(png_data)
+  ras  <- read_png_as_raster(png_data)
+  rgba <- read_png_as_rgba(png_data)
+  
+  bench::mark(
+    write_png_from_nara(nara, compression_level = 0),
+    write_png_from_raster(ras, compression_level = 0),
+    writePNG(rgba),
+    check = FALSE
+  )
+  
+  
+  write_png_from_raster(ras, "working/ras.png")
+  
+  
   grid.newpage()
   grid.raster(im, interpolate = FALSE)
   
