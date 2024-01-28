@@ -42,12 +42,12 @@ if (FALSE) {
   
   
   bench::mark(
-    write_png(nara, compression_level = 0),
+    write_png(nara),
     write_png(nara, compression_level = 0, use_filter = FALSE),
-    write_png(ras, compression_level = 0),
+    write_png(ras),
     write_png(ras, compression_level = 0, use_filter = FALSE),
     writePNG(rgba),
     check = FALSE
-  )
+  )[, c(1, 4)]
   
 }

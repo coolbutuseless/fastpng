@@ -230,6 +230,57 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
 }
 
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Write image data (stored as native raster) into PNG (also stored as raw)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Options
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  size_t nbytes   = (size_t)(length(ras_) * 3.0);
+  SEXP dims_      = getAttrib(ras_, R_DimSymbol);
+  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
+  uint32_t height = (uint32_t)INTEGER(dims_)[0];
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Convert from raster to image
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *image = (unsigned char *)malloc(nbytes);
+  if (image == NULL) {
+    error("Could not allocate image buffer");
+  }
+  unsigned char *im_ptr = image;
+  for (int i = 0; i < Rf_xlength(ras_); i++) {
+    const char *col = CHAR(STRING_ELT(ras_, i));
+    if (col[0] != '#') {
+      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+    }
+    *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
+    *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
+    *im_ptr++ = (unsigned char)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Encode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(write_png_core_(
+    image, nbytes, width, height, file_,
+    SPNG_COLOR_TYPE_TRUECOLOR,
+    use_filter_, compression_level_,
+    TRUE // free_image_on_error
+  ));
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  free(image);
+  UNPROTECT(1);
+  return res_;
+}
+
+
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -368,8 +419,21 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_leve
   
   if (inherits(image_, "nativeRaster")) {
     return write_png_from_nara_(image_, file_, use_filter_, compression_level_);
-  } else if (inherits(image_, "raster")) {
-    return write_png_from_raster_(image_, file_, use_filter_, compression_level_);
+  } else if (inherits(image_, "raster") && TYPEOF(image_) == STRSXP) {
+    if (length(image_) == 0) {
+      error("Zero length rasters not valid");
+    }
+    const char *first_elem = CHAR(STRING_ELT(image_, 0));
+    if (first_elem[0] != '#') {
+      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");  
+    }
+    if (strlen(first_elem) == 9) {
+      return write_png_from_raster_(image_, file_, use_filter_, compression_level_);
+    } else if (strlen(first_elem) == 7) {
+      return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_);
+    } else {
+      error("Raster encoding not understood");
+    }
   } else if (inherits(image_, "array") && isReal(image_)) {
     SEXP dims_ = getAttrib(image_, R_DimSymbol);
     if (length(dims_) == 3) {

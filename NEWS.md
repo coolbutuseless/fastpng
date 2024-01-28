@@ -1,7 +1,6 @@
 
 # spng 0.1.2.9000  2024-01-26
 
-* Re-visit, Update, Re-factor
 * `read_png()` read from files or raw vectors
 * `write_png()` write to files or raw vectors
 * `get_png_info()` fetch a named list of information about the PNG

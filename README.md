@@ -9,24 +9,31 @@
 [![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`spng` offers in-memory decompression of PNG images to vectors of raw
-values.
+`{spng}` provides functions for read/write of PNG image from files and
+raw vectors.
 
-This is useful if you have bytes representing a PNG image (e.g. from a
-database) and need to decompress these to an array representation within
-R.
+In contrast to the standard [`{png}`]() library, `{spng}`
+
+- Provides explicit support for images as rasters, native rasters,
+  numeric RGBA arrays and numeric RGB arrays.
+- Flags to configure reading of PNG
+  - gamma correction
+- Flags to configure writing of PNG
+  - Compression level
+  - PNG filter settings
 
 `spng` is a R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 - [libspng API docs](https://libspng.org/docs/api/)
 
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="60%" />
+
 ## To Do
 
 - `read_png()`
   - Properly describe `flags`
 - `write.png()`
-  - Add support for RGB `raster` images
   - Handle R colour names in `raster` images. e.g. `white` instead of
     `#FFFFFFFF`
   - Extend compression level and filter settings to match PNG standard
@@ -47,11 +54,11 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What’s in the box
 
-- `read_png(raw_vec, type, flags)`
-- `write_png()`
-- `get_png_info(raw_vec)` - interrogate a vector of raw values
-  containing a PNG image to determine image information i.e. width,
-  height, bit_depth, color_type, compression_method, filter_method,
+- `read_png(src, type, flags)`
+- `write_png(image)`
+- `get_png_info(src)` - interrogate a vector of raw values containing a
+  PNG image to determine image information i.e. width, height,
+  bit_depth, color_type, compression_method, filter_method,
   interlace_method.
 
 ## Example: Decompress a PNG in memory
@@ -109,7 +116,7 @@ nara <- read_png(png_data, type = 'nara')
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="60%" />
 
 ### Read PNG as raster
 
@@ -118,7 +125,7 @@ ras <- read_png(png_data, type = 'raster')
 plot(ras, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
 
 ### Read PNG as RGBA array
 
@@ -127,7 +134,7 @@ arr <- read_png(png_data, type = 'rgba')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
 
 ### Read PNG as RGB array
 
@@ -138,7 +145,7 @@ arr <- read_png(png_data, type = 'rgb')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
 
 ## Acknowledgements
 

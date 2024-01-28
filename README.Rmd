@@ -35,16 +35,53 @@ library(spng)
 [![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`spng` offers in-memory decompression of PNG images to vectors of raw values.
+`{spng}` provides functions for read/write of PNG image from files and raw vectors.
 
-This is useful if you have bytes representing a PNG image (e.g. from a database)
-and need to decompress these to an array representation within R.
+In contrast to the standard [`{png}`]() library, `{spng}` 
+
+* Provides explicit support for images as rasters, native rasters, numeric RGBA arrays
+  and numeric RGB arrays.
+* Flags to configure reading of PNG
+    * gamma correction
+* Flags to configure writing of PNG
+    * Compression level
+    * PNG filter settings
 
 `spng` is a R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
-
-
 * [libspng API docs](https://libspng.org/docs/api/)
+
+
+```{r warning=FALSE, echo=FALSE}
+library(ggplot2)
+
+png_file <- system.file("img", "Rlogo.png", package="png")
+# png_data <- readBin(png_file, 'raw', n = file.size(png_file))
+image <- spng::read_png(png_file, type = 'nara')
+
+res <- bench::mark(
+  png::writePNG(image),
+  spng::write_png(image),
+  spng::write_png(image, compression_level = 0),
+  check = FALSE,
+  relative = TRUE
+)
+
+res$name <- c("{png}", "{spng}", "{spng} (no compression)")
+
+ggplot(res) + 
+  geom_col(aes(name, `itr/sec`)) + 
+  theme_bw() + 
+  labs(
+    title = "Relative speed of writing PNG",
+    subtitle = "Bigger is better",
+    y = "Relative speed",
+    x = NULL
+  )
+```
+
+
+
 
 
 ## To Do
@@ -52,7 +89,6 @@ and need to decompress these to an array representation within R.
 * `read_png()`
     * Properly describe `flags`
 * `write.png()`
-    * Add support for RGB `raster` images 
     * Handle R colour names in `raster` images. e.g. `white` instead of `#FFFFFFFF`
     * Extend compression level and filter settings to match PNG standard
 * `get_png_info()`
@@ -71,9 +107,9 @@ remotes::install_github('coolbutuseless/spng')
 
 ## What's in the box
 
-* `read_png(raw_vec, type, flags)` 
-* `write_png()`
-* `get_png_info(raw_vec)` - interrogate a vector of raw values containing a PNG image
+* `read_png(src, type, flags)` 
+* `write_png(image)`
+* `get_png_info(src)` - interrogate a vector of raw values containing a PNG image
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
   

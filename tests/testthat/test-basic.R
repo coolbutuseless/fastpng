@@ -11,7 +11,11 @@ if (FALSE) {
   
   ras_test <- matrix(tolower(grDevices::rainbow(100 * 75)), 75, 100)
   class(ras_test) <- 'raster'
-  write_png(ras_test, "tests/testthat/image/rainbow.png")
+  write_png(ras_test, testthat::test_path("image/rainbow-rgb.png"))
+  
+  ras_test <- matrix('green', 75, 100)
+  class(ras_test) <- 'raster'
+  write_png(ras_test, testthat::test_path("image/rainbow-rgb.png"))
 }
 
 
