@@ -17,7 +17,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, uint32_t *width, uint32_t *height, size_t *out_size) {
+spng_ctx *read_png_core(SEXP src_, FILE **fp, int fmt, uint32_t *width, uint32_t *height, size_t *out_size) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create context
@@ -42,16 +42,16 @@ spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, uint32_t *width, uint32_t 
     spng_set_png_buffer(ctx, buf, buf_size);
   } else if (TYPEOF(src_) == STRSXP) {
     const char *filename = CHAR(STRING_ELT(src_, 0));
-    fp = fopen(filename, "rb");
+    *fp = fopen(filename, "rb");
     if (fp == NULL) {
       spng_ctx_free(ctx);
       error("read_png_core(): Couldn't open file '%s'", filename);
     }
     
-    int err = spng_set_png_file(ctx, fp); 
+    int err = spng_set_png_file(ctx, *fp); 
     if (err) {
-      fclose(fp);
       spng_ctx_free(ctx);
+      fclose(*fp);
       error("read_png_core(): Couldn't set file for input: %s", filename);
     }
     
@@ -67,6 +67,7 @@ spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, uint32_t *width, uint32_t 
   int err = spng_get_ihdr(ctx, &ihdr);
   if (err) {
     spng_ctx_free(ctx);
+    if (*fp) fclose(*fp);
     error("spng_get_ihdr() error: %s\n", spng_strerror(err));
   }
   *height = ihdr.height;
@@ -79,57 +80,6 @@ spng_ctx *read_png_core(SEXP src_, FILE *fp, int fmt, uint32_t *width, uint32_t 
   
   return ctx;
 }
-
-
-
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Read image data from PNG stored in a raw vector
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_raw_(SEXP src_, SEXP fmt_, SEXP flags_) {
-  
-  FILE *fp = NULL;
-  int fmt   = asInteger(fmt_);
-  int flags = asInteger(flags_);
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Create a context 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  uint32_t width  = 0;
-  uint32_t height = 0;
-  size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Initialise memory into which the PNG will be decoded
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(RAWSXP, (R_xlen_t)out_size));
-  unsigned char *decode_buf = (unsigned char *)RAW(res_);
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Decode to given format
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
-  if (err) {
-    if (fp) fclose(fp);
-    spng_ctx_free(ctx);
-    UNPROTECT(1);
-    error("spng_decode_image() error: %s\n", spng_strerror(err));
-  }
-  
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Tidy and return
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (fp) fclose(fp);
-  spng_ctx_free(ctx);
-  UNPROTECT(1);
-  return res_;
-}
-
-
-
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -147,8 +97,8 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
-
+  spng_ctx *ctx = read_png_core(src_, &fp, fmt, &width, &height, &out_size);
+  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,8 +110,8 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
   if (err) {
-    if (fp) fclose(fp);
     spng_ctx_free(ctx);
+    if (fp) fclose(fp);
     UNPROTECT(1);
     error("spng_decode_image() error: %s\n", spng_strerror(err));
   }
@@ -181,8 +131,8 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (fp) fclose(fp);
   spng_ctx_free(ctx);
+  if (fp) fclose(fp);
   UNPROTECT(2);
   return res_;
 }
@@ -205,7 +155,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -290,7 +240,7 @@ SEXP read_png_as_rgba_(SEXP src_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -384,7 +334,7 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, fp, fmt, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, fmt, &width, &height, &out_size);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded

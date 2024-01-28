@@ -28,19 +28,19 @@ if (FALSE) {
   png_data <- readBin(png_file, 'raw', n = file.size(png_file))
   
   nara <- read_png(png_data, type = 'nara')
-  ras  <- read_png(png_data, type = 'raster')
-  rgba <- read_png(png_data, type = 'rgba')
-  rgb  <- read_png(png_data, type = 'rgb')
-  
+  # ras  <- read_png(png_data, type = 'raster')
+  # rgba <- read_png(png_data, type = 'rgba')
+  # rgb  <- read_png(png_data, type = 'rgb')
+  # 
   nara2 <- read_png(png_file, type = 'nara')
-  ras2  <- read_png(png_file, type = 'raster')
-  rgba2 <- read_png(png_file, type = 'rgba')
-  rgb2  <- read_png(png_file, type = 'rgb')
-  
-  identical(nara, nara2)
-  identical(ras, ras2)
-  identical(rgba, rgba2)
-  identical(rgb, rgb2)
+  # ras2  <- read_png(png_file, type = 'raster')
+  # rgba2 <- read_png(png_file, type = 'rgba')
+  # rgb2  <- read_png(png_file, type = 'rgb')
+  # 
+  # identical(nara, nara2)
+  # identical(ras, ras2)
+  # identical(rgba, rgba2)
+  # identical(rgb, rgb2)
     
   
   

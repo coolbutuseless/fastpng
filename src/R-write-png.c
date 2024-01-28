@@ -149,33 +149,6 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
 }
 
 
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data (stored as raw) into PNG (also stored as raw)
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_raw_(SEXP src_, SEXP file_, SEXP width_, SEXP height_, 
-                         SEXP use_filter_, SEXP compression_level_) {
-  
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Options
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = (size_t)length(src_);
-  uint32_t width = (uint32_t)asInteger(width_);
-  uint32_t height = (uint32_t)asInteger(height_);
-  void *image = (void *)RAW(src_);
-  
-  return write_png_core_(
-    image, nbytes, width, height, file_,
-    SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
-    use_filter_, compression_level_,
-    FALSE // free_image_on_error
-  );
-}
-
-
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data (stored as native raster) into PNG (also stored as raw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
