@@ -12,7 +12,7 @@ Description: Read and write PNG image data from raw vectors and files.
     Compression level when writing is configurable, thus allowing for 
     a tradeoff between file size and writing speed.
     This implementation is a wrapper around the 'libspng' 'C' library
-    which is available from <https://github.com/randy408/libspng/>
+    which is available from <https://github.com/randy408/libspng/>.
 License: MIT + file LICENSE
 URL: https://github.com/coolbutuseless/spng
 BugReports: https://github.com/coolbutuseless/spng/issues

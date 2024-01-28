@@ -98,6 +98,14 @@ remotes::install_github('coolbutuseless/spng')
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
   
+Supported R image types:
+
+* Native Raster (integer matrix with class 'nativeRaster')
+* Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
+* RGBA 3D numeric array values in [0, 1]
+* RGB 3D numeric array values in [0, 1]
+* Grey 2D numeric matrix values in [0, 1] (write only)
+  
 
 ## Example: Decompress a PNG in memory
 

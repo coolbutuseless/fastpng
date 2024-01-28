@@ -182,7 +182,7 @@ static unsigned char hexdigit(int digit) {
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data (stored as native raster) into PNG (also stored as raw)
+// Write image data (stored as native raster) 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
   
@@ -231,7 +231,7 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data (stored as native raster) into PNG (also stored as raw)
+// Write image data stored as hex colours in a character matrix
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
   
@@ -284,7 +284,7 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data (stored as native raster) into PNG (also stored as raw)
+// Write image data stored as RGBA numeric array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_rgba_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
   
@@ -351,7 +351,7 @@ SEXP write_png_from_rgba_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compress
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data (stored as native raster) into PNG (also stored as raw)
+// Write image data stored as RGB numeric array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
   
@@ -412,11 +412,66 @@ SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compressi
 }
 
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Write image data from matrix (grey data. numeric. range [0, 1])
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Options
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  size_t nbytes = (size_t)length(mat_);
+  SEXP dims_    = getAttrib(mat_, R_DimSymbol);
+  if (length(dims_) != 2) {
+    error("Must be 2d matrix");
+  }
+  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
+  uint32_t height = (uint32_t)INTEGER(dims_)[0];
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Convert from matrix to raw vec
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *image = (unsigned char *)malloc(nbytes);
+  if (image == NULL) {
+    error("Could not allocate image buffer");
+  }
+  unsigned char *im_ptr = image;
+  
+  for (int row = 0; row < height; row++) {
+    double *r = REAL(mat_) + row;
+    for (int col = 0; col < width; col++) {
+      *im_ptr++ = (unsigned char)(*r * 255.0);
+      r += height;
+    }
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Encode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(write_png_core_(
+    image, nbytes, width, height, file_,
+    SPNG_COLOR_TYPE_GRAYSCALE,
+    use_filter_, compression_level_,
+    TRUE // free_image_on_error
+  ));
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  free(image);
+  UNPROTECT(1);
+  return res_;
+}
+
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
-  
+
   if (inherits(image_, "nativeRaster")) {
     return write_png_from_nara_(image_, file_, use_filter_, compression_level_);
   } else if (inherits(image_, "raster") && TYPEOF(image_) == STRSXP) {
@@ -434,7 +489,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_leve
     } else {
       error("Raster encoding not understood");
     }
-  } else if (inherits(image_, "array") && isReal(image_)) {
+  } else if ((isArray(image_) || isMatrix(image_)) && isReal(image_)) {
     SEXP dims_ = getAttrib(image_, R_DimSymbol);
     if (length(dims_) == 3) {
       if (INTEGER(dims_)[2] == 4) {
@@ -442,6 +497,9 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_leve
       } else if (INTEGER(dims_)[2] == 3) {
         return write_png_from_rgb_(image_, file_, use_filter_, compression_level_);
       }
+    } else if (length(dims_) == 2) {
+      // 2D matrix of grey
+      return write_png_from_mat_(image_, file_, use_filter_, compression_level_);
     }
   }
   

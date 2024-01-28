@@ -9,6 +9,7 @@
     * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
     * RGBA 3D numeric array values in [0, 1]
     * RGB 3D numeric array values in [0, 1]
+    * Grey 2D numeric matrix values in [0, 1] (write only)
 
 # spng 0.1.2
 
