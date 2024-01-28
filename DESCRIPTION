@@ -2,13 +2,22 @@ Package: spng
 Type: Package
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
 Version: 0.1.2.9000
-Author: mikefc
-Maintainer: mikefc <mikefc@coolbutuseless.com>
+Authors@R: c(
+    person("Mike", "Cheng", role = c("aut", "cre", 'cph'), 
+    email = "mikefc@coolbutuseless.com"),
+    person(given = "Randy408", role = "cph", email = "randy408@protonmail.com", 
+    comment="Author of bundled libspng"))
+Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
 Description: Read and write PNG image data from raw vectors and files.
     Compression level when writing is configurable, thus allowing for 
     a tradeoff between file size and writing speed.
+    This implementation is a wrapper around the 'libspng' 'C' library
+    which is available from <https://github.com/randy408/libspng/>
 License: MIT + file LICENSE
+URL: https://github.com/coolbutuseless/spng
+BugReports: https://github.com/coolbutuseless/spng/issues
 Encoding: UTF-8
+Language: en-AU
 RoxygenNote: 7.3.0
 Suggests: 
     knitr,
