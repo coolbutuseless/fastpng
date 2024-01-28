@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "60%"
+  out.width = "80%"
 )
 
 library(spng)
@@ -80,21 +80,6 @@ ggplot(res) +
   )
 ```
 
-
-
-
-
-## To Do
-
-* `read_png()`
-    * Properly describe `flags`
-* `write.png()`
-    * Handle R colour names in `raster` images. e.g. `white` instead of `#FFFFFFFF`
-    * Extend compression level and filter settings to match PNG standard
-* `get_png_info()`
-    * Add descriptions for all the codes e.g. `compression_method`
-* Docs
-    * Benchmark with compression level and filter settings against `{png}`
 
 ## Installation
 

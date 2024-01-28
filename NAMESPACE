@@ -3,6 +3,5 @@
 export(get_png_info)
 export(read_png)
 export(spng_decode_flags)
-export(spng_format)
 export(write_png)
 useDynLib(spng, .registration=TRUE)

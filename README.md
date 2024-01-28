@@ -27,20 +27,7 @@ In contrast to the standard [`{png}`]() library, `{spng}`
 
 - [libspng API docs](https://libspng.org/docs/api/)
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="60%" />
-
-## To Do
-
-- `read_png()`
-  - Properly describe `flags`
-- `write.png()`
-  - Handle R colour names in `raster` images. e.g. `white` instead of
-    `#FFFFFFFF`
-  - Extend compression level and filter settings to match PNG standard
-- `get_png_info()`
-  - Add descriptions for all the codes e.g. `compression_method`
-- Docs
-  - Benchmark with compression level and filter settings against `{png}`
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="80%" />
 
 ## Installation
 
@@ -106,7 +93,13 @@ png_data[1:100]
 #> [1] 0
 #> 
 #> $color_desc
-#> [1] "RGB + Alpha"
+#> [1] "SPNG_COLOR_TYPE_TRUECOLOR_ALPHA"
+#> 
+#> $filter_desc
+#> [1] "SPNG_FILTER_NONE"
+#> 
+#> $interlate_desc
+#> [1] "SPNG_INTERLACE_NONE"
 ```
 
 ### Read PNG as native raster
@@ -116,7 +109,7 @@ nara <- read_png(png_data, type = 'nara')
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="80%" />
 
 ### Read PNG as raster
 
@@ -125,7 +118,7 @@ ras <- read_png(png_data, type = 'raster')
 plot(ras, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="80%" />
 
 ### Read PNG as RGBA array
 
@@ -134,7 +127,7 @@ arr <- read_png(png_data, type = 'rgba')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="80%" />
 
 ### Read PNG as RGB array
 
@@ -145,7 +138,7 @@ arr <- read_png(png_data, type = 'rgb')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="60%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="80%" />
 
 ## Acknowledgements
 
