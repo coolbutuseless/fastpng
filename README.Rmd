@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "80%"
+  out.width = "100%"
 )
 
 library(spng)
@@ -73,13 +73,51 @@ ggplot(res) +
   geom_col(aes(name, `itr/sec`)) + 
   theme_bw() + 
   labs(
-    title = "Relative speed of writing PNG",
+    title = "Relative speed of writing RGBA array to PNG",
     subtitle = "Bigger is better",
     y = "Relative speed",
     x = NULL
   )
 ```
 
+
+
+
+
+```{r warning=FALSE, echo=FALSE}
+library(ggplot2)
+
+res <- bench::mark(
+  png::writePNG(test_image_gray8),
+  spng::write_png(test_image_gray8),
+  spng::write_png(test_image_gray8, compression_level = 0),
+  spng::write_png(test_image_gray8, compression_level = 0, avoid_traanspose = TRUE),
+  check = FALSE,
+  relative = TRUE
+)
+
+res$name <- c("{png}", "{spng}", "{spng} (no compression)", "{snpg} (No compression.\nNo transpose)")
+res$name <- factor(res$name, levels = res$name)
+
+ggplot(res) + 
+  geom_col(aes(name, `itr/sec`)) + 
+  theme_bw(10) + 
+  labs(
+    title = "Relative speed of writing grey matrix to PNG",
+    subtitle = "Bigger is better",
+    y = "Relative speed",
+    x = NULL
+  )
+```
+
+
+## ToDo
+
+* 16 bit support
+* Reading 8bit grayscale as both RGBA array and 2D Matrix
+* `avoid_transpose` when reading 
+* Palette based images
+* transparency via the `tRNS` chunk
 
 ## Installation
 

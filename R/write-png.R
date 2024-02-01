@@ -3,7 +3,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Write PNG
 #' 
-#' @param image image data.  raster, rgba array, rgb array, nativeraster object
+#' @param image image data.  raster, rgba array, rgb array, nativeraster object,
+#'        2D grayscale matrix
 #' @param file If NULL then return result as raw vector, otherwise write
 #'        to the given filepath.
 #' @param use_filter Use PNG filtering to help reduce size. Default: TRUE.
@@ -15,12 +16,20 @@
 #'        result in faster compression, but larger image sizes.  For fastest
 #'        image writing, set \code{compression_level}
 #'        to 0 to completely disable compression.
+#' @param avoid_traanspose Should transposition be avoided if possible so as to 
+#'        maximise the speed of writing the PNG?  Default: FALSE.  
+#'        PNG is a row-major image format, where R stored data in column-major
+#'        ordering.  When writing data to PNG, it is often necessary to transpose
+#'        the R data to match what PNG requires.  If this option is set 
+#'        to \code{TRUE} then the image is written without this transposition and 
+#'        should speed up PNG creation.  Currently this option is only
+#'        used when writing greyscale PNGs from 2D matrix data.
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, use_filter = TRUE, 
-                      compression_level = -1L) {
-  .Call(write_png_, image, file, use_filter, compression_level)
+                      compression_level = -1L, avoid_traanspose = FALSE) {
+  .Call(write_png_, image, file, use_filter, compression_level, avoid_traanspose)
 }
 
 
@@ -49,5 +58,28 @@ if (FALSE) {
     writePNG(rgba),
     check = FALSE
   )[, c(1, 4)]
+  
+}
+
+
+if (FALSE) {
+  
+  
+  write_png(test_image_gray8, file = "working/test_image_gray8.png", avoid_rotation = TRUE)
+  
+  
+  library(png)
+  
+  bench::mark(
+    writePNG(test_image_gray8),
+    write_png(test_image_gray8),
+    write_png(test_image_gray8, avoid_rotation = TRUE),
+    write_png(test_image_gray8, compression_level = 0, use_filter = TRUE),
+    write_png(test_image_gray8, compression_level = 0, use_filter = FALSE),
+    write_png(test_image_gray8, compression_level = 0, use_filter = FALSE, avoid_rotation = TRUE),
+    check = FALSE
+  )
+  
+  
   
 }

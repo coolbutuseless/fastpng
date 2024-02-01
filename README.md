@@ -27,7 +27,17 @@ In contrast to the standard [`{png}`]() library, `{spng}`
 
 - [libspng API docs](https://libspng.org/docs/api/)
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+## ToDo
+
+- 16 bit support
+- Reading 8bit grayscale as both RGBA array and 2D Matrix
+- `avoid_transpose` when reading
+- Palette based images
+- transparency via the `tRNS` chunk
 
 ## Installation
 
@@ -47,6 +57,15 @@ remotes::install_github('coolbutuseless/spng')
   PNG image to determine image information i.e. width, height,
   bit_depth, color_type, compression_method, filter_method,
   interlace_method.
+
+Supported R image types:
+
+- Native Raster (integer matrix with class ‘nativeRaster’)
+- Raster (character matrix with class ‘raster’) with hex colour vaules
+  “\#RRGGBBAA”
+- RGBA 3D numeric array values in \[0, 1\]
+- RGB 3D numeric array values in \[0, 1\]
+- Grey 2D numeric matrix values in \[0, 1\] (write only)
 
 ## Example: Decompress a PNG in memory
 
@@ -109,7 +128,7 @@ nara <- read_png(png_data, type = 'nara')
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ### Read PNG as raster
 
@@ -118,7 +137,7 @@ ras <- read_png(png_data, type = 'raster')
 plot(ras, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Read PNG as RGBA array
 
@@ -127,7 +146,7 @@ arr <- read_png(png_data, type = 'rgba')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ### Read PNG as RGB array
 
@@ -138,7 +157,7 @@ arr <- read_png(png_data, type = 'rgb')
 plot(as.raster(arr), interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="80%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ## Acknowledgements
 

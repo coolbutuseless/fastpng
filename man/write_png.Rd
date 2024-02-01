@@ -4,10 +4,17 @@
 \alias{write_png}
 \title{Write PNG}
 \usage{
-write_png(image, file = NULL, use_filter = TRUE, compression_level = -1L)
+write_png(
+  image,
+  file = NULL,
+  use_filter = TRUE,
+  compression_level = -1L,
+  avoid_traanspose = FALSE
+)
 }
 \arguments{
-\item{image}{image data.  raster, rgba array, rgb array, nativeraster object}
+\item{image}{image data.  raster, rgba array, rgb array, nativeraster object,
+2D grayscale matrix}
 
 \item{file}{If NULL then return result as raw vector, otherwise write
 to the given filepath.}
@@ -22,6 +29,15 @@ values are in range [0, 9].  In general, lower compression levels
 result in faster compression, but larger image sizes.  For fastest
 image writing, set \code{compression_level}
 to 0 to completely disable compression.}
+
+\item{avoid_traanspose}{Should transposition be avoided if possible so as to 
+maximise the speed of writing the PNG?  Default: FALSE.  
+PNG is a row-major image format, where R stored data in column-major
+ordering.  When writing data to PNG, it is often necessary to transpose
+the R data to match what PNG requires.  If this option is set 
+to \code{TRUE} then the image is written without this transposition and 
+should speed up PNG creation.  Currently this option is only
+used when writing greyscale PNGs from 2D matrix data.}
 }
 \description{
 Write PNG

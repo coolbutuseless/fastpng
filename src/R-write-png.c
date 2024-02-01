@@ -416,7 +416,7 @@ SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compressi
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data from matrix (grey data. numeric. range [0, 1])
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
@@ -438,11 +438,18 @@ SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compressi
   }
   unsigned char *im_ptr = image;
   
-  for (int row = 0; row < height; row++) {
-    double *r = REAL(mat_) + row;
-    for (int col = 0; col < width; col++) {
-      *im_ptr++ = (unsigned char)(*r * 255.0);
-      r += height;
+  if (asLogical(avoid_transpose_)) {
+    double *r = REAL(mat_);
+    for (int idx = 0; idx < width *height; idx ++) {
+      *im_ptr++ = (unsigned char)(*r++ * 255.0);
+    }
+  } else {
+    for (int row = 0; row < height; row++) {
+      double *r = REAL(mat_) + row;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (unsigned char)(*r * 255.0);
+        r += height;
+      }
     }
   }
   
@@ -450,7 +457,7 @@ SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compressi
   // Encode
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP res_ = PROTECT(write_png_core_(
-    image, nbytes, width, height, file_,
+    image, nbytes, height, width, file_, // Swapped height and width
     SPNG_COLOR_TYPE_GRAYSCALE,
     use_filter_, compression_level_,
     TRUE // free_image_on_error
@@ -470,7 +477,7 @@ SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compressi
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
 
   if (inherits(image_, "nativeRaster")) {
     return write_png_from_nara_(image_, file_, use_filter_, compression_level_);
@@ -499,7 +506,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_leve
       }
     } else if (length(dims_) == 2) {
       // 2D matrix of grey
-      return write_png_from_mat_(image_, file_, use_filter_, compression_level_);
+      return write_png_from_mat_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
     }
   }
   
