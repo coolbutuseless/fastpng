@@ -4,7 +4,12 @@
 \alias{read_png}
 \title{Read a PNG from a raw vector in memory}
 \usage{
-read_png(src, type = c("nara", "raster", "rgba", "rgb"), flags = 0L)
+read_png(
+  src,
+  type = c("nara", "raster", "rgba", "rgb", "gray"),
+  flags = 0L,
+  avoid_transpose = FALSE
+)
 }
 \arguments{
 \item{src}{raw vector containing encoded PNG data or file path}
@@ -13,6 +18,8 @@ read_png(src, type = c("nara", "raster", "rgba", "rgb"), flags = 0L)
 
 \item{flags}{flags. default: 0. See \code{?spng_decode_flags} for other
 options.  Must be an integer.}
+
+\item{avoid_transpose}{default: FALSE.}
 }
 \value{
 R image object of the specified type

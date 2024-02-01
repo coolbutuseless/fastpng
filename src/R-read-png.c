@@ -410,10 +410,103 @@ SEXP read_png_as_rgb_(SEXP src_, SEXP flags_) {
 }
 
 
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Read PNG as grey 2d numeric matrix
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_as_gray_(SEXP src_, SEXP flags_, SEXP avoid_transpose_) {
+  
+  FILE *fp = NULL;
+  int fmt   = SPNG_FMT_G8;
+  int flags = asInteger(flags_);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Create a context 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  uint32_t width  = 0;
+  uint32_t height = 0;
+  size_t out_size = 0;
+  spng_ctx *ctx = read_png_core(src_, &fp, fmt, &width, &height, &out_size);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Initialise memory into which the PNG will be decoded
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *decode_buf = (unsigned char *)malloc(out_size);
+  if (decode_buf == NULL) {
+    if (fp) fclose(fp);
+    spng_ctx_free(ctx);
+    error("Couldn't allocate PNG buffer");
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Decode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
+  if (err) {
+    if (fp) fclose(fp);
+    free(decode_buf);
+    spng_ctx_free(ctx);
+    error("spng_decode_image() error: %s\n", spng_strerror(err));
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Format raw bytes as 2d matrix:  width, height
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)out_size));
+  
+  double *res_ptr = REAL(res_);
+  unsigned char *buf_ptr = decode_buf;
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Need to switch from raw data (row-major) to R array (column-major)
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (asLogical(avoid_transpose_)) {
+    double *r   = res_ptr;
+    for (int idx = 0; idx < width * height; idx++) {
+        *r++ = *buf_ptr++ / 255.0;
+    }
+  } else {
+    for (int row = 0; row < height; row++) {
+      double *r   = res_ptr + row;
+      for (int col = 0; col < width; col++) {
+        *r = *buf_ptr++ / 255.0;
+        r += height;
+      }
+    }
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Set attributes on result
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
+  if (asLogical(avoid_transpose_)) {
+    INTEGER(dims_)[0] = (int)width;
+    INTEGER(dims_)[1] = (int)height;
+  } else {
+    INTEGER(dims_)[0] = (int)height;
+    INTEGER(dims_)[1] = (int)width;
+  }
+  
+  setAttrib(res_, R_DimSymbol, dims_);
+  setAttrib(res_, R_ClassSymbol, mkString("matrix"));
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
+  spng_ctx_free(ctx);
+  free(decode_buf);
+  UNPROTECT(2);
+  return res_;
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_) {
+SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_, SEXP avoid_transpose_) {
   
   const char *image_type = CHAR(STRING_ELT(type_, 0));
   
@@ -425,6 +518,8 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_) {
     return read_png_as_rgba_(src_, flags_);
   } else if (strcmp(image_type, "rgb") == 0) {
     return read_png_as_rgb_(src_, flags_);
+  } else if (strcmp(image_type, "gray") == 0 || strcmp(image_type, "grey") == 0) {
+    return read_png_as_gray_(src_, flags_, avoid_transpose_);
   }
   
   error("image type not understood: %s", image_type);

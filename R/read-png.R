@@ -9,13 +9,15 @@
 #' @param type type of object in which to store image data
 #' @param flags flags. default: 0. See \code{?spng_decode_flags} for other
 #'        options.  Must be an integer.
+#' @param avoid_transpose default: FALSE.
 #'
 #' @return R image object of the specified type
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png <- function(src, type = c('nara', 'raster', 'rgba', 'rgb'), flags = 0L) {
-  .Call(read_png_, src, match.arg(type), flags)
+read_png <- function(src, type = c('nara', 'raster', 'rgba', 'rgb', 'gray'), flags = 0L, 
+                     avoid_transpose = FALSE) {
+  .Call(read_png_, src, match.arg(type), flags, avoid_transpose)
 }
 
 
