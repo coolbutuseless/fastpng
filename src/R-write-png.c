@@ -71,7 +71,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   // Alternatively you can set an output FILE* or stream with 
   //   spng_set_png_file() or spng_set_png_stream() 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1);
+  // spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Extra options
