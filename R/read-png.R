@@ -7,6 +7,12 @@
 #'
 #' @param src raw vector containing encoded PNG data or file path
 #' @param type type of object in which to store image data
+#' @param rgba Should the result be forced into RGBA?  Default: FALSE  
+#'        Example 1: When reading with \code{type = 'nara'} the result
+#'        will always be RGBA, so this variable is ignored.
+#'        Example 2: When reading a grey+alpha image, if \code{rgba = TRUE}, 
+#'        then image will be read into an RGBA array with 4 planes.  Otherwise
+#'        it will be read in as grey+alpha data in an array with 2 planes.
 #' @param flags flags. default: 0. See \code{?spng_decode_flags} for other
 #'        options.  Must be an integer.
 #' @param avoid_transpose default: FALSE.
@@ -15,9 +21,10 @@
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png <- function(src, type = c('nara', 'raster', 'rgba', 'rgb', 'gray'), flags = 0L, 
+read_png <- function(src, type = c('nara', 'raster', 'array'), 
+                     rgba = FALSE, flags = 0L, 
                      avoid_transpose = FALSE) {
-  .Call(read_png_, src, match.arg(type), flags, avoid_transpose)
+  .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose)
 }
 
 

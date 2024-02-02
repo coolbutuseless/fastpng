@@ -32,8 +32,8 @@ test_that("Write PNG works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   nara <- read_png(png_data, type = 'nara')
   ras  <- read_png(png_data, type = 'raster')
-  rgb  <- read_png(png_data, type = 'rgb')
-  rgba <- read_png(png_data, type = 'rgba')
+  rgb  <- read_png(png_data, type = 'array', rgba = FALSE)
+  rgba <- read_png(png_data, type = 'array')
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Vanilla 'write_png' works
@@ -49,8 +49,8 @@ test_that("Write PNG works", {
   
   nara3 <- read_png(png_data_nara, type = 'nara')
   ras3  <- read_png(png_data_ras , type = 'raster')
-  rgb3  <- read_png(png_data_rgb , type = 'rgb')
-  rgba3 <- read_png(png_data_rgba, type = 'rgba')
+  rgb3  <- read_png(png_data_rgb , type = 'array', rgba = FALSE)
+  rgba3 <- read_png(png_data_rgba, type = 'array')
   
   expect_identical(nara, nara3)
   expect_identical(ras, ras3)
@@ -66,13 +66,13 @@ test_that("Read PNG works", {
   
   nara <- read_png(png_data, type = 'nara')
   ras  <- read_png(png_data, type = 'raster')
-  rgba <- read_png(png_data, type = 'rgba')
-  rgb  <- read_png(png_data, type = 'rgb')
+  rgba <- read_png(png_data, type = 'array')
+  rgb  <- read_png(png_data, type = 'array', rgba = FALSE)
   
   nara2 <- read_png(png_file, type = 'nara')
   ras2  <- read_png(png_file, type = 'raster')
-  rgba2 <- read_png(png_file, type = 'rgba')
-  rgb2  <- read_png(png_file, type = 'rgb')
+  rgba2 <- read_png(png_file, type = 'array')
+  rgb2  <- read_png(png_file, type = 'array', rgba = FALSE)
   
   expect_identical(nara, nara2)
   expect_identical(ras, ras2)

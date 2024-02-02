@@ -282,183 +282,119 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
 
 
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data stored as RGBA numeric array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_rgba_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_, 
+                           SEXP avoid_transpose_) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   size_t nbytes = (size_t)(length(arr_));
-  SEXP dims_    = getAttrib(arr_, R_DimSymbol);
-  if (length(dims_) != 3) {
-    error("Must be 3d array");
-  }
-  if (INTEGER(dims_)[2] != 4) {
-    error("Must be RGBA array");
-  }
-  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
-  uint32_t height = (uint32_t)INTEGER(dims_)[0];
   
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Convert from array to raw vec
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  unsigned char *image = (unsigned char *)malloc(nbytes);
-  if (image == NULL) {
-    error("Could not allocate image buffer");
-  }
-  unsigned char *im_ptr = image;
-  
-  for (int row = 0; row < height; row++) {
-    double *r = REAL(arr_) + row + (width * height) * 0;
-    double *g = REAL(arr_) + row + (width * height) * 1;
-    double *b = REAL(arr_) + row + (width * height) * 2;
-    double *a = REAL(arr_) + row + (width * height) * 3;
-    for (int col = 0; col < width; col++) {
-      *im_ptr++ = (unsigned char)(*r * 255.0);
-      *im_ptr++ = (unsigned char)(*g * 255.0);
-      *im_ptr++ = (unsigned char)(*b * 255.0);
-      *im_ptr++ = (unsigned char)(*a * 255.0);
-      r += height;
-      g += height;
-      b += height;
-      a += height;
-    }
-  }
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Encode
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(write_png_core_(
-    image, nbytes, width, height, file_,
-    SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
-    use_filter_, compression_level_,
-    TRUE // free_image_on_error
-  ));
-  
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Tidy and return
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  free(image);
-  UNPROTECT(1);
-  return res_;
-}
-
-
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data stored as RGB numeric array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_rgb_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Options
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = (size_t)length(arr_);
-  SEXP dims_    = getAttrib(arr_, R_DimSymbol);
-  if (length(dims_) != 3) {
-    error("Must be 3d array");
-  }
-  if (INTEGER(dims_)[2] != 3) {
-    error("Must be RGB array");
-  }
-  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
-  uint32_t height = (uint32_t)INTEGER(dims_)[0];
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Convert from array to raw vec
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  unsigned char *image = (unsigned char *)malloc(nbytes);
-  if (image == NULL) {
-    error("Could not allocate image buffer");
-  }
-  unsigned char *im_ptr = image;
-  
-  for (int row = 0; row < height; row++) {
-    double *r = REAL(arr_) + row + (width * height) * 0;
-    double *g = REAL(arr_) + row + (width * height) * 1;
-    double *b = REAL(arr_) + row + (width * height) * 2;
-    for (int col = 0; col < width; col++) {
-      *im_ptr++ = (unsigned char)(*r * 255.0);
-      *im_ptr++ = (unsigned char)(*g * 255.0);
-      *im_ptr++ = (unsigned char)(*b * 255.0);
-      r += height;
-      g += height;
-      b += height;
-    }
-  }
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Encode
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(write_png_core_(
-    image, nbytes, width, height, file_,
-    SPNG_COLOR_TYPE_TRUECOLOR,
-    use_filter_, compression_level_,
-    TRUE // free_image_on_error
-  ));
-  
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Tidy and return
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  free(image);
-  UNPROTECT(1);
-  return res_;
-}
-
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data from matrix (grey data. numeric. range [0, 1])
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Options
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  size_t nbytes = (size_t)length(mat_);
-  SEXP dims_    = getAttrib(mat_, R_DimSymbol);
-  if (length(dims_) != 2) {
-    error("Must be 2d matrix");
-  }
-  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
-  uint32_t height = (uint32_t)INTEGER(dims_)[0];
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Convert from matrix to raw vec
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  unsigned char *image = (unsigned char *)malloc(nbytes);
-  if (image == NULL) {
-    error("Could not allocate image buffer");
-  }
-  unsigned char *im_ptr = image;
-  
-  if (asLogical(avoid_transpose_)) {
-    double *r = REAL(mat_);
-    for (int idx = 0; idx < width *height; idx ++) {
-      *im_ptr++ = (unsigned char)(*r++ * 255.0);
+  int fmt;
+  SEXP dims_ = getAttrib(arr_, R_DimSymbol);
+  if (length(dims_) == 2) {
+    fmt = SPNG_COLOR_TYPE_GRAYSCALE;
+    // SPNG_COLOR_TYPE_TRUECOLOR_ALPHA
+    // error("Must be 3d array");
+  } else if (length(dims_) == 3) {
+    switch(INTEGER(dims_)[2]) {
+    case 2:
+      fmt = SPNG_COLOR_TYPE_GRAYSCALE_ALPHA;
+      break;
+    case 3:
+      fmt = SPNG_COLOR_TYPE_TRUECOLOR;
+      break;
+    case 4:
+      fmt = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
+      break;
+    default:
+      error("Unknown 3rd dimension length: %i", INTEGER(dims_)[2]);
     }
   } else {
+    error("Unknown dims length: %i", length(dims_));
+  }
+  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
+  uint32_t height = (uint32_t)INTEGER(dims_)[0];
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Convert from array to raw vec
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *image = (unsigned char *)malloc(nbytes);
+  if (image == NULL) {
+    error("Could not allocate image buffer");
+  }
+  unsigned char *im_ptr = image;
+  
+  if (fmt == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
     for (int row = 0; row < height; row++) {
-      double *r = REAL(mat_) + row;
+      double *r = REAL(arr_) + row + (width * height) * 0;
+      double *g = REAL(arr_) + row + (width * height) * 1;
+      double *b = REAL(arr_) + row + (width * height) * 2;
+      double *a = REAL(arr_) + row + (width * height) * 3;
       for (int col = 0; col < width; col++) {
         *im_ptr++ = (unsigned char)(*r * 255.0);
+        *im_ptr++ = (unsigned char)(*g * 255.0);
+        *im_ptr++ = (unsigned char)(*b * 255.0);
+        *im_ptr++ = (unsigned char)(*a * 255.0);
         r += height;
+        g += height;
+        b += height;
+        a += height;
       }
     }
+  } else if (fmt == SPNG_COLOR_TYPE_TRUECOLOR) {
+    for (int row = 0; row < height; row++) {
+      double *r = REAL(arr_) + row + (width * height) * 0;
+      double *g = REAL(arr_) + row + (width * height) * 1;
+      double *b = REAL(arr_) + row + (width * height) * 2;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (unsigned char)(*r * 255.0);
+        *im_ptr++ = (unsigned char)(*g * 255.0);
+        *im_ptr++ = (unsigned char)(*b * 255.0);
+        r += height;
+        g += height;
+        b += height;
+      }
+    }
+  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
+    for (int row = 0; row < height; row++) {
+      double *g = REAL(arr_) + row + (width * height) * 0;
+      double *a = REAL(arr_) + row + (width * height) * 1;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (unsigned char)(*g * 255.0);
+        *im_ptr++ = (unsigned char)(*a * 255.0);
+        g += height;
+        a += height;
+      }
+    }
+  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE) {
+    if (asLogical(avoid_transpose_)) {
+      double *r = REAL(arr_);
+      for (int idx = 0; idx < width *height; idx ++) {
+        *im_ptr++ = (unsigned char)(*r++ * 255.0);
+      }
+    } else {
+      for (int row = 0; row < height; row++) {
+        double *r = REAL(arr_) + row;
+        for (int col = 0; col < width; col++) {
+          *im_ptr++ = (unsigned char)(*r * 255.0);
+          r += height;
+        }
+      }
+    }
+  } else {
+    error("Unknown fmt: %i", fmt);
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Encode
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP res_ = PROTECT(write_png_core_(
-    image, nbytes, height, width, file_, // Swapped height and width
-    SPNG_COLOR_TYPE_GRAYSCALE,
+    image, nbytes, width, height, file_,
+    fmt,
     use_filter_, compression_level_,
     TRUE // free_image_on_error
   ));
@@ -471,7 +407,6 @@ SEXP write_png_from_mat_(SEXP mat_, SEXP file_, SEXP use_filter_, SEXP compressi
   UNPROTECT(1);
   return res_;
 }
-
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -497,17 +432,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_leve
       error("Raster encoding not understood");
     }
   } else if ((isArray(image_) || isMatrix(image_)) && isReal(image_)) {
-    SEXP dims_ = getAttrib(image_, R_DimSymbol);
-    if (length(dims_) == 3) {
-      if (INTEGER(dims_)[2] == 4) {
-        return write_png_from_rgba_(image_, file_, use_filter_, compression_level_);
-      } else if (INTEGER(dims_)[2] == 3) {
-        return write_png_from_rgb_(image_, file_, use_filter_, compression_level_);
-      }
-    } else if (length(dims_) == 2) {
-      // 2D matrix of grey
-      return write_png_from_mat_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
-    }
+    return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
   }
   
   error("write_png(): R image container not understood");

@@ -6,7 +6,8 @@
 \usage{
 read_png(
   src,
-  type = c("nara", "raster", "rgba", "rgb", "gray"),
+  type = c("nara", "raster", "array"),
+  rgba = FALSE,
   flags = 0L,
   avoid_transpose = FALSE
 )
@@ -15,6 +16,13 @@ read_png(
 \item{src}{raw vector containing encoded PNG data or file path}
 
 \item{type}{type of object in which to store image data}
+
+\item{rgba}{Should the result be forced into RGBA?  Default: FALSE
+Example 1: When reading with \code{type = 'nara'} the result
+will always be RGBA, so this variable is ignored.
+Example 2: When reading a grey+alpha image, if \code{rgba = TRUE}, 
+then image will be read into an RGBA array with 4 planes.  Otherwise
+it will be read in as grey+alpha data in an array with 2 planes.}
 
 \item{flags}{flags. default: 0. See \code{?spng_decode_flags} for other
 options.  Must be an integer.}

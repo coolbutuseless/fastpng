@@ -113,6 +113,8 @@ ggplot(res) +
 
 ## ToDo
 
+* Reading in GA8 images as arrays
+* Set consistent matrix/array classnames on 2d matrix
 * 16 bit support
 * Reading 8bit grayscale as both RGBA array and 2D Matrix
 * `avoid_transpose` when reading 
