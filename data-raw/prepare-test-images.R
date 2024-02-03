@@ -1,11 +1,16 @@
 
 library(grid)
 
+w <- 400
+h <- 300
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ARRAY: Gray
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test_image_gray <- outer(1:150, 1:200) 
+test_image_gray <- outer(1:h, 1:w) 
 test_image_gray <- test_image_gray / max(test_image_gray)
+test_image_gray <- round(test_image_gray * 255) / 255
 grid.raster(test_image_gray)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -16,7 +21,7 @@ test_image_array_rgb <- c(
   rev(test_image_gray),
   test_image_gray[nrow(test_image_gray):1, ]
 )
-dim(test_image_array_rgb) <- c(150, 200, 3)
+dim(test_image_array_rgb) <- c(h, w, 3)
 grid.newpage(); grid.raster(test_image_array_rgb)
 
 
@@ -29,7 +34,7 @@ test_image_array_rgba <- c(
   test_image_gray[nrow(test_image_gray):1, ],
   (test_image_gray[, ncol(test_image_gray):1]) ^ 0.15
 )
-dim(test_image_array_rgba) <- c(150, 200, 4)
+dim(test_image_array_rgba) <- c(h, w, 4)
 grid.newpage(); grid.raster(test_image_array_rgba)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,7 +44,7 @@ test_image_array_ga <- c(
   test_image_gray,
   test_image_gray[nrow(test_image_gray):1, ] ^ 0.15
 )
-dim(test_image_array_ga) <- c(150, 200, 2)
+dim(test_image_array_ga) <- c(h, w, 2)
 # grid.newpage(); grid.raster(test_image_array_ga)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

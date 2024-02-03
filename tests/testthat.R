@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(spng)
+library(fastpng)
 
-test_check("spng")
+test_check("fastpng")

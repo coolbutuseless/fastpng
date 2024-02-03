@@ -38,7 +38,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Creating an encoder context requires a flag */
+  // Creating an encoder context requires a flag 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ctx = spng_ctx_new(SPNG_CTX_ENCODER);
   
@@ -65,13 +65,6 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
       error("Couldn't set file for output: %s", CHAR(STRING_ELT(file_, 0)));
     }
   } 
-  
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Encode to internal buffer managed by the library 
-  // Alternatively you can set an output FILE* or stream with 
-  //   spng_set_png_file() or spng_set_png_stream() 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Extra options
@@ -176,7 +169,7 @@ static unsigned char hexdigit(int digit) {
   if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
   if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
   if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
-  error("invalid hex: %i", digit);
+  error("Invalid hex: %i.  Only 6-char and 8 char hex colours supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colours in a raster image (e.g. 'white') are not supported", digit);
   return (unsigned char)digit; 
 }
 
@@ -293,7 +286,7 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   size_t nbytes = (size_t)(length(arr_));
   
-  int fmt;
+  enum spng_color_type fmt;
   SEXP dims_ = getAttrib(arr_, R_DimSymbol);
   if (length(dims_) == 2) {
     fmt = SPNG_COLOR_TYPE_GRAYSCALE;
@@ -326,19 +319,22 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
   if (image == NULL) {
     error("Could not allocate image buffer");
   }
+  
+  int npixels = (int)(width * height);
+  double *arr_ptr = REAL(arr_);
   unsigned char *im_ptr = image;
   
   if (fmt == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
     for (int row = 0; row < height; row++) {
-      double *r = REAL(arr_) + row + (width * height) * 0;
-      double *g = REAL(arr_) + row + (width * height) * 1;
-      double *b = REAL(arr_) + row + (width * height) * 2;
-      double *a = REAL(arr_) + row + (width * height) * 3;
+      double *r = arr_ptr + row + npixels * 0;
+      double *g = arr_ptr + row + npixels * 1;
+      double *b = arr_ptr + row + npixels * 2;
+      double *a = arr_ptr + row + npixels * 3;
       for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*r * 255.0);
-        *im_ptr++ = (unsigned char)(*g * 255.0);
-        *im_ptr++ = (unsigned char)(*b * 255.0);
-        *im_ptr++ = (unsigned char)(*a * 255.0);
+        *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*b * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*a * 255.0 + 0.5);
         r += height;
         g += height;
         b += height;
@@ -347,13 +343,13 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
     }
   } else if (fmt == SPNG_COLOR_TYPE_TRUECOLOR) {
     for (int row = 0; row < height; row++) {
-      double *r = REAL(arr_) + row + (width * height) * 0;
-      double *g = REAL(arr_) + row + (width * height) * 1;
-      double *b = REAL(arr_) + row + (width * height) * 2;
+      double *r = arr_ptr + row + npixels * 0;
+      double *g = arr_ptr + row + npixels * 1;
+      double *b = arr_ptr + row + npixels * 2;
       for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*r * 255.0);
-        *im_ptr++ = (unsigned char)(*g * 255.0);
-        *im_ptr++ = (unsigned char)(*b * 255.0);
+        *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*b * 255.0 + 0.5);
         r += height;
         g += height;
         b += height;
@@ -361,26 +357,26 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
     }
   } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
     for (int row = 0; row < height; row++) {
-      double *g = REAL(arr_) + row + (width * height) * 0;
-      double *a = REAL(arr_) + row + (width * height) * 1;
+      double *g = arr_ptr + row + npixels * 0;
+      double *a = arr_ptr + row + npixels * 1;
       for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*g * 255.0);
-        *im_ptr++ = (unsigned char)(*a * 255.0);
+        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
+        *im_ptr++ = (unsigned char)(*a * 255.0 + 0.5);
         g += height;
         a += height;
       }
     }
   } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE) {
     if (asLogical(avoid_transpose_)) {
-      double *r = REAL(arr_);
-      for (int idx = 0; idx < width *height; idx ++) {
-        *im_ptr++ = (unsigned char)(*r++ * 255.0);
+      double *r = arr_ptr;
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (unsigned char)(*r++ * 255.0 + 0.5);
       }
     } else {
       for (int row = 0; row < height; row++) {
-        double *r = REAL(arr_) + row;
+        double *r = arr_ptr + row;
         for (int col = 0; col < width; col++) {
-          *im_ptr++ = (unsigned char)(*r * 255.0);
+          *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
           r += height;
         }
       }

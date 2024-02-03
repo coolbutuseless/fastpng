@@ -30,7 +30,7 @@ test_that("Write PNG works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Read in as specific formats
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  nara <- read_png(png_data, type = 'nara')
+  nara <- read_png(png_data, type = 'native_raster')
   ras  <- read_png(png_data, type = 'raster')
   rgb  <- read_png(png_data, type = 'array', rgba = FALSE)
   rgba <- read_png(png_data, type = 'array')
@@ -47,7 +47,7 @@ test_that("Write PNG works", {
   expect_identical(png_data_nara, png_data_rgba)
   
   
-  nara3 <- read_png(png_data_nara, type = 'nara')
+  nara3 <- read_png(png_data_nara, type = 'native_raster')
   ras3  <- read_png(png_data_ras , type = 'raster')
   rgb3  <- read_png(png_data_rgb , type = 'array', rgba = FALSE)
   rgba3 <- read_png(png_data_rgba, type = 'array')
@@ -64,12 +64,12 @@ test_that("Read PNG works", {
   png_file <- testthat::test_path("image/rainbow.png")
   png_data <- readBin(png_file, raw(), n = file.size(png_file))
   
-  nara <- read_png(png_data, type = 'nara')
+  nara <- read_png(png_data, type = 'native_raster')
   ras  <- read_png(png_data, type = 'raster')
   rgba <- read_png(png_data, type = 'array')
   rgb  <- read_png(png_data, type = 'array', rgba = FALSE)
   
-  nara2 <- read_png(png_file, type = 'nara')
+  nara2 <- read_png(png_file, type = 'native_raster')
   ras2  <- read_png(png_file, type = 'raster')
   rgba2 <- read_png(png_file, type = 'array')
   rgb2  <- read_png(png_file, type = 'array', rgba = FALSE)

@@ -1,5 +1,3 @@
-
-
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
@@ -8,9 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-
 #include "spng.h"
-
 
 #define R_IMAGE_NARA 0
 #define R_IMAGE_RASTER 1
@@ -457,7 +453,6 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     }
     
     setAttrib(res_, R_DimSymbol, dims_);
-    // setAttrib(res_, R_ClassSymbol, mkString("matrix"));
   } else {
     SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
     INTEGER(dims_)[0] = (int)height;
@@ -465,7 +460,6 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     INTEGER(dims_)[2] = nchannels;
     
     setAttrib(res_, R_DimSymbol, dims_);
-    // setAttrib(res_, R_ClassSymbol, mkString("array"));
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -481,13 +475,13 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// 
+// C function called from R
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
   
   const char *image_type = CHAR(STRING_ELT(type_, 0));
   
-  if (strcmp(image_type, "nara") == 0) {
+  if (strcmp(image_type, "native_raster") == 0) {
     return read_png_as_nara_(src_, flags_);
   } else if (strcmp(image_type, "raster") == 0) {
     return read_png_as_raster_(src_, rgba_, flags_);
@@ -498,8 +492,3 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
   error("image type not understood: %s", image_type);
   return R_NilValue;
 }
-
-
-
-
-

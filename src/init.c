@@ -17,7 +17,7 @@ static const R_CallMethodDef CEntries[] = {
 };
 
 
-void R_init_spng(DllInfo *info) {
+void R_init_fastpng(DllInfo *info) {
   R_registerRoutines(
     info,      // DllInfo
     NULL,      // .C

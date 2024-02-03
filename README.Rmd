@@ -9,10 +9,12 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  fig.width = 8,
+  fig.height = 6
 )
 
-library(spng)
+library(fastpng)
 
 # Makevars options to do some deep testing for CRAN
 
@@ -27,7 +29,7 @@ library(spng)
 # testthat::test_local()
 ```
 
-# spng
+# fastpng
 
 
 <!-- badges: start -->
@@ -35,19 +37,21 @@ library(spng)
 [![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{spng}` provides functions for read/write of PNG image from files and raw vectors.
+`{fastpng}` provides functions for read/write of PNG image from files and raw vectors.
 
-In contrast to the standard [`{png}`]() library, `{spng}` 
+By disabling compression when writing image data to PNG, this can ben ~75x faster
+than standard PNG packages.
 
-* Provides explicit support for images as rasters, native rasters, numeric RGBA arrays
-  and numeric RGB arrays.
+`{fastpng}` 
+
+* Provides explicit support for images as rasters, native rasters, numeric arrays (RGBA, RGB, and Grayscale)
 * Flags to configure reading of PNG
     * gamma correction
 * Flags to configure writing of PNG
     * Compression level
     * PNG filter settings
 
-`spng` is a R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
+`fastpng` is a R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 * [libspng API docs](https://libspng.org/docs/api/)
 
@@ -55,25 +59,24 @@ In contrast to the standard [`{png}`]() library, `{spng}`
 ```{r warning=FALSE, echo=FALSE}
 library(ggplot2)
 
-png_file <- system.file("img", "Rlogo.png", package="png")
-# png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-image <- spng::read_png(png_file, type = 'nara')
+image <- test_image$array$rgba
 
 res <- bench::mark(
   png::writePNG(image),
-  spng::write_png(image),
-  spng::write_png(image, compression_level = 0),
+  fastpng::write_png(image),
+  fastpng::write_png(image, compression_level = 0),
   check = FALSE,
   relative = TRUE
 )
 
-res$name <- c("{png}", "{spng}", "{spng} (no compression)")
+res$name <- c("{png}", "{fastpng}", "{fastpng}\nNo compression")
+res$name <- factor(res$name, levels = res$name)
 
 ggplot(res) + 
   geom_col(aes(name, `itr/sec`)) + 
-  theme_bw() + 
+  theme_bw(14) + 
   labs(
-    title = "Relative speed of writing RGBA array to PNG",
+    title = "Relative speed of writing 300x400 RGBA array to PNG",
     subtitle = "Bigger is better",
     y = "Relative speed",
     x = NULL
@@ -91,21 +94,21 @@ test_image_gray8 <- test_image$array$gray
 
 res <- bench::mark(
   png::writePNG(test_image_gray8),
-  spng::write_png(test_image_gray8),
-  spng::write_png(test_image_gray8, compression_level = 0),
-  spng::write_png(test_image_gray8, compression_level = 0, avoid_traanspose = TRUE),
+  fastpng::write_png(test_image_gray8),
+  fastpng::write_png(test_image_gray8, compression_level = 0),
+  fastpng::write_png(test_image_gray8, compression_level = 0, avoid_traanspose = TRUE),
   check = FALSE,
   relative = TRUE
 )
 
-res$name <- c("{png}", "{spng}", "{spng} (no compression)", "{snpg} (No compression.\nNo transpose)")
+res$name <- c("{png}", "{fastpng}", "{fastpng}\nNo compression", "{snpg}\nNo compression.\nNo transpose")
 res$name <- factor(res$name, levels = res$name)
 
 ggplot(res) + 
   geom_col(aes(name, `itr/sec`)) + 
-  theme_bw(10) + 
+  theme_bw(14) + 
   labs(
-    title = "Relative speed of writing grey matrix to PNG",
+    title = "Relative speed of writing 300x400 grey matrix to PNG",
     subtitle = "Bigger is better",
     y = "Relative speed",
     x = NULL
@@ -115,40 +118,41 @@ ggplot(res) +
 
 ## ToDo
 
-* 16 bit support
+* Transparency via the `tRNS` chunk
 * Palette based images
-* Write transparency via the `tRNS` chunk
+* 16 bit support
 
 ## Installation
 
-You can install from [GitHub](https://github.com/coolbutuseless/spng) with:
+You can install from [GitHub](https://github.com/coolbutuseless/fastpng) with:
 
 ``` r
 # install.package('remotes')
-remotes::install_github('coolbutuseless/spng')
+remotes::install_github('coolbutuseless/fastpng')
 ```
 
 ## What's in the box
 
-* `read_png(src, type, flags)` 
-* `write_png(image)`
-* `get_png_info(src)` - interrogate a vector of raw values containing a PNG image
+* `read_png()` to read a PNG from a file or a raw vector
+* `write_png()` to write data as a PNG file or PNG data in a raw vector
+* `get_png_info()` - interrogate a vector of raw values containing a PNG image
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
   
 Supported R image types:
 
 * Native Raster (integer matrix with class 'nativeRaster')
-* Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
-* RGBA 3D numeric array values in [0, 1]
-* RGB 3D numeric array values in [0, 1]
-* Grey 2D numeric matrix values in [0, 1] (write only)
+* Raster (character matrix with class 'raster') with hex colour values of the 
+  form `#RRGGBBAA` or `#RRGGBB`.  Note: R colour names are not supported here.
+* 3D numeric array containing RGBA values in the range [0, 1]
+* 3D numeric array containing RGB values in the range [0, 1]
+* 2D numeric matrix containing greyscale values in the range [0, 1] 
   
 
-## Example: Decompress a PNG in memory
+## Example: Decompress a PNG from a raw vector
 
 ```{r example}
-library(spng)
+library(fastpng)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # A PNG file everyone should have!
@@ -164,14 +168,14 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(get_png_info <- spng::get_png_info(png_data))
+(get_png_info <- fastpng::get_png_info(png_data))
 ```
 
 
 ### Read PNG as native raster
 
 ```{r}
-nara <- read_png(png_data, type = 'nara')
+nara <- read_png(png_data, type = 'native_raster')
 nara[1:10, 1:10]
 grid::grid.raster(nara, interpolate = FALSE)
 ```
@@ -181,7 +185,7 @@ grid::grid.raster(nara, interpolate = FALSE)
 library(png)
 bench::mark(
   # read_png(png_data),
-  read_png(png_data, type = 'nara'),
+  read_png(png_data, type = 'native_raster'),
   read_png(png_data, type = 'ras'),
   read_png(png_data, type = 'rgba'),
   read_png(png_data, type = 'rgb'),

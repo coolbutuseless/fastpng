@@ -1,4 +1,4 @@
-#' @useDynLib spng, .registration=TRUE
+#' @useDynLib fastpng, .registration=TRUE
 NULL
 
 

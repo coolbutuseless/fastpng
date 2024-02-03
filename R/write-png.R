@@ -1,5 +1,3 @@
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Write PNG
 #' 
@@ -30,26 +28,4 @@
 write_png <- function(image, file = NULL, use_filter = TRUE, 
                       compression_level = -1L, avoid_traanspose = FALSE) {
   .Call(write_png_, image, file, use_filter, compression_level, avoid_traanspose)
-}
-
-
-if (FALSE) {
-  library(png)
-  
-  im <- test_image$array$gray
-  raw_vec <- write_png(im)
-  get_png_info(raw_vec)
-  grid.newpage(); spng::read_png(raw_vec, type = 'array') |> grid.raster();
-  grid.newpage(); spng::read_png(raw_vec, type = 'array', avoid_transpose = TRUE) |> grid.raster();
-  
-  
-  bench::mark(
-    png::readPNG(raw_vec),
-    spng::read_png(raw_vec, type = 'array'),
-    spng::read_png(raw_vec, type = 'array', avoid_transpose = TRUE),
-    check = FALSE
-  )
-  
-  
-  
 }

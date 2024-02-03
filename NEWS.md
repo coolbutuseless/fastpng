@@ -1,15 +1,20 @@
 
-# spng 0.1.2.9001  2024-02-03
+# spng 0.1.3  2024-02-03
 
-* `read_png()` read from files or raw vectors
-* `write_png()` write to files or raw vectors
-* `get_png_info()` fetch a named list of information about the PNG
-* Types supported:
-    * Native Raster (integer matrix with class 'nativeRaster')
-    * Raster (character matrix with class 'raster') with hex colour vaules "#RRGGBBAA"
-    * RGBA 3D numeric array values in [0, 1]
-    * RGB 3D numeric array values in [0, 1]
-    * Grey 2D numeric matrix values in [0, 1] (write only)
+* `read_png()` to read a PNG from a file or a raw vector
+* `write_png()` to write data as a PNG file or PNG data in a raw vector
+* `get_png_info()` - interrogate a vector of raw values containing a PNG image
+  to determine image information i.e. width, height, bit_depth, color_type, 
+  compression_method, filter_method, interlace_method.
+  
+Supported R image types:
+
+* Native Raster (integer matrix with class 'nativeRaster')
+* Raster (character matrix with class 'raster') with hex colour values of the 
+  form `#RRGGBBAA` or `#RRGGBB`.  Note: R colour names are not supported here.
+* 3D numeric array containing RGBA values in the range [0, 1]
+* 3D numeric array containing RGB values in the range [0, 1]
+* 2D numeric matrix containing greyscale values in the range [0, 1] 
 
 # spng 0.1.2
 

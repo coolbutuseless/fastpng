@@ -6,7 +6,7 @@ test_that("write/read round trip is idempotent", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   for (im in test_image$native_raster) {
     raw_vec <- write_png(im)
-    im2 <- read_png(raw_vec, type = 'nara')
+    im2 <- read_png(raw_vec, type = 'native_raster')
     
     # equal except for rounding 
     expect_identical(im, im2)    
@@ -47,12 +47,12 @@ test_that("write/read round trip is idempotent", {
       # promoted to RGBA.  With R,G+B channels just replicating
       # the gray value.
       # Mike 2024-02-03
-      expect_equal(im2[,,1], im [,,1], tolerance = 0.01) # R = grey
-      expect_equal(im2[,,4], im [,,2], tolerance = 0.01) # Alpha matches
-      expect_equal(im2[,,1], im2[,,2], tolerance = 0.01) # Red = Green
-      expect_equal(im2[,,1], im2[,,3], tolerance = 0.01) # Red = Blue
+      expect_equal(im2[,,1], im [,,1], tolerance = 1/255/2) # R = grey
+      expect_equal(im2[,,4], im [,,2], tolerance = 1/255/2) # Alpha matches
+      expect_equal(im2[,,1], im2[,,2], tolerance = 1/255/2) # Red = Green
+      expect_equal(im2[,,1], im2[,,3], tolerance = 1/255/2) # Red = Blue
     } else {
-      expect_equal(im, im2, tolerance = 0.01)    
+      expect_equal(im, im2, tolerance = 1/255/2)    
     }
   }
   
@@ -67,7 +67,7 @@ if (FALSE) {
   im2 <- read_png(raw_vec, type = 'array', rgba = FALSE)
   
   im2 <- read_png(raw_vec, type = 'array', rgba = TRUE)
-  im2 <- read_png(raw_vec, type = 'nara')
+  im2 <- read_png(raw_vec, type = 'native_raster')
   im2 <- read_png(raw_vec, type = 'raster')
 
 }

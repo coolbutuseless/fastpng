@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# spng
+# fastpng
 
 <!-- badges: start -->
 
@@ -9,20 +9,23 @@
 [![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{spng}` provides functions for read/write of PNG image from files and
-raw vectors.
+`{fastpng}` provides functions for read/write of PNG image from files
+and raw vectors.
 
-In contrast to the standard [`{png}`]() library, `{spng}`
+By disabling compression when writing image data to PNG, this can ben
+~75x faster than standard PNG packages.
+
+`{fastpng}`
 
 - Provides explicit support for images as rasters, native rasters,
-  numeric RGBA arrays and numeric RGB arrays.
+  numeric arrays (RGBA, RGB, and Grayscale)
 - Flags to configure reading of PNG
   - gamma correction
 - Flags to configure writing of PNG
   - Compression level
   - PNG filter settings
 
-`spng` is a R wrapper for
+`fastpng` is a R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 - [libspng API docs](https://libspng.org/docs/api/)
@@ -33,42 +36,42 @@ In contrast to the standard [`{png}`]() library, `{spng}`
 
 ## ToDo
 
-- 16 bit support
+- Transparency via the `tRNS` chunk
 - Palette based images
-- Write transparency via the `tRNS` chunk
+- 16 bit support
 
 ## Installation
 
-You can install from [GitHub](https://github.com/coolbutuseless/spng)
+You can install from [GitHub](https://github.com/coolbutuseless/fastpng)
 with:
 
 ``` r
 # install.package('remotes')
-remotes::install_github('coolbutuseless/spng')
+remotes::install_github('coolbutuseless/fastpng')
 ```
 
 ## What’s in the box
 
-- `read_png(src, type, flags)`
-- `write_png(image)`
-- `get_png_info(src)` - interrogate a vector of raw values containing a
-  PNG image to determine image information i.e. width, height,
-  bit_depth, color_type, compression_method, filter_method,
-  interlace_method.
+- `read_png()` to read a PNG from a file or a raw vector
+- `write_png()` to write data as a PNG file or PNG data in a raw vector
+- `get_png_info()` - interrogate a vector of raw values containing a PNG
+  image to determine image information i.e. width, height, bit_depth,
+  color_type, compression_method, filter_method, interlace_method.
 
 Supported R image types:
 
 - Native Raster (integer matrix with class ‘nativeRaster’)
-- Raster (character matrix with class ‘raster’) with hex colour vaules
-  “\#RRGGBBAA”
-- RGBA 3D numeric array values in \[0, 1\]
-- RGB 3D numeric array values in \[0, 1\]
-- Grey 2D numeric matrix values in \[0, 1\] (write only)
+- Raster (character matrix with class ‘raster’) with hex colour values
+  of the form `#RRGGBBAA` or `#RRGGBB`. Note: R colour names are not
+  supported here.
+- 3D numeric array containing RGBA values in the range \[0, 1\]
+- 3D numeric array containing RGB values in the range \[0, 1\]
+- 2D numeric matrix containing greyscale values in the range \[0, 1\]
 
-## Example: Decompress a PNG in memory
+## Example: Decompress a PNG from a raw vector
 
 ``` r
-library(spng)
+library(fastpng)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # A PNG file everyone should have!
@@ -87,7 +90,7 @@ png_data[1:100]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get info about the PNG 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(get_png_info <- spng::get_png_info(png_data))
+(get_png_info <- fastpng::get_png_info(png_data))
 #> $width
 #> [1] 100
 #> 
@@ -122,7 +125,7 @@ png_data[1:100]
 ### Read PNG as native raster
 
 ``` r
-nara <- read_png(png_data, type = 'nara')
+nara <- read_png(png_data, type = 'native_raster')
 nara[1:10, 1:10]
 #>       [,1] [,2]        [,3]        [,4] [,5] [,6]     [,7]     [,8] [,9] [,10]
 #>  [1,]    0    0    -9406092           0    0    0 -8091002 -7695987    0     0
