@@ -87,6 +87,8 @@ ggplot(res) +
 ```{r warning=FALSE, echo=FALSE}
 library(ggplot2)
 
+test_image_gray8 <- test_image$array$gray
+
 res <- bench::mark(
   png::writePNG(test_image_gray8),
   spng::write_png(test_image_gray8),
@@ -113,13 +115,9 @@ ggplot(res) +
 
 ## ToDo
 
-* Reading in GA8 images as arrays
-* Set consistent matrix/array classnames on 2d matrix
 * 16 bit support
-* Reading 8bit grayscale as both RGBA array and 2D Matrix
-* `avoid_transpose` when reading 
 * Palette based images
-* transparency via the `tRNS` chunk
+* Write transparency via the `tRNS` chunk
 
 ## Installation
 
@@ -174,6 +172,7 @@ png_data[1:100]
 
 ```{r}
 nara <- read_png(png_data, type = 'nara')
+nara[1:10, 1:10]
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
@@ -206,6 +205,7 @@ grid.raster(im)
 
 ```{r}
 ras <- read_png(png_data, type = 'raster')
+ras[1:10, 1:10]
 plot(ras, interpolate = FALSE)
 ```
 
@@ -213,18 +213,8 @@ plot(ras, interpolate = FALSE)
 ### Read PNG as RGBA array
 
 ```{r}
-arr <- read_png(png_data, type = 'rgba')
-plot(as.raster(arr), interpolate = FALSE)
-```
-
-
-
-### Read PNG as RGB array
-
-Ignoring any alpha channel in the image.
-
-```{r}
-arr <- read_png(png_data, type = 'rgb')
+arr <- read_png(png_data, type = 'array')
+arr[1:10, 1:10, 1]
 plot(as.raster(arr), interpolate = FALSE)
 ```
 

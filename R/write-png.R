@@ -33,50 +33,20 @@ write_png <- function(image, file = NULL, use_filter = TRUE,
 }
 
 
-
-
-
 if (FALSE) {
   library(png)
-  library(grid)
   
-  png_file <- system.file("img", "Rlogo.png", package="png")
-  png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-  
-  nara <- read_png(png_data, type = 'nara')
-  ras  <- read_png(png_data, type = 'raster')
-  rgba <- read_png(png_data, type = 'rgba')
-  rgb  <- read_png(png_data, type = 'rgb')
-  
+  im <- test_image$array$gray
+  raw_vec <- write_png(im)
+  get_png_info(raw_vec)
+  grid.newpage(); spng::read_png(raw_vec, type = 'array') |> grid.raster();
+  grid.newpage(); spng::read_png(raw_vec, type = 'array', avoid_transpose = TRUE) |> grid.raster();
   
   
   bench::mark(
-    write_png(nara),
-    write_png(nara, compression_level = 0, use_filter = FALSE),
-    write_png(ras),
-    write_png(ras, compression_level = 0, use_filter = FALSE),
-    writePNG(rgba),
-    check = FALSE
-  )[, c(1, 4)]
-  
-}
-
-
-if (FALSE) {
-  
-  
-  write_png(test_image_gray8, file = "working/test_image_gray8.png", avoid_rotation = TRUE)
-  
-  
-  library(png)
-  
-  bench::mark(
-    writePNG(test_image_gray8),
-    write_png(test_image_gray8),
-    write_png(test_image_gray8, avoid_rotation = TRUE),
-    write_png(test_image_gray8, compression_level = 0, use_filter = TRUE),
-    write_png(test_image_gray8, compression_level = 0, use_filter = FALSE),
-    write_png(test_image_gray8, compression_level = 0, use_filter = FALSE, avoid_rotation = TRUE),
+    png::readPNG(raw_vec),
+    spng::read_png(raw_vec, type = 'array'),
+    spng::read_png(raw_vec, type = 'array', avoid_transpose = TRUE),
     check = FALSE
   )
   

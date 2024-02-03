@@ -60,7 +60,7 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
     
   } else {
     spng_ctx_free(ctx);
-    error("read_png_core(): Data source not handled");
+    error("read_png_core(): Data source must be a raw vector or path to an existing file");
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,13 +97,14 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   //   SPNG_FMT_PNG = 256,
   //   SPNG_FMT_RAW = 512  /* big-endian (everything else is host-endian) */
   // };
+  
   if (rgba || image_type == R_IMAGE_NARA) {
     // Set to RGBA if asked
     // NativeRaster can only be RGBA
     *fmt = SPNG_FMT_RGBA8;
   } else if (image_type == R_IMAGE_RASTER) {
     // Raster can only process RGBA or RGB
-    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
+    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
       *fmt = SPNG_FMT_RGBA8;
     } else {
       *fmt = SPNG_FMT_RGB8;
@@ -114,7 +115,10 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
       *fmt = SPNG_FMT_RGB8;
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
-      *fmt = SPNG_FMT_GA8;
+      // As ov v0.7.4, libspng does not seem to be able to read
+      // Grayscale+Alphna images into GA8!
+      // So will always be read as RGBA8 instead
+      *fmt = SPNG_FMT_RGBA8;
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
       *fmt = SPNG_FMT_G8;
     } else {
@@ -312,7 +316,6 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size);
   
-  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -327,8 +330,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     // 2024-02-02 For unknown reasons SPNG doesn't seem to want to read
     // a gray+alpha image back as the 'GA8' format.
     // Error:  spng_decode_image() error: invalid format
-    nchannels = 2;
-    error("Note: reading Grey+Alpha images currently unsupported");
+    error("Note: reading Grey+Alpha images to 2-plane array is currently unsupported");
     break;
   case SPNG_FMT_RGB8:
     nchannels = 3;
@@ -339,6 +341,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   default:
     error("Unhandled format for read_png_as_array: %i", fmt);
   }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -454,7 +457,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     }
     
     setAttrib(res_, R_DimSymbol, dims_);
-    setAttrib(res_, R_ClassSymbol, mkString("matrix"));
+    // setAttrib(res_, R_ClassSymbol, mkString("matrix"));
   } else {
     SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
     INTEGER(dims_)[0] = (int)height;
@@ -462,7 +465,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     INTEGER(dims_)[2] = nchannels;
     
     setAttrib(res_, R_DimSymbol, dims_);
-    setAttrib(res_, R_ClassSymbol, mkString("array"));
+    // setAttrib(res_, R_ClassSymbol, mkString("array"));
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -480,7 +483,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_(SEXP src_, SEXP type_, SEXP flags_, SEXP rgba_, SEXP avoid_transpose_) {
+SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
   
   const char *image_type = CHAR(STRING_ELT(type_, 0));
   

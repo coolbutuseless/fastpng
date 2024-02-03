@@ -1,5 +1,5 @@
 
-# spng 0.1.2.9000  2024-01-26
+# spng 0.1.2.9001  2024-02-03
 
 * `read_png()` read from files or raw vectors
 * `write_png()` write to files or raw vectors
