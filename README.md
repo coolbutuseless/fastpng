@@ -172,10 +172,9 @@ palette[1:10]
 tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
 #> NULL
-knitr::include_graphics(tmp)
 ```
 
-<img src="../../../../private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpb4FgvD/file6e50244a7c37" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ## Acknowledgements
 

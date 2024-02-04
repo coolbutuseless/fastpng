@@ -219,7 +219,12 @@ palette[1:10]
 
 tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
-knitr::include_graphics(tmp)
+```
+
+```{r echo=FALSE}
+write_png(image = indices, palette = palette) |>
+  read_png() |>
+  grid::grid.raster()
 ```
 
 
