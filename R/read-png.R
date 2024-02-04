@@ -5,7 +5,9 @@
 #' combinations of formats and flags are permissable.
 #'
 #' @param src raw vector containing encoded PNG data or file path
-#' @param type type of object in which to store image data
+#' @param type type of object in which to store image data. Valid types are
+#'        'array', 'raster', 'native_raster' and 'indexed'.  Note that indexed
+#'        image objects can only be loaded from indexed PNGs.
 #' @param rgba Should the result be forced into RGBA?  Default: FALSE  
 #'        Example 1: When reading with \code{type = 'native_raster'} the result
 #'        will always be RGBA, so this variable is ignored.
@@ -20,7 +22,7 @@
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png <- function(src, type = c('array', 'raster', 'native_raster'), 
+read_png <- function(src, type = c('array', 'raster', 'native_raster', 'indexed'), 
                      rgba = FALSE, flags = 0L, 
                      avoid_transpose = FALSE) {
   .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose)

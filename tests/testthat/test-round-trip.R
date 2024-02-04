@@ -41,19 +41,7 @@ test_that("write/read round trip is idempotent", {
     im2 <- read_png(raw_vec, type = 'array')
     
     # equal except for rounding 
-    if (nm == 'gray_alpha') {
-      # SPNG library does not seem to want to read GA8 images
-      # into a 2-plane array.  So instead grey+alpha is always
-      # promoted to RGBA.  With R,G+B channels just replicating
-      # the gray value.
-      # Mike 2024-02-03
-      expect_equal(im2[,,1], im [,,1], tolerance = 1/255/2) # R = grey
-      expect_equal(im2[,,4], im [,,2], tolerance = 1/255/2) # Alpha matches
-      expect_equal(im2[,,1], im2[,,2], tolerance = 1/255/2) # Red = Green
-      expect_equal(im2[,,1], im2[,,3], tolerance = 1/255/2) # Red = Blue
-    } else {
-      expect_equal(im, im2, tolerance = 1/255/2)    
-    }
+    expect_equal(im, im2, tolerance = 1/255/2)    
   }
   
 })

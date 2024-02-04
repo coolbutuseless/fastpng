@@ -34,7 +34,7 @@ library(fastpng)
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-[![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `{fastpng}` provides functions for read/write of PNG image from files and raw vectors.
@@ -119,8 +119,9 @@ ggplot(res) +
 ## ToDo
 
 * Transparency via the `tRNS` chunk
-* Palette based images
 * 16 bit support
+* Add test for "avoid transpose" when writing gray PNG
+
 
 ## Installation
 
@@ -147,6 +148,7 @@ Supported R image types:
 * 3D numeric array containing RGBA values in the range [0, 1]
 * 3D numeric array containing RGB values in the range [0, 1]
 * 2D numeric matrix containing greyscale values in the range [0, 1] 
+* Integer 2D matrix paired with a colour palette (specified as a character vector of hex colours)
   
 
 ## Example: Decompress a PNG from a raw vector
@@ -205,22 +207,24 @@ grid.raster(im)
 ```
 
 
-### Read PNG as raster
+### Write image as indexed PNG
 
 ```{r}
-ras <- read_png(png_data, type = 'raster')
-ras[1:10, 1:10]
-plot(ras, interpolate = FALSE)
+indices <- test_image$indexed$integer_index
+palette <- test_image$indexed$palette
+
+dim(indices)
+indices[1:10, 1:10]
+palette[1:10]
+
+tmp <- tempfile()
+write_png(image = indices, palette = palette, file = tmp)
+knitr::include_graphics(tmp)
 ```
 
 
-### Read PNG as RGBA array
 
-```{r}
-arr <- read_png(png_data, type = 'array')
-arr[1:10, 1:10, 1]
-plot(as.raster(arr), interpolate = FALSE)
-```
+
 
 
 

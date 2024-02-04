@@ -1,5 +1,10 @@
 
-# spng 0.1.3  2024-02-03
+# fastpng 0.1.3.9000 2024-02-05
+
+* Read/Write indexed PNG
+* Fix GA8 reading
+
+# fastpng 0.1.3  2024-02-03
 
 * `read_png()` to read a PNG from a file or a raw vector
 * `write_png()` to write data as a PNG file or PNG data in a raw vector

@@ -1,7 +1,7 @@
 Package: fastpng
 Type: Package
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
-Version: 0.1.3
+Version: 0.1.3.9000
 Authors@R: c(
     person("Mike", "Cheng", role = c("aut", "cre", 'cph'), 
     email = "mikefc@coolbutuseless.com"),
@@ -14,8 +14,8 @@ Description: Read and write PNG image data from raw vectors and files.
     This implementation is a wrapper around the 'libspng' 'C' library
     which is available from <https://github.com/randy408/libspng/>.
 License: MIT + file LICENSE
-URL: https://github.com/coolbutuseless/spng
-BugReports: https://github.com/coolbutuseless/spng/issues
+URL: https://github.com/coolbutuseless/fastpng
+BugReports: https://github.com/coolbutuseless/fastpng/issues
 Encoding: UTF-8
 Language: en-AU
 RoxygenNote: 7.3.0

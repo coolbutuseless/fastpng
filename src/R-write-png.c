@@ -12,12 +12,27 @@
 #include "spng.h"
 
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Convert a hex digit to a nibble
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+static unsigned char hexdigit(int digit) {
+  if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
+  if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
+  if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
+  error("Invalid hex: %i.  Only 6-char and 8 char hex colours supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colours in a raster image (e.g. 'white') are not supported", digit);
+  return (unsigned char)digit; 
+}
+
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data (stored as raw) into PNG (also stored as raw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height, 
                      SEXP file_,
                      enum spng_color_type color_type,
+                     SEXP palette_,
                      SEXP use_filter_, SEXP compression_level_,
                      int free_image_on_error) {
   
@@ -87,6 +102,42 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   ihdr.color_type = (uint8_t)color_type;
   ihdr.bit_depth  = bit_depth;
   spng_set_ihdr(ctx, &ihdr);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Write Palette:  PLTE Chunk
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (!isNull(palette_)) {
+    
+    struct spng_plte plte;
+    plte.n_entries = length(palette_); // length is checked prior to calling core func
+    for (int i = 0; i < length(palette_); i++) {
+      const char *col = CHAR(STRING_ELT(palette_, i));
+      if (col[0] != '#') {
+        error("Palettes may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+      }
+      plte.entries[i].red   = (uint8_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
+      plte.entries[i].green = (uint8_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
+      plte.entries[i].blue  = (uint8_t)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+    }
+    
+    // int spng_set_plte(spng_ctx *ctx, struct spng_plte *plte)
+    err = spng_set_plte(ctx, &plte);
+    if (err) {
+      if (fp) fclose(fp);
+      if (free_image_on_error) free(image);
+      spng_ctx_free(ctx);
+      error("spng_encode_image() PLTE error: %s\n", spng_strerror(err));
+    }
+    
+    err = spng_encode_chunks(ctx);
+    if (err) {
+      if (fp) fclose(fp);
+      if (free_image_on_error) free(image);
+      spng_ctx_free(ctx);
+      error("spng_encode_image() chunks error: %s\n", spng_strerror(err));
+    }
+  }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // When encoding fmt is the source format */
@@ -159,18 +210,10 @@ SEXP write_png_from_nara_(SEXP nara_, SEXP file_, SEXP use_filter_, SEXP compres
   return write_png_core_(
     image, nbytes, width, height, file_,
     SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
+    R_NilValue, // Palette
     use_filter_, compression_level_,
     FALSE // free_image_on_error
   );
-}
-
-
-static unsigned char hexdigit(int digit) {
-  if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
-  if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
-  if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
-  error("Invalid hex: %i.  Only 6-char and 8 char hex colours supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colours in a raster image (e.g. 'white') are not supported", digit);
-  return (unsigned char)digit; 
 }
 
 
@@ -197,6 +240,9 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
   unsigned char *im_ptr = image;
   for (int i = 0; i < Rf_xlength(ras_); i++) {
     const char *col = CHAR(STRING_ELT(ras_, i));
+    if (col[0] != '#') {
+      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+    }
     *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
     *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
     *im_ptr++ = (unsigned char)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
@@ -209,6 +255,7 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
   SEXP res_ = PROTECT(write_png_core_(
     image, nbytes, width, height, file_,
     SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
+    R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE // free_image_on_error
   ));
@@ -260,6 +307,7 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
   SEXP res_ = PROTECT(write_png_core_(
     image, nbytes, width, height, file_,
     SPNG_COLOR_TYPE_TRUECOLOR,
+    R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE // free_image_on_error
   ));
@@ -391,6 +439,104 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
   SEXP res_ = PROTECT(write_png_core_(
     image, nbytes, width, height, file_,
     fmt,
+    R_NilValue, // Palette
+    use_filter_, compression_level_,
+    TRUE // free_image_on_error
+  ));
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  free(image);
+  UNPROTECT(1);
+  return res_;
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_, 
+                        SEXP compression_level_, SEXP avoid_transpose_) {
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Options
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  size_t nbytes = (size_t)(length(arr_));
+  
+  enum spng_color_type fmt = SPNG_COLOR_TYPE_INDEXED;
+  SEXP dims_ = getAttrib(arr_, R_DimSymbol);
+  if (length(dims_) != 2) {
+    error("write_png_indexed_(): Must be 2-D array");
+  } 
+  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
+  uint32_t height = (uint32_t)INTEGER(dims_)[0];
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Convert from column-major R matrix  to row major unsigned char
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *image = (unsigned char *)malloc(nbytes);
+  if (image == NULL) {
+    error("Could not allocate image buffer");
+  }
+  
+  int npixels = (int)(width * height);
+  unsigned char *im_ptr = image;
+  
+  if (isInteger(arr_)) {
+    if (asLogical(avoid_transpose_)) {
+      int32_t *r = INTEGER(arr_);
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (unsigned char)(*r++);
+      }
+    } else {
+      int32_t *arr_ptr = INTEGER(arr_);
+      for (int row = 0; row < height; row++) {
+        int32_t *r = arr_ptr + row;
+        for (int col = 0; col < width; col++) {
+          *im_ptr++ = (unsigned char)(*r);
+          r += height;
+        }
+      }
+    }
+  } else if (isReal(arr_)) {
+    if (asLogical(avoid_transpose_)) {
+      double *r = REAL(arr_);
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (unsigned char)(*r++);
+      }
+    } else {
+      double *arr_ptr = REAL(arr_);
+      for (int row = 0; row < height; row++) {
+        double *r = arr_ptr + row;
+        for (int col = 0; col < width; col++) {
+          *im_ptr++ = (unsigned char)(*r);
+          r += height;
+        }
+      }
+    }
+  } else {
+    error("Index type not understood");
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // No tranposition, so swap width/height value
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (asLogical(avoid_transpose_)) {
+    int tmp = height;
+    height = width;
+    width = tmp;
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Encode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(write_png_core_(
+    image, nbytes, width, height, file_,
+    fmt,
+    palette_,
     use_filter_, compression_level_,
     TRUE // free_image_on_error
   ));
@@ -408,9 +554,20 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_(SEXP image_, SEXP file_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
+SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
 
-  if (inherits(image_, "nativeRaster")) {
+  if (!isNull(palette_)) {
+    if (!isMatrix(image_)) {
+      error("write_png(): When palette provided image must be a matrix.");
+    }
+    if (!isNumeric(image_)) {
+      error("write_png(): When writing paletted PNG, image must be integer or numeric matrix with values in range [0, 255]");
+    }
+    if (length(palette_) > 256 || TYPEOF(palette_) != STRSXP) {
+      error("Palette must be a character vector of hex colours. length <= 256 elements");
+    }
+    return write_png_indexed_(image_, file_, palette_, use_filter_, compression_level_, avoid_transpose_);
+  } else if (inherits(image_, "nativeRaster")) {
     return write_png_from_nara_(image_, file_, use_filter_, compression_level_);
   } else if (inherits(image_, "raster") && TYPEOF(image_) == STRSXP) {
     if (length(image_) == 0) {

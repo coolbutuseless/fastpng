@@ -11,6 +11,7 @@
 #define R_IMAGE_NARA 0
 #define R_IMAGE_RASTER 1
 #define R_IMAGE_ARRAY 2
+#define R_IMAGE_INDEXED 3
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Initialise a context
@@ -94,6 +95,10 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   //   SPNG_FMT_RAW = 512  /* big-endian (everything else is host-endian) */
   // };
   
+  if (image_type == R_IMAGE_INDEXED && ihdr.color_type != SPNG_COLOR_TYPE_INDEXED) {
+    error("This is not an indexed PNG and cannot be read as type='indexed'.");
+  }
+  
   if (rgba || image_type == R_IMAGE_NARA) {
     // Set to RGBA if asked
     // NativeRaster can only be RGBA
@@ -111,15 +116,14 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
       *fmt = SPNG_FMT_RGB8;
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
-      // As ov v0.7.4, libspng does not seem to be able to read
-      // Grayscale+Alphna images into GA8!
-      // So will always be read as RGBA8 instead
-      *fmt = SPNG_FMT_RGBA8;
+      *fmt = SPNG_FMT_PNG;
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
       *fmt = SPNG_FMT_G8;
     } else {
       *fmt = SPNG_FMT_RGBA8;
     }
+  } else if (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
+    *fmt = SPNG_FMT_PNG;
   } else {
     error("Image type not understood: %i", image_type);
   }
@@ -322,11 +326,10 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   case SPNG_FMT_G8:
     nchannels = 1;
     break;
-  case SPNG_FMT_GA8:
+  case SPNG_FMT_PNG:
     // 2024-02-02 For unknown reasons SPNG doesn't seem to want to read
     // a gray+alpha image back as the 'GA8' format.
-    // Error:  spng_decode_image() error: invalid format
-    error("Note: reading Grey+Alpha images to 2-plane array is currently unsupported");
+    nchannels = 2;
     break;
   case SPNG_FMT_RGB8:
     nchannels = 3;
@@ -475,6 +478,141 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Read PNG as RGBA array
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+  
+  FILE *fp = NULL;
+  int fmt   = SPNG_FMT_G8;
+  int flags = asInteger(flags_);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Create a context 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  uint32_t width  = 0;
+  uint32_t height = 0;
+  size_t out_size = 0;
+  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_INDEXED, &width, &height, &out_size);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Initialise memory into which the PNG will be decoded
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  unsigned char *decode_buf = (unsigned char *)malloc(out_size);
+  if (decode_buf == NULL) {
+    if (fp) fclose(fp);
+    spng_ctx_free(ctx);
+    error("Couldn't allocate PNG buffer");
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Decode all chunks
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int err = spng_decode_chunks(ctx);
+  if (err) {
+    if (fp) fclose(fp);
+    free(decode_buf);
+    spng_ctx_free(ctx);
+    error("spng_decode_image() chunks error: %s\n", spng_strerror(err));
+  }
+  
+  // int spng_get_plte(spng_ctx *ctx, struct spng_plte *plte)
+  struct spng_plte plte;
+  err = spng_get_plte(ctx, &plte);
+  
+  
+  char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
+  SEXP palette_ = PROTECT(allocVector(STRSXP, plte.n_entries));
+  char col[8] = "#000000"; // template
+  for (int i = 0; i < plte.n_entries; i++) {
+    col[1] = hex_lookup[(plte.entries[i].red   >>  4) & 0x0F];
+    col[2] = hex_lookup[(plte.entries[i].red   >>  0) & 0x0F];
+    col[3] = hex_lookup[(plte.entries[i].green >>  4) & 0x0F];
+    col[4] = hex_lookup[(plte.entries[i].green >>  0) & 0x0F];
+    col[5] = hex_lookup[(plte.entries[i].blue  >>  4) & 0x0F];
+    col[6] = hex_lookup[(plte.entries[i].blue  >>  0) & 0x0F];
+    SET_STRING_ELT(palette_, i, mkChar(col));
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Decode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
+  if (err) {
+    if (fp) fclose(fp);
+    free(decode_buf);
+    spng_ctx_free(ctx);
+    error("spng_decode_image() error: %s\n", spng_strerror(err));
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Format raw bytes as array:  width, height, depth
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(allocVector(INTSXP, (R_xlen_t)out_size));
+  
+  int32_t *res_ptr = INTEGER(res_);
+  unsigned char *buf_ptr = decode_buf;
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Copy pixel data from PNG buffer to R 'res_'
+  // Need to switch from raw data (row-major) to R array (column-major)
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (asLogical(avoid_transpose_)) {
+    int32_t *r   = res_ptr;
+    for (int idx = 0; idx < width * height; idx++) {
+      *r++ = *buf_ptr++;
+    }
+  } else {
+    for (int row = 0; row < height; row++) {
+      int32_t *r   = res_ptr + row;
+      for (int col = 0; col < width; col++) {
+        *r = *buf_ptr++;
+        r += height;
+      }
+    }
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Set attributes on result
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
+  if (asLogical(avoid_transpose_)) {
+    INTEGER(dims_)[0] = (int)width;
+    INTEGER(dims_)[1] = (int)height;
+  } else {
+    INTEGER(dims_)[0] = (int)height;
+    INTEGER(dims_)[1] = (int)width;
+  }
+  
+  setAttrib(res_, R_DimSymbol, dims_);
+  
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Return named list object
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP list_ = PROTECT(allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(list_, 0, res_);
+  SET_VECTOR_ELT(list_, 1, palette_);
+  
+  SEXP nms_ = PROTECT(allocVector(STRSXP, 2));
+  SET_STRING_ELT(nms_, 0, mkChar("index"));
+  SET_STRING_ELT(nms_, 1, mkChar("palette"));
+  setAttrib(list_, R_NamesSymbol, nms_);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
+  spng_ctx_free(ctx);
+  free(decode_buf);
+  UNPROTECT(5);
+  return list_;
+}
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // C function called from R
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
@@ -487,6 +625,8 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
     return read_png_as_raster_(src_, rgba_, flags_);
   } else if (strcmp(image_type, "array") == 0) {
     return read_png_as_array_(src_, rgba_, flags_, avoid_transpose_);
+  } else if (strcmp(image_type, "indexed") == 0) {
+    return read_png_as_indexed_(src_, rgba_, flags_, avoid_transpose_);
   }
   
   error("image type not understood: %s", image_type);

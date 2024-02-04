@@ -22,10 +22,12 @@
 #'        to \code{TRUE} then the image is written without this transposition and 
 #'        should speed up PNG creation.  Currently this option is only
 #'        used when writing greyscale PNGs from 2D matrix data.
+#' @param palette character vector of up to 256 colours in RGB hex format
+#'        i.e. \code{#RRGGBB}
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write_png <- function(image, file = NULL, use_filter = TRUE, 
+write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 
                       compression_level = -1L, avoid_traanspose = FALSE) {
-  .Call(write_png_, image, file, use_filter, compression_level, avoid_traanspose)
+  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose)
 }

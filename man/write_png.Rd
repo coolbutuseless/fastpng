@@ -7,6 +7,7 @@
 write_png(
   image,
   file = NULL,
+  palette = NULL,
   use_filter = TRUE,
   compression_level = -1L,
   avoid_traanspose = FALSE
@@ -18,6 +19,9 @@ write_png(
 
 \item{file}{If NULL then return result as raw vector, otherwise write
 to the given filepath.}
+
+\item{palette}{character vector of up to 256 colours in RGB hex format
+i.e. \code{#RRGGBB}}
 
 \item{use_filter}{Use PNG filtering to help reduce size. Default: TRUE.
 If FALSE, then filtering will be disabled which can make 

@@ -59,6 +59,23 @@ test_image_raster_rgba <- as.raster(test_image_array_rgba)
 test_image_nativeraster <- nara::raster_to_nr(test_image_raster_rgba)
 
 
+index_dbl <- test_image_gray * 255
+index_int <- as.integer(index_dbl)
+dim(index_int) <- dim(index_dbl)
+
+palette <- viridisLite::viridis(256)
+
+class(index_dbl[1, 1])
+class(index_int[1, 1])
+
+if (FALSE) {
+  im <- test_image_palette
+  im[] <- palette[test_image_palette + 1]
+}
+
+
+
+
 test_image <- list(
   array = list(
     gray       = test_image_gray,
@@ -72,6 +89,11 @@ test_image <- list(
   ),
   native_raster = list(
     rgba = test_image_nativeraster
+  ),
+  indexed = list(
+    integer_index = index_int,
+    numeric_index = index_dbl,
+    palette       = palette
   )
 )
 

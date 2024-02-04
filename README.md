@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
-[![R-CMD-check](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/spng/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `{fastpng}` provides functions for read/write of PNG image from files
@@ -37,8 +37,8 @@ By disabling compression when writing image data to PNG, this can ben
 ## ToDo
 
 - Transparency via the `tRNS` chunk
-- Palette based images
 - 16 bit support
+- Add test for “avoid transpose” when writing gray PNG
 
 ## Installation
 
@@ -67,6 +67,8 @@ Supported R image types:
 - 3D numeric array containing RGBA values in the range \[0, 1\]
 - 3D numeric array containing RGB values in the range \[0, 1\]
 - 2D numeric matrix containing greyscale values in the range \[0, 1\]
+- Integer 2D matrix paired with a colour palette (specified as a
+  character vector of hex colours)
 
 ## Example: Decompress a PNG from a raw vector
 
@@ -143,43 +145,15 @@ grid::grid.raster(nara, interpolate = FALSE)
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
-### Read PNG as raster
+### Write image as indexed PNG
 
 ``` r
-ras <- read_png(png_data, type = 'raster')
-ras[1:10, 1:10]
-#>       [,1]        [,2]        [,3]        [,4]        [,5]        [,6]       
-#>  [1,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [2,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [3,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [4,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [5,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [6,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [7,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [8,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [9,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#> [10,] "#00000000" "#00000000" "#00000000" "#00000000" "#00000000" "#00000000"
-#>       [,7]        [,8]        [,9]        [,10]      
-#>  [1,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [2,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [3,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [4,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [5,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [6,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [7,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [8,] "#00000000" "#00000000" "#00000000" "#00000000"
-#>  [9,] "#00000000" "#00000000" "#00000000" "#00000000"
-#> [10,] "#00000000" "#00000000" "#00000000" "#00000000"
-plot(ras, interpolate = FALSE)
-```
+indices <- test_image$indexed$integer_index
+palette <- test_image$indexed$palette
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
-
-### Read PNG as RGBA array
-
-``` r
-arr <- read_png(png_data, type = 'array')
-arr[1:10, 1:10, 1]
+dim(indices)
+#> [1] 300 400
+indices[1:10, 1:10]
 #>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 #>  [1,]    0    0    0    0    0    0    0    0    0     0
 #>  [2,]    0    0    0    0    0    0    0    0    0     0
@@ -191,10 +165,17 @@ arr[1:10, 1:10, 1]
 #>  [8,]    0    0    0    0    0    0    0    0    0     0
 #>  [9,]    0    0    0    0    0    0    0    0    0     0
 #> [10,]    0    0    0    0    0    0    0    0    0     0
-plot(as.raster(arr), interpolate = FALSE)
+palette[1:10]
+#>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
+#>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
+
+tmp <- tempfile()
+write_png(image = indices, palette = palette, file = tmp)
+#> NULL
+knitr::include_graphics(tmp)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="../../../../private/var/folders/kq/h7dv19mj00947dthlyb5w2780000gn/T/Rtmpb4FgvD/file6e50244a7c37" width="100%" />
 
 ## Acknowledgements
 
