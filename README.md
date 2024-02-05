@@ -18,14 +18,14 @@ By disabling compression when writing image data to PNG, this can ben
 `{fastpng}`
 
 - Provides explicit support for images as rasters, native rasters,
-  numeric arrays (RGBA, RGB, and Grayscale)
+  numeric arrays (RGBA, RGB, and Grayscale) and indexed images
 - Flags to configure reading of PNG
   - gamma correction
 - Flags to configure writing of PNG
   - Compression level
   - PNG filter settings
 
-`fastpng` is a R wrapper for
+`fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 - [libspng API docs](https://libspng.org/docs/api/)
@@ -39,7 +39,6 @@ By disabling compression when writing image data to PNG, this can ben
 - Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.
   (Already implemented for indexed images).
 - 16 bit support
-- Add test for “avoid transpose” when writing gray PNG
 
 ## Installation
 
@@ -163,11 +162,11 @@ indices[1:10, 1:10]
 #>  [3,]    0    0    0    0    0    0    0    0    0     0
 #>  [4,]    0    0    0    0    0    0    0    0    0     0
 #>  [5,]    0    0    0    0    0    0    0    0    0     0
-#>  [6,]    0    0    0    0    0    0    0    0    0     0
-#>  [7,]    0    0    0    0    0    0    0    0    0     0
-#>  [8,]    0    0    0    0    0    0    0    0    0     0
-#>  [9,]    0    0    0    0    0    0    0    0    0     0
-#> [10,]    0    0    0    0    0    0    0    0    0     0
+#>  [6,]    0    0    0    0    0    0    0    0    0     1
+#>  [7,]    0    0    0    0    0    0    0    0    1     1
+#>  [8,]    0    0    0    0    0    0    0    1    1     1
+#>  [9,]    0    0    0    0    0    0    1    1    1     1
+#> [10,]    0    0    0    0    0    1    1    1    1     1
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"

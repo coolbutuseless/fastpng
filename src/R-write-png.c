@@ -453,6 +453,9 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
       for (int idx = 0; idx < npixels; idx ++) {
         *im_ptr++ = (unsigned char)(*r++ * 255.0 + 0.5);
       }
+      uint32_t tmp = height;
+      height = width;
+      width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
         double *r = arr_ptr + row;

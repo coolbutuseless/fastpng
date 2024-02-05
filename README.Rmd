@@ -45,13 +45,14 @@ than standard PNG packages.
 `{fastpng}` 
 
 * Provides explicit support for images as rasters, native rasters, numeric arrays (RGBA, RGB, and Grayscale)
+  and indexed images
 * Flags to configure reading of PNG
     * gamma correction
 * Flags to configure writing of PNG
     * Compression level
     * PNG filter settings
 
-`fastpng` is a R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
+`fastpng` is an R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 * [libspng API docs](https://libspng.org/docs/api/)
 
@@ -121,7 +122,6 @@ ggplot(res) +
 * Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.  (Already
   implemented for indexed images).
 * 16 bit support
-* Add test for "avoid transpose" when writing gray PNG
 
 
 ## Installation
