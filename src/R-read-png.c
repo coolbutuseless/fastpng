@@ -96,8 +96,12 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   // };
   
   if (image_type == R_IMAGE_INDEXED && ihdr.color_type != SPNG_COLOR_TYPE_INDEXED) {
-    error("This is not an indexed PNG and cannot be read as type='indexed'.");
+    error("type='indexed' cannot be used as this is not an indexed PNG");
   }
+  
+  struct spng_trns trns;
+  int has_trns = (spng_get_trns(ctx, &trns) == 0);
+  
   
   if (rgba || image_type == R_IMAGE_NARA) {
     // Set to RGBA if asked
@@ -105,15 +109,15 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
     *fmt = SPNG_FMT_RGBA8;
   } else if (image_type == R_IMAGE_RASTER) {
     // Raster can only process RGBA or RGB
-    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
+    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA || has_trns) {
       *fmt = SPNG_FMT_RGBA8;
     } else {
       *fmt = SPNG_FMT_RGB8;
     }
   } else if (image_type == R_IMAGE_ARRAY) {
-    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
+    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED  && has_trns)) {
       *fmt = SPNG_FMT_RGBA8;
-    } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
+    } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR || ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
       *fmt = SPNG_FMT_RGB8;
     } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
       *fmt = SPNG_FMT_PNG;
@@ -480,7 +484,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
   
   FILE *fp = NULL;
   int fmt   = SPNG_FMT_G8;
@@ -519,10 +523,19 @@ SEXP read_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
   struct spng_plte plte;
   err = spng_get_plte(ctx, &plte);
   
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // tRNS
+  // Note: there is no guarantee that the number of trNS entries matches
+  // the number of palette entries
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  struct spng_trns trns;
+  int trns_err = spng_get_trns(ctx, &trns); 
+  
+  Rprintf("trns_err: %i\n", trns_err);
   
   char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
   SEXP palette_ = PROTECT(allocVector(STRSXP, plte.n_entries));
-  char col[8] = "#000000"; // template
+  char col[10] = "#000000FF"; // template
   for (int i = 0; i < plte.n_entries; i++) {
     col[1] = hex_lookup[(plte.entries[i].red   >>  4) & 0x0F];
     col[2] = hex_lookup[(plte.entries[i].red   >>  0) & 0x0F];
@@ -530,6 +543,18 @@ SEXP read_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
     col[4] = hex_lookup[(plte.entries[i].green >>  0) & 0x0F];
     col[5] = hex_lookup[(plte.entries[i].blue  >>  4) & 0x0F];
     col[6] = hex_lookup[(plte.entries[i].blue  >>  0) & 0x0F];
+    
+    if (trns_err == 0 && i < trns.n_type3_entries) {
+      // There is a tRNS entry for this palette entry
+      // Rprintf("TRNS %i = %i\n", i, trns.type3_alpha[i]);
+      col[7] = hex_lookup[(trns.type3_alpha[i]  >>  4) & 0x0F];
+      col[8] = hex_lookup[(trns.type3_alpha[i]  >>  0) & 0x0F];
+    } else {
+      // There is no tRNS
+      col[7] = 'F';
+      col[8] = 'F';
+    }
+    
     SET_STRING_ELT(palette_, i, mkChar(col));
   }
   
@@ -626,7 +651,7 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
   } else if (strcmp(image_type, "array") == 0) {
     return read_png_as_array_(src_, rgba_, flags_, avoid_transpose_);
   } else if (strcmp(image_type, "indexed") == 0) {
-    return read_png_as_indexed_(src_, rgba_, flags_, avoid_transpose_);
+    return read_indexed_png_as_indexed_(src_, rgba_, flags_, avoid_transpose_);
   }
   
   error("image type not understood: %s", image_type);

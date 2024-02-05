@@ -168,13 +168,11 @@ indices[1:10, 1:10]
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
-
-tmp <- tempfile()
-write_png(image = indices, palette = palette, file = tmp)
-#> NULL
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+    #> NULL
+
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ## Acknowledgements
 

@@ -216,17 +216,25 @@ palette <- test_image$indexed$palette
 dim(indices)
 indices[1:10, 1:10]
 palette[1:10]
+```
 
+
+```{r echo=FALSE}
 tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
 ```
 
 ```{r echo=FALSE}
 write_png(image = indices, palette = palette) |>
-  read_png() |>
+  read_png() |> 
   grid::grid.raster()
 ```
 
+
+
+```{r echo=FALSE, eval=FALSE}
+write_png(image = indices, palette = palette, file = "working/indexed.png")
+```
 
 
 
