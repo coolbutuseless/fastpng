@@ -126,8 +126,8 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
     struct spng_trns trns;
     struct spng_plte plte;
     
-    plte.n_entries = length(palette_); // length is checked prior to calling core func
-    trns.n_type3_entries = length(palette_); // always match palette length
+    plte.n_entries = (uint32_t)length(palette_); // length is checked prior to calling core func
+    trns.n_type3_entries = (uint32_t)length(palette_); // always match palette length
     
     for (int i = 0; i < length(palette_); i++) {
       const char *col = CHAR(STRING_ELT(palette_, i));
@@ -557,7 +557,7 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
   // No tranposition, so swap width/height value
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (asLogical(avoid_transpose_)) {
-    int tmp = height;
+    uint32_t tmp = height;
     height = width;
     width = tmp;
   }

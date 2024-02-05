@@ -36,7 +36,8 @@ By disabling compression when writing image data to PNG, this can ben
 
 ## ToDo
 
-- Transparency via the `tRNS` chunk
+- Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.
+  (Already implemented for indexed images).
 - 16 bit support
 - Add test for “avoid transpose” when writing gray PNG
 
@@ -57,6 +58,8 @@ remotes::install_github('coolbutuseless/fastpng')
 - `get_png_info()` - interrogate a vector of raw values containing a PNG
   image to determine image information i.e. width, height, bit_depth,
   color_type, compression_method, filter_method, interlace_method.
+- `test_image` is a named list of different image representations in R:
+  RGBA and RGB numeric arrays, raster, native raster.
 
 Supported R image types:
 
@@ -68,7 +71,7 @@ Supported R image types:
 - 3D numeric array containing RGB values in the range \[0, 1\]
 - 2D numeric matrix containing greyscale values in the range \[0, 1\]
 - Integer 2D matrix paired with a colour palette (specified as a
-  character vector of hex colours)
+  character vector of hex colours). Also supports alpha channel.
 
 ## Example: Decompress a PNG from a raw vector
 
