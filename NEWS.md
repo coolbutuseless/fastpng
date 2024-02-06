@@ -1,5 +1,9 @@
 
-# fastpng 0.1.3.9000 2024-02-05
+# fastpng 0.1.3.9001 2024-02-05
+
+* Indexed PNGs now support alpha by including `tRNS` chunk
+
+# fastpng 0.1.3.9000 2024-02-04
 
 * Read/Write indexed PNG
 * Fix GA8 reading

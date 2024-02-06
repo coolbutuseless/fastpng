@@ -8,7 +8,7 @@ read_png(
   src,
   type = c("array", "raster", "native_raster", "indexed"),
   rgba = FALSE,
-  flags = 0L,
+  flags = 1L,
   avoid_transpose = FALSE
 )
 }
@@ -26,8 +26,8 @@ Example 2: When reading a grey+alpha image, if \code{rgba = TRUE},
 then image will be read into an RGBA array with 4 planes.  Otherwise
 it will be read in as grey+alpha data in an array with 2 planes.}
 
-\item{flags}{flags. default: 0. See \code{?spng_decode_flags} for other
-options.  Must be an integer.}
+\item{flags}{flags. default: 1 (always decode transparency from tRNS chunks). 
+See \code{?spng_decode_flags} for other options.  Must be an integer.}
 
 \item{avoid_transpose}{default: FALSE.}
 }

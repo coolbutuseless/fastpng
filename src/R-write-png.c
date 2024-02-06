@@ -104,12 +104,31 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   spng_set_ihdr(ctx, &ihdr);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Write Palette:  PLTE Chunk
+  // Write Palette:  
+  //   tRNS CHunk for alpha channel
+  //   PLTE Chunk for RGB palette
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (!isNull(palette_)) {
     
+    // struct spng_trns
+    // {
+    //   uint16_t gray;
+    //   
+    //   uint16_t red;
+    //   uint16_t green;
+    //   uint16_t blue;
+    //   
+    //   uint32_t n_type3_entries;
+    //   uint8_t type3_alpha[256];
+    // };
+    // int spng_set_trns(spng_ctx *ctx, struct spng_trns *trns)
+    
+    struct spng_trns trns;
     struct spng_plte plte;
+    
     plte.n_entries = (uint32_t)length(palette_); // length is checked prior to calling core func
+    trns.n_type3_entries = (uint32_t)length(palette_); // always match palette length
+    
     for (int i = 0; i < length(palette_); i++) {
       const char *col = CHAR(STRING_ELT(palette_, i));
       if (col[0] != '#') {
@@ -118,15 +137,29 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
       plte.entries[i].red   = (uint8_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
       plte.entries[i].green = (uint8_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
       plte.entries[i].blue  = (uint8_t)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+      if (strlen(col) == 9) {
+        trns.type3_alpha[i] = (uint8_t)( (hexdigit(col[7]) << 4) + hexdigit(col[8]) ); // A
+      } else {
+        trns.type3_alpha[i] = 255; // opaque
+      }
     }
     
-    // int spng_set_plte(spng_ctx *ctx, struct spng_plte *plte)
+    // Set PLTE chunk
     err = spng_set_plte(ctx, &plte);
     if (err) {
       if (fp) fclose(fp);
       if (free_image_on_error) free(image);
       spng_ctx_free(ctx);
       error("spng_encode_image() PLTE error: %s\n", spng_strerror(err));
+    }
+    
+    // Set tRNS chunk
+    err = spng_set_trns(ctx, &trns);
+    if (err) {
+      if (fp) fclose(fp);
+      if (free_image_on_error) free(image);
+      spng_ctx_free(ctx);
+      error("spng_encode_image() TRNS error: %s\n", spng_strerror(err));
     }
     
     err = spng_encode_chunks(ctx);
@@ -420,6 +453,9 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
       for (int idx = 0; idx < npixels; idx ++) {
         *im_ptr++ = (unsigned char)(*r++ * 255.0 + 0.5);
       }
+      uint32_t tmp = height;
+      height = width;
+      width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
         double *r = arr_ptr + row;

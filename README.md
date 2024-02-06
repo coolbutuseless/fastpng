@@ -18,14 +18,14 @@ By disabling compression when writing image data to PNG, this can ben
 `{fastpng}`
 
 - Provides explicit support for images as rasters, native rasters,
-  numeric arrays (RGBA, RGB, and Grayscale)
+  numeric arrays (RGBA, RGB, and Grayscale) and indexed images
 - Flags to configure reading of PNG
   - gamma correction
 - Flags to configure writing of PNG
   - Compression level
   - PNG filter settings
 
-`fastpng` is a R wrapper for
+`fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 - [libspng API docs](https://libspng.org/docs/api/)
@@ -36,9 +36,9 @@ By disabling compression when writing image data to PNG, this can ben
 
 ## ToDo
 
-- Transparency via the `tRNS` chunk
+- Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.
+  (Already implemented for indexed images).
 - 16 bit support
-- Add test for “avoid transpose” when writing gray PNG
 
 ## Installation
 
@@ -57,6 +57,8 @@ remotes::install_github('coolbutuseless/fastpng')
 - `get_png_info()` - interrogate a vector of raw values containing a PNG
   image to determine image information i.e. width, height, bit_depth,
   color_type, compression_method, filter_method, interlace_method.
+- `test_image` is a named list of different image representations in R:
+  RGBA and RGB numeric arrays, raster, native raster.
 
 Supported R image types:
 
@@ -68,7 +70,7 @@ Supported R image types:
 - 3D numeric array containing RGB values in the range \[0, 1\]
 - 2D numeric matrix containing greyscale values in the range \[0, 1\]
 - Integer 2D matrix paired with a colour palette (specified as a
-  character vector of hex colours)
+  character vector of hex colours). Also supports alpha channel.
 
 ## Example: Decompress a PNG from a raw vector
 
@@ -160,21 +162,19 @@ indices[1:10, 1:10]
 #>  [3,]    0    0    0    0    0    0    0    0    0     0
 #>  [4,]    0    0    0    0    0    0    0    0    0     0
 #>  [5,]    0    0    0    0    0    0    0    0    0     0
-#>  [6,]    0    0    0    0    0    0    0    0    0     0
-#>  [7,]    0    0    0    0    0    0    0    0    0     0
-#>  [8,]    0    0    0    0    0    0    0    0    0     0
-#>  [9,]    0    0    0    0    0    0    0    0    0     0
-#> [10,]    0    0    0    0    0    0    0    0    0     0
+#>  [6,]    0    0    0    0    0    0    0    0    0     1
+#>  [7,]    0    0    0    0    0    0    0    0    1     1
+#>  [8,]    0    0    0    0    0    0    0    1    1     1
+#>  [9,]    0    0    0    0    0    0    1    1    1     1
+#> [10,]    0    0    0    0    0    1    1    1    1     1
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
-
-tmp <- tempfile()
-write_png(image = indices, palette = palette, file = tmp)
-#> NULL
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+    #> NULL
+
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ## Acknowledgements
 

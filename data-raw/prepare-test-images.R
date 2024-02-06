@@ -10,7 +10,7 @@ h <- 300
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test_image_gray <- outer(1:h, 1:w) 
 test_image_gray <- test_image_gray / max(test_image_gray)
-test_image_gray <- round(test_image_gray * 255) / 255
+test_image_gray <- (round(test_image_gray * 1024) %% 256) / 255
 grid.raster(test_image_gray)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
