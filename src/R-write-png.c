@@ -34,7 +34,8 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
                      enum spng_color_type color_type,
                      SEXP palette_,
                      SEXP use_filter_, SEXP compression_level_,
-                     int free_image_on_error) {
+                     int free_image_on_error, 
+                     uint8_t bit_depth) {
   
   int fmt;
   int err = 0;
@@ -44,7 +45,6 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  uint8_t bit_depth = 8;
   int use_filter        = asLogical(use_filter_);
   int compression_level = asInteger(compression_level_);
   if (compression_level < -1 || compression_level > 9) {
@@ -245,7 +245,8 @@ SEXP write_png_from_nara_(SEXP nara_, SEXP file_, SEXP use_filter_, SEXP compres
     SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
     R_NilValue, // Palette
     use_filter_, compression_level_,
-    FALSE // free_image_on_error
+    FALSE, // free_image_on_error
+    8 // bit depth
   );
 }
 
@@ -290,7 +291,8 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
     SPNG_COLOR_TYPE_TRUECOLOR_ALPHA,
     R_NilValue, // Palette
     use_filter_, compression_level_,
-    TRUE // free_image_on_error
+    TRUE,  // free_image_on_error
+    8 // bit depth
   ));
   
   
@@ -342,7 +344,8 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
     SPNG_COLOR_TYPE_TRUECOLOR,
     R_NilValue, // Palette
     use_filter_, compression_level_,
-    TRUE // free_image_on_error
+    TRUE,  // free_image_on_error
+    8 // bit depth
   ));
   
   
@@ -477,7 +480,144 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
     fmt,
     R_NilValue, // Palette
     use_filter_, compression_level_,
-    TRUE // free_image_on_error
+    TRUE,  // free_image_on_error
+    8 // bit depth
+  ));
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  free(image);
+  UNPROTECT(1);
+  return res_;
+}
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Write image data stored as RGBA numeric array
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_, 
+                           SEXP avoid_transpose_) {
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Options
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  size_t nbytes = (size_t)(2.0 * length(arr_));
+  
+  enum spng_color_type fmt;
+  SEXP dims_ = getAttrib(arr_, R_DimSymbol);
+  if (length(dims_) == 2) {
+    fmt = SPNG_COLOR_TYPE_GRAYSCALE;
+    // SPNG_COLOR_TYPE_TRUECOLOR_ALPHA
+    // error("Must be 3d array");
+  } else if (length(dims_) == 3) {
+    switch(INTEGER(dims_)[2]) {
+    case 2:
+      fmt = SPNG_COLOR_TYPE_GRAYSCALE_ALPHA;
+      break;
+    case 3:
+      fmt = SPNG_COLOR_TYPE_TRUECOLOR;
+      break;
+    case 4:
+      fmt = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
+      break;
+    default:
+      error("Unknown 3rd dimension length: %i", INTEGER(dims_)[2]);
+    }
+  } else {
+    error("Unknown dims length: %i", length(dims_));
+  }
+  uint32_t width  = (uint32_t)INTEGER(dims_)[1];
+  uint32_t height = (uint32_t)INTEGER(dims_)[0];
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Convert from array to raw vec
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  uint16_t *image = (uint16_t *)malloc(nbytes);
+  if (image == NULL) {
+    error("Could not allocate image buffer");
+  }
+  
+  int npixels = (int)(width * height);
+  double *arr_ptr = REAL(arr_);
+  uint16_t *im_ptr = image;
+  
+  if (fmt == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
+    for (int row = 0; row < height; row++) {
+      double *r = arr_ptr + row + npixels * 0;
+      double *g = arr_ptr + row + npixels * 1;
+      double *b = arr_ptr + row + npixels * 2;
+      double *a = arr_ptr + row + npixels * 3;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*b * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*a * 65535.0 + 0.5);
+        r += height;
+        g += height;
+        b += height;
+        a += height;
+      }
+    }
+  } else if (fmt == SPNG_COLOR_TYPE_TRUECOLOR) {
+    for (int row = 0; row < height; row++) {
+      double *r = arr_ptr + row + npixels * 0;
+      double *g = arr_ptr + row + npixels * 1;
+      double *b = arr_ptr + row + npixels * 2;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*b * 65535.0 + 0.5);
+        r += height;
+        g += height;
+        b += height;
+      }
+    }
+  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
+    for (int row = 0; row < height; row++) {
+      double *g = arr_ptr + row + npixels * 0;
+      double *a = arr_ptr + row + npixels * 1;
+      for (int col = 0; col < width; col++) {
+        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
+        *im_ptr++ = (uint16_t)(*a * 65535.0 + 0.5);
+        g += height;
+        a += height;
+      }
+    }
+  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE) {
+    if (asLogical(avoid_transpose_)) {
+      double *r = arr_ptr;
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (uint16_t)(*r++ * 65535.0 + 0.5);
+      }
+      uint32_t tmp = height;
+      height = width;
+      width = tmp;
+    } else {
+      for (int row = 0; row < height; row++) {
+        double *r = arr_ptr + row;
+        for (int col = 0; col < width; col++) {
+          *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
+          r += height;
+        }
+      }
+    }
+  } else {
+    error("Unknown fmt: %i", fmt);
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Encode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(write_png_core_(
+    image, nbytes, width, height, file_,
+    fmt,
+    R_NilValue, // Palette
+    use_filter_, compression_level_,
+    TRUE,  // free_image_on_error
+    16 // bit depth
   ));
   
   
@@ -574,7 +714,8 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
     fmt,
     palette_,
     use_filter_, compression_level_,
-    TRUE // free_image_on_error
+    TRUE,  // free_image_on_error
+    8 // bit depth
   ));
   
   
@@ -590,7 +731,8 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, SEXP compression_level_, SEXP avoid_transpose_) {
+SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, 
+                SEXP compression_level_, SEXP avoid_transpose_, SEXP bits_) {
 
   if (!isNull(palette_)) {
     if (!isMatrix(image_)) {
@@ -621,7 +763,11 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, SEXP c
       error("Raster encoding not understood");
     }
   } else if ((isArray(image_) || isMatrix(image_)) && isReal(image_)) {
-    return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
+    if (asInteger(bits_) == 16) {
+      return write_png_from_array16_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
+    } else {
+      return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
+    }
   }
   
   error("write_png(): R image container not understood");

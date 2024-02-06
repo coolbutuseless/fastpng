@@ -17,7 +17,8 @@
 // Initialise a context
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type, 
-                        uint32_t *width, uint32_t *height, size_t *out_size) {
+                        uint32_t *width, uint32_t *height, size_t *out_size,
+                        uint8_t *bits, uint32_t *nchannels) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create context
@@ -72,6 +73,7 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   }
   *height = ihdr.height;
   *width  = ihdr.width;
+  *bits   = ihdr.bit_depth;
   
   
   // SPNG_COLOR_TYPE_GRAYSCALE = 0,
@@ -115,16 +117,40 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
       *fmt = SPNG_FMT_RGB8;
     }
   } else if (image_type == R_IMAGE_ARRAY) {
-    if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED  && has_trns)) {
-      *fmt = SPNG_FMT_RGBA8;
-    } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR || ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
-      *fmt = SPNG_FMT_RGB8;
-    } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
-      *fmt = SPNG_FMT_PNG;
-    } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
-      *fmt = SPNG_FMT_G8;
+    if (*bits == 16) {
+      if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
+        *fmt = SPNG_FMT_RGBA16;
+        *nchannels = 4;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
+        *fmt = SPNG_FMT_PNG;
+        *nchannels = 3;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
+        *fmt = SPNG_FMT_PNG;
+        *nchannels = 2;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
+        *fmt = SPNG_FMT_PNG;
+        *nchannels = 1;
+      } else {
+        *fmt = SPNG_FMT_RGBA16;
+        *nchannels = 4;
+      }
     } else {
-      *fmt = SPNG_FMT_RGBA8;
+      if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED  && has_trns)) {
+        *fmt = SPNG_FMT_RGBA8;
+        *nchannels = 4;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR || ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
+        *fmt = SPNG_FMT_RGB8;
+        *nchannels = 3;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
+        *fmt = SPNG_FMT_PNG;
+        *nchannels = 2;
+      } else if (ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
+        *fmt = SPNG_FMT_G8;
+        *nchannels = 1;
+      } else {
+        *fmt = SPNG_FMT_RGBA8;
+        *nchannels = 4;
+      }
     }
   } else if (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
     *fmt = SPNG_FMT_PNG;
@@ -149,6 +175,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   
   FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
+  uint8_t bits  = 8; 
   int flags = asInteger(flags_);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,7 +184,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, &fp, 1, &fmt, R_IMAGE_NARA, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, 1, &fmt, R_IMAGE_NARA, &width, &height, &out_size, &bits, NULL);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -206,6 +233,7 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
 SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
   
   FILE *fp = NULL;
+  uint8_t bits  = 8; 
   int fmt   = SPNG_FMT_RGBA8;
   int flags = asInteger(flags_);
   
@@ -215,7 +243,7 @@ SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_RASTER, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_RASTER, &width, &height, &out_size, &bits, NULL);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -301,7 +329,10 @@ SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
   return res_;
 }
 
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Forward declaration
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
@@ -310,7 +341,9 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   
   FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
+  uint8_t bits  = 8; 
   int flags = asInteger(flags_);
+  uint32_t nchannels;
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
@@ -318,33 +351,17 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size, &bits, &nchannels);
+  
+  if (bits == 16) {
+    return read_png_as_array16_(src_, rgba_, flags_, avoid_transpose_);
+  }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int npixels = (int)(width * height);
-  int nchannels;
-  
-  switch(fmt) {
-  case SPNG_FMT_G8:
-    nchannels = 1;
-    break;
-  case SPNG_FMT_PNG:
-    // 2024-02-02 For unknown reasons SPNG doesn't seem to want to read
-    // a gray+alpha image back as the 'GA8' format.
-    nchannels = 2;
-    break;
-  case SPNG_FMT_RGB8:
-    nchannels = 3;
-    break;
-  case SPNG_FMT_RGBA8:
-    nchannels = 4;
-    break;
-  default:
-    error("Unhandled format for read_png_as_array: %i", fmt);
-  }
-  
+
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -482,11 +499,174 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Read PNG as RGBA array.  16 bits
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+  
+  FILE *fp = NULL;
+  uint8_t bits  = 8; 
+  int fmt   = SPNG_FMT_RGBA8;
+  int flags = asInteger(flags_);
+  uint32_t nchannels;
+  
+  Rprintf("read_png_as_array16_()\n");
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Create a context 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  uint32_t width  = 0;
+  uint32_t height = 0;
+  size_t out_size = 0;
+  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size, &bits, &nchannels);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int npixels = (int)(width * height);
+
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Initialise memory into which the PNG will be decoded
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  uint16_t *decode_buf = (uint16_t *)malloc(out_size);
+  if (decode_buf == NULL) {
+    if (fp) fclose(fp);
+    spng_ctx_free(ctx);
+    error("Couldn't allocate PNG buffer");
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Decode
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int err = spng_decode_image(ctx, decode_buf, out_size, fmt, flags);
+  if (err) {
+    if (fp) fclose(fp);
+    free(decode_buf);
+    spng_ctx_free(ctx);
+    error("spng_decode_image() error: %s\n", spng_strerror(err));
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Format raw bytes as array:  width, height, depth
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  SEXP res_ = PROTECT(allocVector(REALSXP, npixels * nchannels));
+  
+  double *res_ptr = REAL(res_);
+  uint16_t *buf_ptr = decode_buf;
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Copy pixel data from PNG buffer to R 'res_'
+  // Need to switch from raw data (row-major) to R array (column-major)
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (nchannels == 4) {
+    for (int row = 0; row < height; row++) {
+      
+      double *r   = res_ptr + row;
+      double *g   = res_ptr + row + npixels * 1;
+      double *b   = res_ptr + row + npixels * 2;
+      double *a   = res_ptr + row + npixels * 3;
+      
+      for (int col = 0; col < width; col++) {
+        *r = *buf_ptr++ / 65535.0;
+        *g = *buf_ptr++ / 65535.0;
+        *b = *buf_ptr++ / 65535.0;
+        *a = *buf_ptr++ / 65535.0;
+        r += height;
+        g += height;
+        b += height;
+        a += height;
+      }
+    }
+  } else if (nchannels == 3) {
+    for (int row = 0; row < height; row++) {
+      
+      double *r   = res_ptr + row;
+      double *g   = res_ptr + row + npixels * 1;
+      double *b   = res_ptr + row + npixels * 2;
+      
+      for (int col = 0; col < width; col++) {
+        *r = *buf_ptr++ / 65535.0;
+        *g = *buf_ptr++ / 65535.0;
+        *b = *buf_ptr++ / 65535.0;
+        r += height;
+        g += height;
+        b += height;
+      }
+    }
+  } else if (nchannels == 2) {
+    for (int row = 0; row < height; row++) {
+      
+      double *g   = res_ptr + row;
+      double *a   = res_ptr + row + npixels * 1;
+      
+      for (int col = 0; col < width; col++) {
+        *g = *buf_ptr++ / 65535.0;
+        *a = *buf_ptr++ / 65535.0;
+        g += height;
+        a += height;
+      }
+    }
+  } else if (nchannels == 1) {
+    if (asLogical(avoid_transpose_)) {
+      double *r   = res_ptr;
+      for (int idx = 0; idx < width * height; idx++) {
+        *r++ = *buf_ptr++ / 65535.0;
+      }
+    } else {
+      for (int row = 0; row < height; row++) {
+        double *r   = res_ptr + row;
+        for (int col = 0; col < width; col++) {
+          *r = *buf_ptr++ / 65535.0;
+          r += height;
+        }
+      }
+    }
+  } else {
+    error("unhandled nchannels: %i", nchannels);
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Set attributes on result
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (nchannels == 1) {
+    SEXP dims_ = PROTECT(allocVector(INTSXP, 2));
+    if (asLogical(avoid_transpose_)) {
+      INTEGER(dims_)[0] = (int)width;
+      INTEGER(dims_)[1] = (int)height;
+    } else {
+      INTEGER(dims_)[0] = (int)height;
+      INTEGER(dims_)[1] = (int)width;
+    }
+    
+    setAttrib(res_, R_DimSymbol, dims_);
+  } else {
+    SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
+    INTEGER(dims_)[0] = (int)height;
+    INTEGER(dims_)[1] = (int)width;
+    INTEGER(dims_)[2] = nchannels;
+    
+    setAttrib(res_, R_DimSymbol, dims_);
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (fp) fclose(fp);
+  spng_ctx_free(ctx);
+  free(decode_buf);
+  UNPROTECT(2);
+  return res_;
+}
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
   
   FILE *fp = NULL;
+  uint8_t bits  = 8; 
   int fmt   = SPNG_FMT_G8;
   int flags = asInteger(flags_);
   
@@ -496,7 +676,7 @@ SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid
   uint32_t width  = 0;
   uint32_t height = 0;
   size_t out_size = 0;
-  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_INDEXED, &width, &height, &out_size);
+  spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_INDEXED, &width, &height, &out_size, &bits, NULL);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded

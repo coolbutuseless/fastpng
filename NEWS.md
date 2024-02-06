@@ -1,4 +1,11 @@
 
+
+# fastpng 0.1.3.9002 2024-02-06
+
+* Read/write 16-bit PNGs from/to arrays
+* raster and nativeraster will read 16-bit PNGs with 8bit precision.
+* PNG does not support indexed images at 16bits.
+
 # fastpng 0.1.3.9001 2024-02-05
 
 * Indexed PNGs now support alpha by including `tRNS` chunk

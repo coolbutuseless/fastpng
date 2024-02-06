@@ -39,13 +39,17 @@ library(fastpng)
 
 `{fastpng}` provides functions for read/write of PNG image from files and raw vectors.
 
-By disabling compression when writing image data to PNG, this can ben ~75x faster
+By disabling compression when writing image data to PNG, this can be ~75x faster
 than standard PNG packages.
 
 `{fastpng}` 
 
 * Provides explicit support for images as rasters, native rasters, numeric arrays (RGBA, RGB, and Grayscale)
   and indexed images
+* 8-bits-per-colour supported for all image types
+* 16-bits-per-colour supported 
+    * read/write with arrays
+    * read into raster and nativeraster (with only 8 bits used)
 * Flags to configure reading of PNG
     * gamma correction
 * Flags to configure writing of PNG
@@ -120,8 +124,7 @@ ggplot(res) +
 ## ToDo
 
 * Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.  (Already
-  implemented for indexed images).
-* 16 bit support
+  implemented for indexed images)
 
 
 ## Installation

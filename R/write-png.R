@@ -24,10 +24,12 @@
 #'        used when writing greyscale PNGs from 2D matrix data.
 #' @param palette character vector of up to 256 colours in RGB hex format
 #'        i.e. \code{#RRGGBB}
+#' @param bits bit depth. default 8.  Valid values are 8 and 16.  This option
+#'        only has an effect when image to output is a numeric array.
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 
-                      compression_level = -1L, avoid_traanspose = FALSE) {
-  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose)
+                      compression_level = -1L, avoid_traanspose = FALSE, bits=8) {
+  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose, bits)
 }

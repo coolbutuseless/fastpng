@@ -5,6 +5,54 @@ w <- 400
 h <- 300
 
 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ARRAY: Gray
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_image_gray16 <- outer(1:h, 1:w) 
+test_image_gray16 <- test_image_gray16 / max(test_image_gray16)
+test_image_gray16 <- (round(test_image_gray16 * 2^17) %% (2^16)) / 2^16
+grid.raster(test_image_gray16)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ARRAY: RGB 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_image_array_rgb16 <- c(
+  test_image_gray16,
+  rev(test_image_gray16),
+  test_image_gray16[nrow(test_image_gray16):1, ]
+)
+dim(test_image_array_rgb16) <- c(h, w, 3)
+grid.newpage(); grid.raster(test_image_array_rgb16)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ARRAY: RGBA
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_image_array_rgba16 <- c(
+  test_image_gray16,
+  rev(test_image_gray16),
+  test_image_gray16[nrow(test_image_gray16):1, ],
+  (test_image_gray16[, ncol(test_image_gray16):1]) ^ 0.15
+)
+dim(test_image_array_rgba16) <- c(h, w, 4)
+grid.newpage(); grid.raster(test_image_array_rgba16)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ARRAY: Gray + Alpha
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_image_array_ga16 <- c(
+  test_image_gray16,
+  test_image_gray16[nrow(test_image_gray16):1, ] ^ 0.15
+)
+dim(test_image_array_ga16) <- c(h, w, 2)
+
+
+
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ARRAY: Gray
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,6 +131,12 @@ test_image <- list(
     rgb        = test_image_array_rgb,
     rgba       = test_image_array_rgba
   ),
+  array16bit = list(
+    gray       = test_image_gray16,
+    gray_alpha = test_image_array_ga16,
+    rgb        = test_image_array_rgb16,
+    rgba       = test_image_array_rgba16
+  ),
   raster = list(
     rgb  = test_image_raster_rgb,
     rgba = test_image_raster_rgba
@@ -99,4 +153,4 @@ test_image <- list(
 
 
 
-usethis::use_data(test_image, overwrite = TRUE)
+usethis::use_data(test_image, overwrite = TRUE, compress = 'xz')
