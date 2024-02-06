@@ -109,7 +109,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   if (!isNull(palette_)) {
     
     struct spng_plte plte;
-    plte.n_entries = length(palette_); // length is checked prior to calling core func
+    plte.n_entries = (uint32_t)length(palette_); // length is checked prior to calling core func
     for (int i = 0; i < length(palette_); i++) {
       const char *col = CHAR(STRING_ELT(palette_, i));
       if (col[0] != '#') {
@@ -524,7 +524,7 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
   // No tranposition, so swap width/height value
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (asLogical(avoid_transpose_)) {
-    int tmp = height;
+    uint32_t tmp = height;
     height = width;
     width = tmp;
   }

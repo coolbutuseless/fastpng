@@ -462,23 +462,23 @@ static inline void write_u16(void *dest, uint16_t x)
 {
     unsigned char *data = dest;
 
-    data[0] = x >> 8;
-    data[1] = x & 0xFF;
+    data[0] = (unsigned char)(x >> 8);
+    data[1] = (unsigned char)(x & 0xFF);
 }
 
 static inline void write_u32(void *dest, uint32_t x)
 {
     unsigned char *data = dest;
 
-    data[0] = (x >> 24);
-    data[1] = (x >> 16) & 0xFF;
-    data[2] = (x >> 8) & 0xFF;
-    data[3] = x & 0xFF;
+    data[0] = (unsigned char)((x >> 24));
+    data[1] = (unsigned char)((x >> 16) & 0xFF);
+    data[2] = (unsigned char)((x >> 8) & 0xFF);
+    data[3] = (unsigned char)(x & 0xFF);
 }
 
 static inline void write_s32(void *dest, int32_t x)
 {
-    uint32_t n = x;
+    uint32_t n = (uint32_t)x;
     write_u32(dest, n);
 }
 
@@ -487,7 +487,7 @@ static struct spng__iter spng__iter_init(unsigned bit_depth, const unsigned char
 {
     struct spng__iter iter =
     {
-        .mask = (uint32_t)(1 << bit_depth) - 1,
+        .mask = (unsigned char)((uint32_t)(1 << bit_depth) - 1),
         .shift_amount = 8 - bit_depth,
         .initial_shift = 8 - bit_depth,
         .bit_depth = bit_depth,
@@ -893,8 +893,8 @@ static int write_header(spng_ctx *ctx, const uint8_t chunk_type[4], size_t chunk
     int ret = require_bytes(ctx, total);
     if(ret) return ret;
 
-    uint32_t crc = crc32(0, NULL, 0);
-    ctx->current_chunk.crc = crc32(crc, chunk_type, 4);
+    uint32_t crc = (uint32_t)crc32(0, NULL, 0);
+    ctx->current_chunk.crc = (uint32_t)crc32(crc, chunk_type, 4);
 
     memcpy(&ctx->current_chunk.type, chunk_type, 4);
     ctx->current_chunk.length = (uint32_t)chunk_length;
@@ -940,7 +940,7 @@ static int finish_chunk(spng_ctx *ctx)
     write_u32(header, chunk->length);
     memcpy(header + 4, chunk->type, 4);
 
-    chunk->crc = crc32(chunk->crc, chunk_data, chunk->length);
+    chunk->crc = (uint32_t)crc32(chunk->crc, chunk_data, chunk->length);
 
     write_u32(chunk_data + chunk->length, chunk->crc);
 
@@ -1085,8 +1085,8 @@ static inline int read_header(spng_ctx *ctx)
 
     if(!ctx->skip_crc)
     {
-        ctx->cur_actual_crc = crc32(0, NULL, 0);
-        ctx->cur_actual_crc = crc32(ctx->cur_actual_crc, chunk.type, 4);
+        ctx->cur_actual_crc = (uint32_t)crc32(0, NULL, 0);
+        ctx->cur_actual_crc = (uint32_t)crc32(ctx->cur_actual_crc, chunk.type, 4);
     }
 
     ctx->current_chunk = chunk;
@@ -1106,7 +1106,7 @@ static int read_chunk_bytes(spng_ctx *ctx, uint32_t bytes)
     ret = read_data(ctx, bytes);
     if(ret) return ret;
 
-    if(!ctx->skip_crc) ctx->cur_actual_crc = crc32(ctx->cur_actual_crc, ctx->data, bytes);
+    if(!ctx->skip_crc) ctx->cur_actual_crc = (uint32_t)crc32(ctx->cur_actual_crc, ctx->data, bytes);
 
     ctx->cur_chunk_bytes_left -= bytes;
 
@@ -1137,7 +1137,7 @@ static int read_chunk_bytes2(spng_ctx *ctx, void *out, uint32_t bytes)
         ctx->bytes_read += len;
         if(ctx->bytes_read < len) return SPNG_EOVERFLOW;
 
-        if(!ctx->skip_crc) ctx->cur_actual_crc = crc32(ctx->cur_actual_crc, out, len);
+        if(!ctx->skip_crc) ctx->cur_actual_crc = (uint32_t)crc32(ctx->cur_actual_crc, out, len);
 
         ctx->cur_chunk_bytes_left -= len;
 
@@ -1424,10 +1424,10 @@ static int read_scanline_bytes(spng_ctx *ctx, unsigned char *dest, size_t len)
 
 static uint8_t paeth(uint8_t a, uint8_t b, uint8_t c)
 {
-    int16_t p = a + b - c;
-    int16_t pa = abs(p - a);
-    int16_t pb = abs(p - b);
-    int16_t pc = abs(p - c);
+    int16_t p  = (int16_t)(a + b - c);
+    int16_t pa = (int16_t)(abs(p - a));
+    int16_t pb = (int16_t)(abs(p - b));
+    int16_t pc = (int16_t)(abs(p - c));
 
     if(pa <= pb && pa <= pc) return a;
     else if(pb <= pc) return b;
@@ -1523,8 +1523,8 @@ no_opt:
             }
             case SPNG_FILTER_AVERAGE:
             {
-                uint16_t avg = (a + b) / 2;
-                x = x + avg;
+                uint16_t avg = (uint16_t)((a + b) / 2);
+                x = (uint8_t)(x + avg);
                 break;
             }
             case SPNG_FILTER_PAETH:
@@ -1584,8 +1584,8 @@ static int filter_scanline(unsigned char *filtered, const unsigned char *prev_sc
             }
             case SPNG_FILTER_AVERAGE:
             {
-                uint16_t avg = (a + b) / 2;
-                x = x - avg;
+                uint16_t avg = (uint16_t)((a + b) / 2);
+                x = (uint8_t)(x - avg);
                 break;
             }
             case SPNG_FILTER_PAETH:
@@ -1646,8 +1646,8 @@ static int32_t filter_sum(const unsigned char *prev_scanline, const unsigned cha
             }
             case SPNG_FILTER_AVERAGE:
             {
-                uint16_t avg = (a + b) / 2;
-                x = x - avg;
+                uint16_t avg = (uint16_t)((a + b) / 2);
+                x = (uint8_t)(x - avg);
                 break;
             }
             case SPNG_FILTER_PAETH:
@@ -1680,7 +1680,7 @@ static unsigned get_best_filter(const unsigned char *prev_scanline, const unsign
     {/* only one choice/bit is set */
         for(i=0; i < 5; i++)
         {
-            if(choices == 1 << (i + 3)) return i;
+            if(choices == 1 << (i + 3)) return (unsigned)i;
         }
     }
 
@@ -1688,7 +1688,7 @@ static unsigned get_best_filter(const unsigned char *prev_scanline, const unsign
     {
         flag = 1 << (i + 3);
 
-        if(choices & flag) sum = filter_sum(prev_scanline, scanline, scanline_width, bytes_per_pixel, i);
+        if((unsigned)choices & flag) sum = filter_sum(prev_scanline, scanline, scanline_width, bytes_per_pixel, (unsigned int)i);
         else continue;
 
         filter_scores[i] = abs(sum);
@@ -1696,7 +1696,7 @@ static unsigned get_best_filter(const unsigned char *prev_scanline, const unsign
         if(filter_scores[i] < best_score)
         {
             best_score = filter_scores[i];
-            best_filter = i;
+            best_filter = (unsigned int)i;
         }
     }
 
@@ -1721,14 +1721,14 @@ static uint16_t sample_to_target(uint16_t sample, unsigned bit_depth, unsigned s
     if(target < sbits) return sample >> (sbits - target);
 
     /* Upscale using left bit replication */
-    int8_t shift_amount = target - sbits;
+    int8_t shift_amount = (int8_t)(target - sbits);
     uint16_t sample_bits = sample;
     sample = 0;
 
     while(shift_amount >= 0)
     {
         sample = sample | (sample_bits << shift_amount);
-        shift_amount -= sbits;
+        shift_amount -= (int8_t)sbits;
     }
 
     int8_t partial = shift_amount + (int8_t)sbits;
@@ -1749,9 +1749,9 @@ static inline void gamma_correct_row(unsigned char *row, uint32_t pixels, int fm
         {
             px = row + i * 4;
 
-            px[0] = gamma_lut[px[0]];
-            px[1] = gamma_lut[px[1]];
-            px[2] = gamma_lut[px[2]];
+            px[0] = (unsigned char)gamma_lut[px[0]];
+            px[1] = (unsigned char)gamma_lut[px[1]];
+            px[2] = (unsigned char)gamma_lut[px[2]];
         }
     }
     else if(fmt == SPNG_FMT_RGBA16)
@@ -1775,9 +1775,9 @@ static inline void gamma_correct_row(unsigned char *row, uint32_t pixels, int fm
         {
             px = row + i * 3;
 
-            px[0] = gamma_lut[px[0]];
-            px[1] = gamma_lut[px[1]];
-            px[2] = gamma_lut[px[2]];
+            px[0] = (unsigned char)gamma_lut[px[0]];
+            px[1] = (unsigned char)gamma_lut[px[1]];
+            px[2] = (unsigned char)gamma_lut[px[2]];
         }
     }
 }
@@ -1871,10 +1871,10 @@ static inline void scale_row(unsigned char *row, uint32_t pixels, int fmt, unsig
         {
             memcpy(px, row + i * 4, 4);
 
-            px[0] = sample_to_target(px[0], depth, sbit->red_bits, 8);
-            px[1] = sample_to_target(px[1], depth, sbit->green_bits, 8);
-            px[2] = sample_to_target(px[2], depth, sbit->blue_bits, 8);
-            px[3] = sample_to_target(px[3], depth, sbit->alpha_bits, 8);
+            px[0] = (unsigned char)sample_to_target(px[0], depth, sbit->red_bits, 8);
+            px[1] = (unsigned char)sample_to_target(px[1], depth, sbit->green_bits, 8);
+            px[2] = (unsigned char)sample_to_target(px[2], depth, sbit->blue_bits, 8);
+            px[3] = (unsigned char)sample_to_target(px[3], depth, sbit->alpha_bits, 8);
 
             memcpy(row + i * 4, px, 4);
         }
@@ -1901,9 +1901,9 @@ static inline void scale_row(unsigned char *row, uint32_t pixels, int fmt, unsig
         {
             memcpy(px, row + i * 3, 3);
 
-            px[0] = sample_to_target(px[0], depth, sbit->red_bits, 8);
-            px[1] = sample_to_target(px[1], depth, sbit->green_bits, 8);
-            px[2] = sample_to_target(px[2], depth, sbit->blue_bits, 8);
+            px[0] = (unsigned char)sample_to_target(px[0], depth, sbit->red_bits, 8);
+            px[1] = (unsigned char)sample_to_target(px[1], depth, sbit->green_bits, 8);
+            px[2] = (unsigned char)sample_to_target(px[2], depth, sbit->blue_bits, 8);
 
             memcpy(row + i * 3, px, 3);
         }
@@ -1912,14 +1912,14 @@ static inline void scale_row(unsigned char *row, uint32_t pixels, int fmt, unsig
     {
         for(i=0; i < pixels; i++)
         {
-            row[i] = sample_to_target(row[i], depth, sbit->grayscale_bits, 8);
+            row[i] = (unsigned char)sample_to_target(row[i], depth, sbit->grayscale_bits, 8);
         }
     }
     else if(fmt == SPNG_FMT_GA8)
     {
         for(i=0; i < pixels; i++)
         {
-            row[i*2] = sample_to_target(row[i*2], depth, sbit->grayscale_bits, 8);
+            row[i*2] = (unsigned char)sample_to_target(row[i*2], depth, sbit->grayscale_bits, 8);
         }
     }
 }
@@ -2285,8 +2285,8 @@ static int read_ihdr(spng_ctx *ctx)
     if(chunk->length != 13) return SPNG_EIHDR_SIZE;
     if(memcmp(chunk->type, type_ihdr, 4)) return SPNG_ENOIHDR;
 
-    ctx->cur_actual_crc = crc32(0, NULL, 0);
-    ctx->cur_actual_crc = crc32(ctx->cur_actual_crc, data + 12, 17);
+    ctx->cur_actual_crc = (uint32_t)crc32(0, NULL, 0);
+    ctx->cur_actual_crc = (uint32_t)crc32(ctx->cur_actual_crc, data + 12, 17);
 
     ctx->ihdr.width = read_u32(data + 16);
     ctx->ihdr.height = read_u32(data + 20);
@@ -2740,7 +2740,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 unsigned char *keyword_nul = memchr(ctx->data, '\0', peek_bytes);
                 if(keyword_nul == NULL) return SPNG_EICCP_NAME;
 
-                uint32_t keyword_len = keyword_nul - ctx->data;
+                uint32_t keyword_len = (uint32_t)(keyword_nul - ctx->data);
 
                 if(keyword_len > 79) return SPNG_EICCP_NAME;
 
@@ -2800,7 +2800,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                 if(keyword_nul == NULL) return SPNG_ETEXT_KEYWORD;
 
-                keyword_len = keyword_nul - data;
+                keyword_len = (uint32_t)(keyword_nul - data);
 
                 if(!memcmp(chunk.type, type_text, 4))
                 {
@@ -2846,13 +2846,13 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                     if((peek_end - term) < 2) return SPNG_EITXT;
 
-                    translated_keyword_offset = term - data + 1;
+                    translated_keyword_offset = (uint32_t)(term - data + 1);
 
                     zlib_stream = memchr(data + translated_keyword_offset, 0, peek_bytes - translated_keyword_offset);
                     if(zlib_stream == NULL) return SPNG_EITXT;
                     if(zlib_stream == peek_end) return SPNG_EITXT;
 
-                    text_offset = zlib_stream - data + 1;
+                    text_offset = (uint32_t)(zlib_stream - data + 1);
                     text->text_length = chunk.length - text_offset;
                 }
                 else return SPNG_EINTERNAL;
@@ -2960,7 +2960,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 const unsigned char *keyword_nul = memchr(data, 0, keyword_len);
                 if(keyword_nul == NULL) return SPNG_ESPLT_NAME;
 
-                keyword_len = keyword_nul - data;
+                keyword_len = (uint32_t)(keyword_nul - data);
 
                 memcpy(splt->name, data, keyword_len);
 
@@ -3492,10 +3492,10 @@ int spng_decode_scanline(spng_ctx *ctx, void *out, size_t len)
         {
             if(ihdr->bit_depth == 16)
             {
-                r_8 = r_16 >> 8;
-                g_8 = g_16 >> 8;
-                b_8 = b_16 >> 8;
-                a_8 = a_16 >> 8;
+                r_8 = (uint8_t)(r_16 >> 8);
+                g_8 = (uint8_t)(g_16 >> 8);
+                b_8 = (uint8_t)(b_16 >> 8);
+                a_8 = (uint8_t)(a_16 >> 8);
             }
 
             pixel[0] = r_8;
@@ -3803,7 +3803,7 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
         unsigned i;
         for(i=0; i < lut_entries; i++)
         {
-            float c = pow((float)i / max, exponent) * max;
+            float c = (float)pow((float)i / max, exponent) * max;
             if(c > max) c = max;
 
             gamma_lut[i] = (uint16_t)c;
@@ -3812,11 +3812,11 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
 
     struct spng_sbit *sb = &ctx->decode_sb;
 
-    sb->red_bits = processing_depth;
-    sb->green_bits = processing_depth;
-    sb->blue_bits = processing_depth;
-    sb->alpha_bits = processing_depth;
-    sb->grayscale_bits = processing_depth;
+    sb->red_bits = (uint8_t)processing_depth;
+    sb->green_bits = (uint8_t)processing_depth;
+    sb->blue_bits = (uint8_t)processing_depth;
+    sb->alpha_bits = (uint8_t)processing_depth;
+    sb->grayscale_bits = (uint8_t)processing_depth;
 
     if(f.use_sbit)
     {
@@ -3890,10 +3890,10 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
             else
                 ctx->plte.entries[i].alpha = 255;
 
-            red   = sample_to_target(ctx->plte.entries[i].red, 8, sb->red_bits, 8);
-            green = sample_to_target(ctx->plte.entries[i].green, 8, sb->green_bits, 8);
-            blue  = sample_to_target(ctx->plte.entries[i].blue, 8, sb->blue_bits, 8);
-            alpha = sample_to_target(ctx->plte.entries[i].alpha, 8, sb->alpha_bits, 8);
+            red   =(uint8_t)sample_to_target(ctx->plte.entries[i].red, 8, sb->red_bits, 8);
+            green =(uint8_t)sample_to_target(ctx->plte.entries[i].green, 8, sb->green_bits, 8);
+            blue  =(uint8_t)sample_to_target(ctx->plte.entries[i].blue, 8, sb->blue_bits, 8);
+            alpha =(uint8_t)sample_to_target(ctx->plte.entries[i].alpha, 8, sb->alpha_bits, 8);
 
 #if defined(SPNG_ARM)
             if(fmt == SPNG_FMT_RGB8 && ihdr->bit_depth == 8)
@@ -3917,8 +3917,8 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
 
     if(f.apply_trns)
     {
-        uint16_t mask = ~0;
-        if(ctx->ihdr.bit_depth < 16) mask = (1 << ctx->ihdr.bit_depth) - 1;
+        uint16_t mask = (uint16_t)(~0);
+        if(ctx->ihdr.bit_depth < 16) mask = (uint16_t)((1 << ctx->ihdr.bit_depth) - 1);
 
         if(fmt & (SPNG_FMT_RGBA8 | SPNG_FMT_RGBA16))
         {
@@ -3932,9 +3932,9 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
                 }
                 else
                 {
-                    trns_px[0] = ctx->trns.red & mask;
-                    trns_px[1] = ctx->trns.green & mask;
-                    trns_px[2] = ctx->trns.blue & mask;
+                    trns_px[0] = (unsigned char)(ctx->trns.red & mask);
+                    trns_px[1] = (unsigned char)(ctx->trns.green & mask);
+                    trns_px[2] = (unsigned char)(ctx->trns.blue & mask);
                 }
             }
         }
@@ -3946,7 +3946,7 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
             }
             else
             {
-                trns_px[0] = ctx->trns.gray & mask;
+                trns_px[0] = (unsigned char)(ctx->trns.gray & mask);
             }
         }
     }
@@ -4208,7 +4208,7 @@ static int write_chunks_before_idat(spng_ctx *ctx)
             {
                 length = 1;
 
-                data[0] = ctx->bkgd.plte_index;
+                data[0] = (unsigned char)(ctx->bkgd.plte_index);
 
                 break;
             }
@@ -4293,10 +4293,10 @@ static int write_chunks_before_idat(spng_ctx *ctx)
             {
                 for(k=0; k < splt->n_entries; k++)
                 {
-                    cdata[k * 6 + 0] = splt->entries[k].red;
-                    cdata[k * 6 + 1] = splt->entries[k].green;
-                    cdata[k * 6 + 2] = splt->entries[k].blue;
-                    cdata[k * 6 + 3] = splt->entries[k].alpha;
+                    cdata[k * 6 + 0] = (unsigned char)(splt->entries[k].red);
+                    cdata[k * 6 + 1] = (unsigned char)(splt->entries[k].green);
+                    cdata[k * 6 + 2] = (unsigned char)(splt->entries[k].blue);
+                    cdata[k * 6 + 3] = (unsigned char)(splt->entries[k].alpha);
                     write_u16(cdata + k * 6 + 4, splt->entries[k].frequency);
                 }
             }
@@ -4390,7 +4390,7 @@ static int write_chunks_before_idat(spng_ctx *ctx)
                 zstream->avail_in = (uInt)text_length;
 
                 zstream->next_out = compressed_text;
-                zstream->avail_out = dest_len;
+                zstream->avail_out = (unsigned int)dest_len;
 
                 ret = deflate(zstream, Z_FINISH);
 
@@ -4586,7 +4586,7 @@ static int encode_scanline(spng_ctx *ctx, const void *scanline, size_t len)
         memset(ctx->prev_scanline, 0, scanline_width);
     }
 
-    filter = get_best_filter(ctx->prev_scanline, ctx->scanline, scanline_width, ctx->bytes_per_pixel, f.filter_choice);
+    filter = (uint8_t)get_best_filter(ctx->prev_scanline, ctx->scanline, scanline_width, ctx->bytes_per_pixel, f.filter_choice);
 
     if(!filter) filtered_scanline = ctx->scanline;
 
@@ -4638,7 +4638,7 @@ static int encode_row(spng_ctx *ctx, const void *row, size_t len)
     if(bit_depth < 8)
     {
         const unsigned samples_per_byte = 8 / bit_depth;
-        const uint8_t mask = (1 << bit_depth) - 1;
+        const uint8_t mask = (const uint8_t)((1 << bit_depth) - 1);
         const unsigned initial_shift = 8 - bit_depth;
         unsigned shift_amount = initial_shift;
 
@@ -4936,7 +4936,7 @@ spng_ctx *spng_ctx_new2(struct spng_alloc *alloc, int flags)
     ctx->image_options = image_defaults;
     ctx->text_options = text_defaults;
 
-    ctx->optimize_option = ~0;
+    ctx->optimize_option = (uint32_t)(~0);
     ctx->encode_flags.filter_choice = SPNG_FILTER_CHOICE_ALL;
 
     ctx->flags = flags;
@@ -5257,7 +5257,7 @@ int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
         {
             if(value < 0) return 1;
             if(value > (int)ctx->chunk_count_total) return 1;
-            ctx->chunk_count_limit = value;
+            ctx->chunk_count_limit = (uint32_t)value;
             break;
         }
         case SPNG_ENCODE_TO_BUFFER:
@@ -5277,7 +5277,7 @@ int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
     }
 
     /* Option can no longer be overriden by the library */
-    if(option < 32) ctx->optimize_option &= ~(1 << option);
+    if(option < 32) ctx->optimize_option &= (uint32_t)(~(1 << option));
 
     return 0;
 }
@@ -5341,7 +5341,7 @@ int spng_get_option(spng_ctx *ctx, enum spng_option option, int *value)
         }
         case SPNG_CHUNK_COUNT_LIMIT:
         {
-            *value = ctx->chunk_count_limit;
+            *value = (int)ctx->chunk_count_limit;
             break;
         }
         case SPNG_ENCODE_TO_BUFFER:
@@ -5711,7 +5711,7 @@ int spng_set_gama(spng_ctx *ctx, double gamma)
 {
     SPNG_SET_CHUNK_BOILERPLATE(ctx);
 
-    uint32_t gama = gamma * 100000.0;
+    uint32_t gama = (uint32_t)(gamma * 100000.0);
 
     if(!gama) return 1;
     if(gama > spng_u32max) return 1;
@@ -6238,7 +6238,7 @@ static __m128i load3(const void* p)
 {
     uint32_t tmp = 0;
     memcpy(&tmp, p, 3);
-    return _mm_cvtsi32_si128(tmp);
+    return _mm_cvtsi32_si128((int)tmp);
 }
 
 static void store3(void* p, __m128i v)
