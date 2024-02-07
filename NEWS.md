@@ -1,4 +1,8 @@
 
+# fastpng 0.1.3.9003 2024-02-07
+
+* Writing now supports specification of a single colour for transparency 
+ in RGB and GrayScale images.  New argument: `trns` 
 
 # fastpng 0.1.3.9002 2024-02-06
 

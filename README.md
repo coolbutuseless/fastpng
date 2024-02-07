@@ -28,6 +28,8 @@ By disabling compression when writing image data to PNG, this can be
 - Flags to configure writing of PNG
   - Compression level
   - PNG filter settings
+- Supports specification of single transparent colour for RGB and
+  Grayscale images. (Cheap transparency using the `tRNS` PNG chunk)
 
 `fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
@@ -37,11 +39,6 @@ By disabling compression when writing image data to PNG, this can be
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
-
-## ToDo
-
-- Transparency via the `tRNS` chunk for RGBA and RGB format PNGs.
-  (Already implemented for indexed images)
 
 ## Installation
 

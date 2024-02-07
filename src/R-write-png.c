@@ -35,7 +35,8 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
                      SEXP palette_,
                      SEXP use_filter_, SEXP compression_level_,
                      int free_image_on_error, 
-                     uint8_t bit_depth) {
+                     uint8_t bit_depth, 
+                     SEXP trns_) {
   
   int fmt;
   int err = 0;
@@ -102,6 +103,66 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   ihdr.color_type = (uint8_t)color_type;
   ihdr.bit_depth  = bit_depth;
   spng_set_ihdr(ctx, &ihdr);
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Write TRNS chunk if
+  //  (a) it is provided
+  //  (b) it makes sense.  i.e. image is RGB (raster/array) or grayscale (array).
+  // SPNG_COLOR_TYPE_GRAYSCALE = 0,
+  //   SPNG_COLOR_TYPE_TRUECOLOR = 2,
+  //   SPNG_COLOR_TYPE_INDEXED = 3,
+  //   SPNG_COLOR_TYPE_GRAYSCALE_ALPHA = 4,
+  //   SPNG_COLOR_TYPE_TRUECOLOR_ALPHA = 6
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (!isNull(trns_)) {
+    struct spng_trns trns;
+    int has_trns = 0;
+    if (color_type == SPNG_COLOR_TYPE_GRAYSCALE) {
+      // Rprintf("trns given and valid for image type GRAYSCALE\n");
+      trns.gray = (uint16_t)(asInteger(trns_));
+      has_trns = 1;
+    } else if (color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
+      // Rprintf("trns given and valid for image type RGB\n");
+      if (TYPEOF(trns_) == STRSXP) {
+        // Rprintf("Hex colour for trns\n");
+        const char *col = CHAR(STRING_ELT(trns_, 0));
+        if (col[0] == '#' && (strlen(col) == 7 || strlen(col) == 9)) {
+          trns.red   = (uint16_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
+          trns.green = (uint16_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
+          trns.blue  = (uint16_t)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+          has_trns = 1;
+        }
+      } else if (isInteger(trns_) && length(trns_) == 3) {
+        // Rprintf("Integer vector for trns\n");
+        int *ptr = INTEGER(trns_);
+        trns.red   = (uint16_t)ptr[0]; // R
+        trns.green = (uint16_t)ptr[1]; // G
+        trns.blue  = (uint16_t)ptr[2]; // B
+        has_trns = 1;
+      } else if (isReal(trns_) && length(trns_) == 3) {
+        // Rprintf("Real vector for trns\n");
+        double *ptr = REAL(trns_);
+        trns.red   = (uint16_t)ptr[0]; // R
+        trns.green = (uint16_t)ptr[1]; // G
+        trns.blue  = (uint16_t)ptr[2]; // B
+        has_trns = 1;
+      } else {
+        warning("Unknown argument for 'trns' %s\n", type2char(TYPEOF(trns_)));
+      }
+    } else {
+      // Rprintf("trns given and --NOT-- valid for image type\n");
+    }
+    
+    // Set tRNS chunk
+    if (has_trns) {
+      err = spng_set_trns(ctx, &trns);
+      if (err) {
+        warning("spng_encode_image() TRNS error: %s\n", spng_strerror(err));
+      }
+    }
+    
+  }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Write Palette:  
@@ -246,7 +307,8 @@ SEXP write_png_from_nara_(SEXP nara_, SEXP file_, SEXP use_filter_, SEXP compres
     R_NilValue, // Palette
     use_filter_, compression_level_,
     FALSE, // free_image_on_error
-    8 // bit depth
+    8, // bit depth
+    R_NilValue // trns
   );
 }
 
@@ -292,7 +354,8 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
     R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE,  // free_image_on_error
-    8 // bit depth
+    8, // bit depth
+    R_NilValue // trns
   ));
   
   
@@ -308,7 +371,8 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data stored as hex colours in a character matrix
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_) {
+SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_,
+                                SEXP trns_) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
@@ -345,7 +409,8 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
     R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE,  // free_image_on_error
-    8 // bit depth
+    8, // bit depth
+    trns_ // trns
   ));
   
   
@@ -363,7 +428,7 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
 // Write image data stored as RGBA numeric array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_, 
-                           SEXP avoid_transpose_) {
+                           SEXP avoid_transpose_, SEXP trns_) {
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
@@ -481,7 +546,8 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
     R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE,  // free_image_on_error
-    8 // bit depth
+    8, // bit depth
+    trns_ // trns
   ));
   
   
@@ -617,7 +683,8 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
     R_NilValue, // Palette
     use_filter_, compression_level_,
     TRUE,  // free_image_on_error
-    16 // bit depth
+    16, // bit depth
+    R_NilValue // trns
   ));
   
   
@@ -715,7 +782,8 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
     palette_,
     use_filter_, compression_level_,
     TRUE,  // free_image_on_error
-    8 // bit depth
+    8, // bit depth
+    R_NilValue // trns
   ));
   
   
@@ -732,7 +800,8 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
 // Write image data 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, 
-                SEXP compression_level_, SEXP avoid_transpose_, SEXP bits_) {
+                SEXP compression_level_, SEXP avoid_transpose_, SEXP bits_,
+                SEXP trns_) {
 
   if (!isNull(palette_)) {
     if (!isMatrix(image_)) {
@@ -758,7 +827,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     if (strlen(first_elem) == 9) {
       return write_png_from_raster_(image_, file_, use_filter_, compression_level_);
     } else if (strlen(first_elem) == 7) {
-      return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_);
+      return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_, trns_);
     } else {
       error("Raster encoding not understood");
     }
@@ -766,7 +835,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     if (asInteger(bits_) == 16) {
       return write_png_from_array16_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
     } else {
-      return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
+      return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_, trns_);
     }
   }
   

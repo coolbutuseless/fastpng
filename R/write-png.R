@@ -26,10 +26,23 @@
 #'        i.e. \code{#RRGGBB}
 #' @param bits bit depth. default 8.  Valid values are 8 and 16.  This option
 #'        only has an effect when image to output is a numeric array.
+#' @param trns Colour to be treated as transparent
+#'        in RGB and Greyscale images - without specifying a full alpha channel.  
+#'        Only a single colour can be specified and it will be treated as a 
+#'        fully transparent colour in the image.  This setting is only used 
+#'        when writing RGB and Greyscale images.  For 8-bit RGB images, the value
+#'        may be a hex colour value i.e. \code{"#RRGGBB"} or a vector of 3 numeric
+#'        values in the range [0, 255].  For 8-bit greyscale images,
+#'        must be a single integer value in the range [0, 255].
+#'        For 16-bit RGB images, the value
+#'        may be a vector of 3 numeric
+#'        values in the range [0, 65535].  For 16-bit greyscale images,
+#'        must be a single integer value in the range [0, 65535].
+#'        Default: NULL - means to not add a transparency colour. 
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 
-                      compression_level = -1L, avoid_traanspose = FALSE, bits=8) {
-  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose, bits)
+                      compression_level = -1L, avoid_traanspose = FALSE, bits=8, trns = NULL) {
+  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose, bits, trns)
 }
