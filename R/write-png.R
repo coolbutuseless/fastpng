@@ -39,10 +39,15 @@
 #'        values in the range [0, 65535].  For 16-bit greyscale images,
 #'        must be a single integer value in the range [0, 65535].
 #'        Default: NULL - means to not add a transparency colour. 
+#' @param raw_spec list of image specifications for encoding a raw vector
+#'        to PNG. This list must contain the following elements in this order:
+#'        width, height, nchannels, bits e.g. \code{raw_spec = list(400, 300, 4, 8)}
 #' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 
-                      compression_level = -1L, avoid_traanspose = FALSE, bits=8, trns = NULL) {
-  .Call(write_png_, image, file, palette, use_filter, compression_level, avoid_traanspose, bits, trns)
+                      compression_level = -1L, avoid_traanspose = FALSE, bits=8, 
+                      trns = NULL, raw_spec = NULL) {
+  .Call(write_png_, image, file, palette, use_filter, compression_level, 
+        avoid_traanspose, bits, trns, raw_spec)
 }

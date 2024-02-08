@@ -19,7 +19,7 @@ By disabling compression when writing image data to PNG, this can be
 
 - Provides explicit support for images as rasters, native rasters,
   numeric arrays (RGBA, RGB, and Grayscale) and indexed images
-- 8-bits-per-colour supported for all image types
+- 8-bits-per-colour supported for all image types (except ‘raw’)
 - 16-bits-per-colour supported
   - read/write with arrays
   - read into raster and nativeraster (with only 8 bits used)
@@ -30,6 +30,8 @@ By disabling compression when writing image data to PNG, this can be
   - PNG filter settings
 - Supports specification of single transparent colour for RGB and
   Grayscale images. (Cheap transparency using the `tRNS` PNG chunk)
+- Read/Write PNGs with `raw()` vectors. Raw vectors contain the pixel
+  data in row-major packed pixel format e.g. `RGBARGBARGBA`.
 
 `fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4

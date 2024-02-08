@@ -1,4 +1,10 @@
 
+
+# fastpng 0.1.3.9004 2024-02-08
+
+* Read/Write PNGs with `raw()` vectors.  Raw vectors contain the pixel data in 
+  row-major packed pixel format e.g. `RGBARGBARGBA`.
+
 # fastpng 0.1.3.9003 2024-02-07
 
 * Writing now supports specification of a single colour for transparency 

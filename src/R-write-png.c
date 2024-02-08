@@ -287,6 +287,67 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
 }
 
 
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Write PNG from raw data
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP write_png_from_raw_vec_(SEXP image_, SEXP file_, SEXP use_filter_, 
+                             SEXP compression_level_, SEXP trns_, 
+                             SEXP raw_spec_) {
+  
+  if (isNull(raw_spec_) || TYPEOF(raw_spec_) != VECSXP || length(raw_spec_) < 4) {
+    error("'raw_spec' must be a 4 element list but missing");
+  }
+  uint32_t width  = asInteger(VECTOR_ELT(raw_spec_, 0));
+  uint32_t height = asInteger(VECTOR_ELT(raw_spec_, 1));
+  uint32_t depth  = asInteger(VECTOR_ELT(raw_spec_, 2));
+  uint32_t bits   = asInteger(VECTOR_ELT(raw_spec_, 3));
+  
+  if (bits != 8) {
+    error("Only 8-bit currently supported for writing raw vectors to PNG");
+  }
+  
+  if (height * width * depth != length(image_)) {
+    error("Mismatch between length of raw vector (%i) and raw_spec (%i x %i x %i)", 
+          length(image_), width, height, depth);
+  }
+  
+  enum spng_color_type color_type = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
+  
+  switch (depth) {
+  case 4:
+    color_type = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
+    break;
+  case 3:
+    color_type = SPNG_COLOR_TYPE_TRUECOLOR;
+    break;
+  case 2:
+    color_type = SPNG_COLOR_TYPE_GRAYSCALE_ALPHA;
+    break;
+  case 1:
+    color_type = SPNG_COLOR_TYPE_GRAYSCALE;
+    break;
+  default:
+    error("Depth not understood: %i", depth);
+  }
+  
+  return write_png_core_(
+    RAW(image_), length(image_), width, height, file_,
+    color_type,
+    R_NilValue, // Palette
+    use_filter_, compression_level_,
+    FALSE, // free_image_on_error
+    bits, // bit depth
+    trns_ // trns
+  );
+  
+  return R_NilValue;
+}
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Write image data (stored as native raster) into PNG (also stored as raw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -421,7 +482,6 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
   UNPROTECT(1);
   return res_;
 }
-
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -801,7 +861,7 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, 
                 SEXP compression_level_, SEXP avoid_transpose_, SEXP bits_,
-                SEXP trns_) {
+                SEXP trns_, SEXP raw_spec_) {
 
   if (!isNull(palette_)) {
     if (!isMatrix(image_)) {
@@ -837,6 +897,9 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     } else {
       return write_png_from_array_(image_, file_, use_filter_, compression_level_, avoid_transpose_, trns_);
     }
+  } else if (TYPEOF(image_) == RAWSXP) {
+    return write_png_from_raw_vec_(image_, file_, use_filter_, compression_level_, trns_, 
+                                   raw_spec_);
   }
   
   error("write_png(): R image container not understood");
