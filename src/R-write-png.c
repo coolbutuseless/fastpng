@@ -547,20 +547,20 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        double *p1 = arr_ptr + row + npixels * 0;
-        double *p2 = arr_ptr + row + npixels * 1;
-        double *p3 = arr_ptr + row + npixels * 2;
-        double *p4 = arr_ptr + row + npixels * 3;
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+        double *p0 = arr_ptr + row + npixels * 0;
+        double *p1 = arr_ptr + row + npixels * 1;
+        double *p2 = arr_ptr + row + npixels * 2;
+        double *p3 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, im_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            im_ptr[3] = (uint8_t)(*p4 * 255.0 + 0.5);
+            im_ptr[3] = (uint8_t)(*p3 * 255.0 + 0.5);
           case 3:
-            im_ptr[2] = (uint8_t)(*p3 * 255.0 + 0.5);
+            im_ptr[2] = (uint8_t)(*p2 * 255.0 + 0.5);
           case 2:
-            im_ptr[1] = (uint8_t)(*p2 * 255.0 + 0.5);
+            im_ptr[1] = (uint8_t)(*p1 * 255.0 + 0.5);
           case 1:
-            im_ptr[0] = (uint8_t)(*p1 * 255.0 + 0.5);
+            im_ptr[0] = (uint8_t)(*p0 * 255.0 + 0.5);
           }
         }
       }
@@ -577,20 +577,20 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        int32_t *p1 = arr_ptr + row + npixels * 0;
-        int32_t *p2 = arr_ptr + row + npixels * 1;
-        int32_t *p3 = arr_ptr + row + npixels * 2;
-        int32_t *p4 = arr_ptr + row + npixels * 3;
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+        int32_t *p0 = arr_ptr + row + npixels * 0;
+        int32_t *p1 = arr_ptr + row + npixels * 1;
+        int32_t *p2 = arr_ptr + row + npixels * 2;
+        int32_t *p3 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, im_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            im_ptr[3] = (uint8_t)(*p4);
+            im_ptr[3] = (uint8_t)(*p3);
           case 3:
-            im_ptr[2] = (uint8_t)(*p3);
+            im_ptr[2] = (uint8_t)(*p2);
           case 2:
-            im_ptr[1] = (uint8_t)(*p2);
+            im_ptr[1] = (uint8_t)(*p1);
           case 1:
-            im_ptr[0] = (uint8_t)(*p1);
+            im_ptr[0] = (uint8_t)(*p0);
           }
         }
       }
@@ -684,20 +684,20 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        double *p1 = arr_ptr + row + npixels * 0;
-        double *p2 = arr_ptr + row + npixels * 1;
-        double *p3 = arr_ptr + row + npixels * 2;
-        double *p4 = arr_ptr + row + npixels * 3;
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+        double *p0 = arr_ptr + row + npixels * 0;
+        double *p1 = arr_ptr + row + npixels * 1;
+        double *p2 = arr_ptr + row + npixels * 2;
+        double *p3 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, im_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            im_ptr[3] = (uint16_t)(*p4 * 65535.0 + 0.5);
+            im_ptr[3] = (uint16_t)(*p3 * 65535.0 + 0.5);
           case 3:
-            im_ptr[2] = (uint16_t)(*p3 * 65535.0 + 0.5);
+            im_ptr[2] = (uint16_t)(*p2 * 65535.0 + 0.5);
           case 2:
-            im_ptr[1] = (uint16_t)(*p2 * 65535.0 + 0.5);
+            im_ptr[1] = (uint16_t)(*p1 * 65535.0 + 0.5);
           case 1:
-            im_ptr[0] = (uint16_t)(*p1 * 65535.0 + 0.5);
+            im_ptr[0] = (uint16_t)(*p0 * 65535.0 + 0.5);
           }
         }
       }
@@ -714,20 +714,20 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        int32_t *p1 = arr_ptr + row + npixels * 0;
-        int32_t *p2 = arr_ptr + row + npixels * 1;
-        int32_t *p3 = arr_ptr + row + npixels * 2;
-        int32_t *p4 = arr_ptr + row + npixels * 3;
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+        int32_t *p0 = arr_ptr + row + npixels * 0;
+        int32_t *p1 = arr_ptr + row + npixels * 1;
+        int32_t *p2 = arr_ptr + row + npixels * 2;
+        int32_t *p3 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, im_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            im_ptr[3] = (uint16_t)(*p4);
+            im_ptr[3] = (uint16_t)(*p3);
           case 3:
-            im_ptr[2] = (uint16_t)(*p3);
+            im_ptr[2] = (uint16_t)(*p2);
           case 2:
-            im_ptr[1] = (uint16_t)(*p2);
+            im_ptr[1] = (uint16_t)(*p1);
           case 1:
-            im_ptr[0] = (uint16_t)(*p1);
+            im_ptr[0] = (uint16_t)(*p0);
           }
         }
       }

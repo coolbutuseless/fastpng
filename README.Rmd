@@ -53,10 +53,10 @@ than standard PNG packages.
     * indexed images with a palette
     * `raw()` vectors with pixel data in row-major packed pixel format
        e.g. `RGBARGBARGBA...`
-* 8-bits-per-colour supported for all image types (except 'raw')
+* 8-bits-per-colour supported for all image types 
 * 16-bits-per-colour supported 
-    * read/write with arrays
-    * read into raster, nativeraster and raw (with only 8 bits precision)
+    * read/write with arrays and raw vectors
+    * read into raster, nativeraster (with only 8 bits precision)
 * Flags to configure reading of PNG
     * gamma correction
 * Flags to configure writing of PNG

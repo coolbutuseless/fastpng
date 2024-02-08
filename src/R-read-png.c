@@ -188,16 +188,15 @@ SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
   size_t out_size = 0;
   spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size, &bits, &nchannels);
   
-  if (bits == 16) {
-    error("read_png_as_raw_(): 16 bit not handled yet");
-    // return read_png_as_array16_(src_, rgba_, flags_, avoid_transpose_);
-  }
-  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int npixels = (int)(width * height);
-  nchannels = out_size / npixels;
+  if (bits == 8) {
+    nchannels = out_size / npixels;
+  } else if (bits == 16) {
+    nchannels = out_size / npixels / 2;
+  }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Initialise memory into which the PNG will be decoded
@@ -236,7 +235,7 @@ SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
   setAttrib(res_, mkString("width") , ScalarInteger((int)width));
   setAttrib(res_, mkString("height"), ScalarInteger((int)height));
   setAttrib(res_, mkString("depth") , ScalarInteger((int)nchannels));
-  setAttrib(res_, mkString("bits" ) , ScalarInteger(8));
+  setAttrib(res_, mkString("bits" ) , ScalarInteger(bits));
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
@@ -488,21 +487,21 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     } else {
       for (int row = 0; row < height; row++) {
         
-        double *p1   = res_ptr + row + npixels * 0;
-        double *p2   = res_ptr + row + npixels * 1;
-        double *p3   = res_ptr + row + npixels * 2;
-        double *p4   = res_ptr + row + npixels * 3;
+        double *p0   = res_ptr + row + npixels * 0;
+        double *p1   = res_ptr + row + npixels * 1;
+        double *p2   = res_ptr + row + npixels * 2;
+        double *p3   = res_ptr + row + npixels * 3;
         
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, buf_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            *p4 = buf_ptr[3] / 255.0;
+            *p3 = buf_ptr[3] / 255.0;
           case 3:
-            *p3 = buf_ptr[2] / 255.0;
+            *p2 = buf_ptr[2] / 255.0;
           case 2:
-            *p2 = buf_ptr[1] / 255.0;
+            *p1 = buf_ptr[1] / 255.0;
           case 1:
-            *p1 = buf_ptr[0] / 255.0;
+            *p0 = buf_ptr[0] / 255.0;
           }
         }
       }
@@ -518,21 +517,21 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     } else {
       for (int row = 0; row < height; row++) {
         
-        int32_t *p1   = res_ptr + row + npixels * 0;
-        int32_t *p2   = res_ptr + row + npixels * 1;
-        int32_t *p3   = res_ptr + row + npixels * 2;
-        int32_t *p4   = res_ptr + row + npixels * 3;
+        int32_t *p0   = res_ptr + row + npixels * 0;
+        int32_t *p1   = res_ptr + row + npixels * 1;
+        int32_t *p2   = res_ptr + row + npixels * 2;
+        int32_t *p3   = res_ptr + row + npixels * 3;
         
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, buf_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            *p4 = buf_ptr[3];
+            *p3 = buf_ptr[3];
           case 3:
-            *p3 = buf_ptr[2];
+            *p2 = buf_ptr[2];
           case 2:
-            *p2 = buf_ptr[1];
+            *p1 = buf_ptr[1];
           case 1:
-            *p1 = buf_ptr[0];
+            *p0 = buf_ptr[0];
           }
         }
       }
@@ -643,21 +642,21 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
     } else {
       for (int row = 0; row < height; row++) {
         
-        double *p1   = res_ptr + row + npixels * 0;
-        double *p2   = res_ptr + row + npixels * 1;
-        double *p3   = res_ptr + row + npixels * 2;
-        double *p4   = res_ptr + row + npixels * 3;
+        double *p0   = res_ptr + row + npixels * 0;
+        double *p1   = res_ptr + row + npixels * 1;
+        double *p2   = res_ptr + row + npixels * 2;
+        double *p3   = res_ptr + row + npixels * 3;
         
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, buf_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            *p4 = buf_ptr[3] / 65535.0;
+            *p3 = buf_ptr[3] / 65535.0;
           case 3:
-            *p3 = buf_ptr[2] / 65535.0;
+            *p2 = buf_ptr[2] / 65535.0;
           case 2:
-            *p2 = buf_ptr[1] / 65535.0;
+            *p1 = buf_ptr[1] / 65535.0;
           case 1:
-            *p1 = buf_ptr[0] / 65535.0;
+            *p0 = buf_ptr[0] / 65535.0;
           }
         }
       }
@@ -673,21 +672,21 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
     } else {
       for (int row = 0; row < height; row++) {
         
-        int32_t *p1   = res_ptr + row + npixels * 0;
-        int32_t *p2   = res_ptr + row + npixels * 1;
-        int32_t *p3   = res_ptr + row + npixels * 2;
-        int32_t *p4   = res_ptr + row + npixels * 3;
+        int32_t *p0   = res_ptr + row + npixels * 0;
+        int32_t *p1   = res_ptr + row + npixels * 1;
+        int32_t *p2   = res_ptr + row + npixels * 2;
+        int32_t *p3   = res_ptr + row + npixels * 3;
         
-        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+        for (int col = 0; col < width; col++, p0+=height, p1+=height, p2+=height, p3+=height, buf_ptr+=nchannels) {
           switch(nchannels) {
           case 4:
-            *p4 = buf_ptr[3];
+            *p3 = buf_ptr[3];
           case 3:
-            *p3 = buf_ptr[2];
+            *p2 = buf_ptr[2];
           case 2:
-            *p2 = buf_ptr[1];
+            *p1 = buf_ptr[1];
           case 1:
-            *p1 = buf_ptr[0];
+            *p0 = buf_ptr[0];
           }
         }
       }
