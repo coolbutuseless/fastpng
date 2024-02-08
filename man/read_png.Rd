@@ -9,7 +9,8 @@ read_png(
   type = c("array", "raster", "native_raster", "indexed", "raw"),
   rgba = FALSE,
   flags = 1L,
-  avoid_transpose = FALSE
+  avoid_transpose = FALSE,
+  array_type = c("dbl", "int")
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ it will be read in as grey+alpha data in an array with 2 planes.}
 See \code{?spng_decode_flags} for other options.  Must be an integer.}
 
 \item{avoid_transpose}{default: FALSE.}
+
+\item{array_type}{'dbl' or 'int'}
 }
 \value{
 R image object of the specified type

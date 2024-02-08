@@ -1,4 +1,10 @@
 
+# fastpng 0.1.3.9005 2024-02-08
+
+* Refactored array transposition to be more compact
+* Support read/write from integer arrays.  For 8bit integer arrays, values should be
+  in range [0,255].  For 16bit integer arrays, values should be in 
+  range [0,65535]
 
 # fastpng 0.1.3.9004 2024-02-08
 

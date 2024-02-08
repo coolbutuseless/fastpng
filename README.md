@@ -17,12 +17,20 @@ By disabling compression when writing image data to PNG, this can be
 
 `{fastpng}`
 
-- Provides explicit support for images as rasters, native rasters,
-  numeric arrays (RGBA, RGB, and Grayscale) and indexed images
+- Provides explicit support for R images stored as
+  - rasters
+  - native rasters,
+  - numeric arrays (RGBA, RGB, and Grayscale), with values in the range
+    \[0,1\]
+  - integer arrays (RGBA, RGB, and Grayscale), with values in the range
+    \[0, 255\] for 8bit PNGs, and \[0,65535\] for 16bit PNGs
+  - indexed images with a palette
+  - `raw()` vectors with pixel data in row-major packed pixel format
+    e.g. `RGBARGBARGBA...`
 - 8-bits-per-colour supported for all image types (except ‘raw’)
 - 16-bits-per-colour supported
   - read/write with arrays
-  - read into raster and nativeraster (with only 8 bits used)
+  - read into raster, nativeraster and raw (with only 8 bits precision)
 - Flags to configure reading of PNG
   - gamma correction
 - Flags to configure writing of PNG
@@ -30,8 +38,6 @@ By disabling compression when writing image data to PNG, this can be
   - PNG filter settings
 - Supports specification of single transparent colour for RGB and
   Grayscale images. (Cheap transparency using the `tRNS` PNG chunk)
-- Read/Write PNGs with `raw()` vectors. Raw vectors contain the pixel
-  data in row-major packed pixel format e.g. `RGBARGBARGBA`.
 
 `fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
@@ -41,6 +47,10 @@ By disabling compression when writing image data to PNG, this can be
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+## ToDo
+
+- Test reading all PNG formats with `rgba = TRUE` into all R image types
 
 ## Installation
 

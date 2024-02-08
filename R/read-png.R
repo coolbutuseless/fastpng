@@ -17,13 +17,14 @@
 #' @param flags flags. default: 1 (always decode transparency from tRNS chunks). 
 #'        See \code{?spng_decode_flags} for other options.  Must be an integer.
 #' @param avoid_transpose default: FALSE.
+#' @param array_type 'dbl' or 'int'
 #'
 #' @return R image object of the specified type
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 read_png <- function(src, type = c('array', 'raster', 'native_raster', 'indexed', 'raw'), 
-                     rgba = FALSE, flags = 1L, 
-                     avoid_transpose = FALSE) {
-  .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose)
+                     rgba = FALSE, flags = 1L, avoid_transpose = FALSE,
+                     array_type = c('dbl', 'int')) {
+  .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose, array_type)
 }

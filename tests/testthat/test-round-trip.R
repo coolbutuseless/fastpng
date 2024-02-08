@@ -44,6 +44,23 @@ test_that("write/read round trip is idempotent", {
     expect_equal(im, im2, tolerance = 1/255/2)    
   }
   
+  
+  im <- test_image$array16$gray
+  
+  for (nm in names(test_image$array16)) {
+    # print(nm)
+    # if (nm == 'gray_alpha') next
+    im <- test_image$array16[[nm]]
+    
+    raw_vec <- write_png(im, bits = 16)
+    im2 <- read_png(raw_vec, type = 'array')
+    
+    # equal except for rounding 
+    expect_equal(im, im2, tolerance = 1/255/2)    
+  }
+  
+  
+  
 })
 
 

@@ -496,13 +496,16 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
   size_t nbytes = (size_t)(length(arr_));
   
   enum spng_color_type fmt;
+  int nchannels;
   SEXP dims_ = getAttrib(arr_, R_DimSymbol);
   if (length(dims_) == 2) {
     fmt = SPNG_COLOR_TYPE_GRAYSCALE;
+    nchannels = 1;
     // SPNG_COLOR_TYPE_TRUECOLOR_ALPHA
     // error("Must be 3d array");
   } else if (length(dims_) == 3) {
-    switch(INTEGER(dims_)[2]) {
+    nchannels = INTEGER(dims_)[2];
+    switch(nchannels) {
     case 2:
       fmt = SPNG_COLOR_TYPE_GRAYSCALE_ALPHA;
       break;
@@ -530,72 +533,69 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
   }
   
   int npixels = (int)(width * height);
-  double *arr_ptr = REAL(arr_);
   unsigned char *im_ptr = image;
   
-  if (fmt == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
-    for (int row = 0; row < height; row++) {
-      double *r = arr_ptr + row + npixels * 0;
-      double *g = arr_ptr + row + npixels * 1;
-      double *b = arr_ptr + row + npixels * 2;
-      double *a = arr_ptr + row + npixels * 3;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*b * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*a * 255.0 + 0.5);
-        r += height;
-        g += height;
-        b += height;
-        a += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_TRUECOLOR) {
-    for (int row = 0; row < height; row++) {
-      double *r = arr_ptr + row + npixels * 0;
-      double *g = arr_ptr + row + npixels * 1;
-      double *b = arr_ptr + row + npixels * 2;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*b * 255.0 + 0.5);
-        r += height;
-        g += height;
-        b += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
-    for (int row = 0; row < height; row++) {
-      double *g = arr_ptr + row + npixels * 0;
-      double *a = arr_ptr + row + npixels * 1;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (unsigned char)(*g * 255.0 + 0.5);
-        *im_ptr++ = (unsigned char)(*a * 255.0 + 0.5);
-        g += height;
-        a += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE) {
-    if (asLogical(avoid_transpose_)) {
+  if (isReal(arr_)) {
+    double *arr_ptr = REAL(arr_);
+    if (fmt == SPNG_COLOR_TYPE_GRAYSCALE && asLogical(avoid_transpose_)) {
       double *r = arr_ptr;
       for (int idx = 0; idx < npixels; idx ++) {
-        *im_ptr++ = (unsigned char)(*r++ * 255.0 + 0.5);
+        *im_ptr++ = (uint8_t)(*r++ * 255.0 + 0.5);
       }
       uint32_t tmp = height;
       height = width;
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        double *r = arr_ptr + row;
-        for (int col = 0; col < width; col++) {
-          *im_ptr++ = (unsigned char)(*r * 255.0 + 0.5);
-          r += height;
+        double *p1 = arr_ptr + row + npixels * 0;
+        double *p2 = arr_ptr + row + npixels * 1;
+        double *p3 = arr_ptr + row + npixels * 2;
+        double *p4 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            im_ptr[3] = (uint8_t)(*p4 * 255.0 + 0.5);
+          case 3:
+            im_ptr[2] = (uint8_t)(*p3 * 255.0 + 0.5);
+          case 2:
+            im_ptr[1] = (uint8_t)(*p2 * 255.0 + 0.5);
+          case 1:
+            im_ptr[0] = (uint8_t)(*p1 * 255.0 + 0.5);
+          }
         }
       }
-    }
-  } else {
-    error("Unknown fmt: %i", fmt);
-  }
+    } 
+  } else if (isInteger(arr_)) {
+    int32_t *arr_ptr = INTEGER(arr_);
+    if (fmt == SPNG_COLOR_TYPE_GRAYSCALE && asLogical(avoid_transpose_)) {
+      int32_t *r = arr_ptr;
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (uint8_t)(*r++);
+      }
+      uint32_t tmp = height;
+      height = width;
+      width = tmp;
+    } else {
+      for (int row = 0; row < height; row++) {
+        int32_t *p1 = arr_ptr + row + npixels * 0;
+        int32_t *p2 = arr_ptr + row + npixels * 1;
+        int32_t *p3 = arr_ptr + row + npixels * 2;
+        int32_t *p4 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            im_ptr[3] = (uint8_t)(*p4);
+          case 3:
+            im_ptr[2] = (uint8_t)(*p3);
+          case 2:
+            im_ptr[1] = (uint8_t)(*p2);
+          case 1:
+            im_ptr[0] = (uint8_t)(*p1);
+          }
+        }
+      }
+    } 
+  } 
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Encode
@@ -634,12 +634,15 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
   
   enum spng_color_type fmt;
   SEXP dims_ = getAttrib(arr_, R_DimSymbol);
+  int nchannels;
   if (length(dims_) == 2) {
     fmt = SPNG_COLOR_TYPE_GRAYSCALE;
+    nchannels = 1;
     // SPNG_COLOR_TYPE_TRUECOLOR_ALPHA
     // error("Must be 3d array");
   } else if (length(dims_) == 3) {
-    switch(INTEGER(dims_)[2]) {
+    nchannels = INTEGER(dims_)[2];
+    switch(nchannels) {
     case 2:
       fmt = SPNG_COLOR_TYPE_GRAYSCALE_ALPHA;
       break;
@@ -667,53 +670,11 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
   }
   
   int npixels = (int)(width * height);
-  double *arr_ptr = REAL(arr_);
   uint16_t *im_ptr = image;
   
-  if (fmt == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA) {
-    for (int row = 0; row < height; row++) {
-      double *r = arr_ptr + row + npixels * 0;
-      double *g = arr_ptr + row + npixels * 1;
-      double *b = arr_ptr + row + npixels * 2;
-      double *a = arr_ptr + row + npixels * 3;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*b * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*a * 65535.0 + 0.5);
-        r += height;
-        g += height;
-        b += height;
-        a += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_TRUECOLOR) {
-    for (int row = 0; row < height; row++) {
-      double *r = arr_ptr + row + npixels * 0;
-      double *g = arr_ptr + row + npixels * 1;
-      double *b = arr_ptr + row + npixels * 2;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*b * 65535.0 + 0.5);
-        r += height;
-        g += height;
-        b += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA) {
-    for (int row = 0; row < height; row++) {
-      double *g = arr_ptr + row + npixels * 0;
-      double *a = arr_ptr + row + npixels * 1;
-      for (int col = 0; col < width; col++) {
-        *im_ptr++ = (uint16_t)(*g * 65535.0 + 0.5);
-        *im_ptr++ = (uint16_t)(*a * 65535.0 + 0.5);
-        g += height;
-        a += height;
-      }
-    }
-  } else if (fmt == SPNG_COLOR_TYPE_GRAYSCALE) {
-    if (asLogical(avoid_transpose_)) {
+  if (isReal(arr_)) {
+    double *arr_ptr = REAL(arr_);
+    if (fmt == SPNG_COLOR_TYPE_GRAYSCALE && asLogical(avoid_transpose_)) {
       double *r = arr_ptr;
       for (int idx = 0; idx < npixels; idx ++) {
         *im_ptr++ = (uint16_t)(*r++ * 65535.0 + 0.5);
@@ -723,15 +684,54 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
       width = tmp;
     } else {
       for (int row = 0; row < height; row++) {
-        double *r = arr_ptr + row;
-        for (int col = 0; col < width; col++) {
-          *im_ptr++ = (uint16_t)(*r * 65535.0 + 0.5);
-          r += height;
+        double *p1 = arr_ptr + row + npixels * 0;
+        double *p2 = arr_ptr + row + npixels * 1;
+        double *p3 = arr_ptr + row + npixels * 2;
+        double *p4 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            im_ptr[3] = (uint16_t)(*p4 * 65535.0 + 0.5);
+          case 3:
+            im_ptr[2] = (uint16_t)(*p3 * 65535.0 + 0.5);
+          case 2:
+            im_ptr[1] = (uint16_t)(*p2 * 65535.0 + 0.5);
+          case 1:
+            im_ptr[0] = (uint16_t)(*p1 * 65535.0 + 0.5);
+          }
         }
       }
-    }
-  } else {
-    error("Unknown fmt: %i", fmt);
+    } 
+  } else if (isInteger(arr_)) {
+    int32_t *arr_ptr = INTEGER(arr_);
+    if (fmt == SPNG_COLOR_TYPE_GRAYSCALE && asLogical(avoid_transpose_)) {
+      int32_t *r = arr_ptr;
+      for (int idx = 0; idx < npixels; idx ++) {
+        *im_ptr++ = (uint16_t)(*r++);
+      }
+      uint32_t tmp = height;
+      height = width;
+      width = tmp;
+    } else {
+      for (int row = 0; row < height; row++) {
+        int32_t *p1 = arr_ptr + row + npixels * 0;
+        int32_t *p2 = arr_ptr + row + npixels * 1;
+        int32_t *p3 = arr_ptr + row + npixels * 2;
+        int32_t *p4 = arr_ptr + row + npixels * 3;
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, im_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            im_ptr[3] = (uint16_t)(*p4);
+          case 3:
+            im_ptr[2] = (uint16_t)(*p3);
+          case 2:
+            im_ptr[1] = (uint16_t)(*p2);
+          case 1:
+            im_ptr[0] = (uint16_t)(*p1);
+          }
+        }
+      }
+    } 
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -891,7 +891,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     } else {
       error("Raster encoding not understood");
     }
-  } else if ((isArray(image_) || isMatrix(image_)) && isReal(image_)) {
+  } else if ((isArray(image_) || isMatrix(image_)) && (isReal(image_) || isInteger(image_))) {
     if (asInteger(bits_) == 16) {
       return write_png_from_array16_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
     } else {

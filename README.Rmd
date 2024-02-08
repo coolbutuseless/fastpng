@@ -44,12 +44,19 @@ than standard PNG packages.
 
 `{fastpng}` 
 
-* Provides explicit support for images as rasters, native rasters, 
-  numeric arrays (RGBA, RGB, and Grayscale) and indexed images
+* Provides explicit support for R images stored as 
+    * rasters
+    * native rasters, 
+    * numeric arrays (RGBA, RGB, and Grayscale), with values in the range [0,1]
+    * integer arrays (RGBA, RGB, and Grayscale), with values in the range [0, 255]
+      for 8bit PNGs, and [0,65535] for 16bit PNGs
+    * indexed images with a palette
+    * `raw()` vectors with pixel data in row-major packed pixel format
+       e.g. `RGBARGBARGBA...`
 * 8-bits-per-colour supported for all image types (except 'raw')
 * 16-bits-per-colour supported 
     * read/write with arrays
-    * read into raster and nativeraster (with only 8 bits used)
+    * read into raster, nativeraster and raw (with only 8 bits precision)
 * Flags to configure reading of PNG
     * gamma correction
 * Flags to configure writing of PNG
@@ -57,8 +64,6 @@ than standard PNG packages.
     * PNG filter settings
 * Supports specification of single transparent colour for RGB and Grayscale images.
   (Cheap transparency using the `tRNS` PNG chunk)
-* Read/Write PNGs with `raw()` vectors.  Raw vectors contain the pixel data in 
-  row-major packed pixel format e.g. `RGBARGBARGBA`.
 
 `fastpng` is an R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
@@ -129,6 +134,9 @@ ggplot(res) +
   )
 ```
 
+## ToDo
+
+* Test reading all PNG formats with `rgba = TRUE` into all R image types
 
 
 ## Installation

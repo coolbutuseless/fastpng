@@ -415,12 +415,12 @@ SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Forward declaration
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_);
+SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_) {
   
   FILE *fp = NULL;
   int fmt   = SPNG_FMT_RGBA8;
@@ -437,7 +437,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size, &bits, &nchannels);
   
   if (bits == 16) {
-    return read_png_as_array16_(src_, rgba_, flags_, avoid_transpose_);
+    return read_png_as_array16_(src_, rgba_, flags_, avoid_transpose_, array_type_);
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -470,80 +470,73 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Format raw bytes as array:  width, height, depth
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)out_size));
-  
-  double *res_ptr = REAL(res_);
+  SEXP res_;
   unsigned char *buf_ptr = decode_buf;
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Copy pixel data from PNG buffer to R 'res_'
   // Need to switch from raw data (row-major) to R array (column-major)
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (nchannels == 4) {
-  for (int row = 0; row < height; row++) {
-    
-    double *r   = res_ptr + row;
-    double *g   = res_ptr + row + npixels * 1;
-    double *b   = res_ptr + row + npixels * 2;
-    double *a   = res_ptr + row + npixels * 3;
-    
-    for (int col = 0; col < width; col++) {
-      *r = *buf_ptr++ / 255.0;
-      *g = *buf_ptr++ / 255.0;
-      *b = *buf_ptr++ / 255.0;
-      *a = *buf_ptr++ / 255.0;
-      r += height;
-      g += height;
-      b += height;
-      a += height;
-    }
-  }
-  } else if (nchannels == 3) {
-    for (int row = 0; row < height; row++) {
-      
-      double *r   = res_ptr + row;
-      double *g   = res_ptr + row + npixels * 1;
-      double *b   = res_ptr + row + npixels * 2;
-      
-      for (int col = 0; col < width; col++) {
-        *r = *buf_ptr++ / 255.0;
-        *g = *buf_ptr++ / 255.0;
-        *b = *buf_ptr++ / 255.0;
-        r += height;
-        g += height;
-        b += height;
-      }
-    }
-  } else if (nchannels == 2) {
-    for (int row = 0; row < height; row++) {
-      
-      double *g   = res_ptr + row;
-      double *a   = res_ptr + row + npixels * 1;
-      
-      for (int col = 0; col < width; col++) {
-        *g = *buf_ptr++ / 255.0;
-        *a = *buf_ptr++ / 255.0;
-        g += height;
-        a += height;
-      }
-    }
-  } else if (nchannels == 1) {
-    if (asLogical(avoid_transpose_)) {
+  if (strcmp(CHAR(STRING_ELT(array_type_, 0)), "dbl") == 0) {
+    res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)out_size));
+    double *res_ptr = REAL(res_);
+    if (nchannels == 1 && asLogical(avoid_transpose_)) {
       double *r   = res_ptr;
       for (int idx = 0; idx < width * height; idx++) {
         *r++ = *buf_ptr++ / 255.0;
       }
     } else {
       for (int row = 0; row < height; row++) {
-        double *r   = res_ptr + row;
-        for (int col = 0; col < width; col++) {
-          *r = *buf_ptr++ / 255.0;
-          r += height;
+        
+        double *p1   = res_ptr + row + npixels * 0;
+        double *p2   = res_ptr + row + npixels * 1;
+        double *p3   = res_ptr + row + npixels * 2;
+        double *p4   = res_ptr + row + npixels * 3;
+        
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            *p4 = buf_ptr[3] / 255.0;
+          case 3:
+            *p3 = buf_ptr[2] / 255.0;
+          case 2:
+            *p2 = buf_ptr[1] / 255.0;
+          case 1:
+            *p1 = buf_ptr[0] / 255.0;
+          }
         }
       }
-    }
+    } 
   } else {
-    error("unhandled nchannels: %i", nchannels);
+    res_ = PROTECT(allocVector(INTSXP, (R_xlen_t)out_size));
+    int32_t *res_ptr = INTEGER(res_);
+    if (nchannels == 1 && asLogical(avoid_transpose_)) {
+      int32_t *r   = res_ptr;
+      for (int idx = 0; idx < width * height; idx++) {
+        *r++ = *buf_ptr++;
+      }
+    } else {
+      for (int row = 0; row < height; row++) {
+        
+        int32_t *p1   = res_ptr + row + npixels * 0;
+        int32_t *p2   = res_ptr + row + npixels * 1;
+        int32_t *p3   = res_ptr + row + npixels * 2;
+        int32_t *p4   = res_ptr + row + npixels * 3;
+        
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            *p4 = buf_ptr[3];
+          case 3:
+            *p3 = buf_ptr[2];
+          case 2:
+            *p2 = buf_ptr[1];
+          case 1:
+            *p1 = buf_ptr[0];
+          }
+        }
+      }
+    } 
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -584,7 +577,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Read PNG as RGBA array.  16 bits
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_) {
   
   FILE *fp = NULL;
   uint8_t bits  = 8; 
@@ -592,7 +585,7 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
   int flags = asInteger(flags_);
   uint32_t nchannels;
   
-  Rprintf("read_png_as_array16_()\n");
+  // Rprintf("read_png_as_array16_()\n");
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
@@ -632,81 +625,75 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Format raw bytes as array:  width, height, depth
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(REALSXP, npixels * nchannels));
-  
-  double *res_ptr = REAL(res_);
+  SEXP res_;
   uint16_t *buf_ptr = decode_buf;
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Copy pixel data from PNG buffer to R 'res_'
   // Need to switch from raw data (row-major) to R array (column-major)
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (nchannels == 4) {
-    for (int row = 0; row < height; row++) {
-      
-      double *r   = res_ptr + row;
-      double *g   = res_ptr + row + npixels * 1;
-      double *b   = res_ptr + row + npixels * 2;
-      double *a   = res_ptr + row + npixels * 3;
-      
-      for (int col = 0; col < width; col++) {
-        *r = *buf_ptr++ / 65535.0;
-        *g = *buf_ptr++ / 65535.0;
-        *b = *buf_ptr++ / 65535.0;
-        *a = *buf_ptr++ / 65535.0;
-        r += height;
-        g += height;
-        b += height;
-        a += height;
-      }
-    }
-  } else if (nchannels == 3) {
-    for (int row = 0; row < height; row++) {
-      
-      double *r   = res_ptr + row;
-      double *g   = res_ptr + row + npixels * 1;
-      double *b   = res_ptr + row + npixels * 2;
-      
-      for (int col = 0; col < width; col++) {
-        *r = *buf_ptr++ / 65535.0;
-        *g = *buf_ptr++ / 65535.0;
-        *b = *buf_ptr++ / 65535.0;
-        r += height;
-        g += height;
-        b += height;
-      }
-    }
-  } else if (nchannels == 2) {
-    for (int row = 0; row < height; row++) {
-      
-      double *g   = res_ptr + row;
-      double *a   = res_ptr + row + npixels * 1;
-      
-      for (int col = 0; col < width; col++) {
-        *g = *buf_ptr++ / 65535.0;
-        *a = *buf_ptr++ / 65535.0;
-        g += height;
-        a += height;
-      }
-    }
-  } else if (nchannels == 1) {
-    if (asLogical(avoid_transpose_)) {
+  if (strcmp(CHAR(STRING_ELT(array_type_, 0)), "dbl") == 0) {
+    res_ = PROTECT(allocVector(REALSXP, npixels * nchannels));
+    double *res_ptr = REAL(res_);
+    if (nchannels == 1 && asLogical(avoid_transpose_)) {
       double *r   = res_ptr;
       for (int idx = 0; idx < width * height; idx++) {
         *r++ = *buf_ptr++ / 65535.0;
       }
     } else {
       for (int row = 0; row < height; row++) {
-        double *r   = res_ptr + row;
-        for (int col = 0; col < width; col++) {
-          *r = *buf_ptr++ / 65535.0;
-          r += height;
+        
+        double *p1   = res_ptr + row + npixels * 0;
+        double *p2   = res_ptr + row + npixels * 1;
+        double *p3   = res_ptr + row + npixels * 2;
+        double *p4   = res_ptr + row + npixels * 3;
+        
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            *p4 = buf_ptr[3] / 65535.0;
+          case 3:
+            *p3 = buf_ptr[2] / 65535.0;
+          case 2:
+            *p2 = buf_ptr[1] / 65535.0;
+          case 1:
+            *p1 = buf_ptr[0] / 65535.0;
+          }
         }
       }
     }
   } else {
-    error("unhandled nchannels: %i", nchannels);
+    res_ = PROTECT(allocVector(INTSXP, npixels * nchannels));
+    int32_t *res_ptr = INTEGER(res_);
+    if (nchannels == 1 && asLogical(avoid_transpose_)) {
+      int32_t *r   = res_ptr;
+      for (int idx = 0; idx < width * height; idx++) {
+        *r++ = *buf_ptr++;
+      }
+    } else {
+      for (int row = 0; row < height; row++) {
+        
+        int32_t *p1   = res_ptr + row + npixels * 0;
+        int32_t *p2   = res_ptr + row + npixels * 1;
+        int32_t *p3   = res_ptr + row + npixels * 2;
+        int32_t *p4   = res_ptr + row + npixels * 3;
+        
+        for (int col = 0; col < width; col++, p1+=height, p2+=height, p3+=height, p4+=height, buf_ptr+=nchannels) {
+          switch(nchannels) {
+          case 4:
+            *p4 = buf_ptr[3];
+          case 3:
+            *p3 = buf_ptr[2];
+          case 2:
+            *p2 = buf_ptr[1];
+          case 1:
+            *p1 = buf_ptr[0];
+          }
+        }
+      }
+    }
   }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set attributes on result
@@ -903,7 +890,8 @@ SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // C function called from R
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
+SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_,
+               SEXP array_type_) {
   
   const char *image_type = CHAR(STRING_ELT(type_, 0));
   
@@ -912,7 +900,7 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
   } else if (strcmp(image_type, "raster") == 0) {
     return read_png_as_raster_(src_, rgba_, flags_);
   } else if (strcmp(image_type, "array") == 0) {
-    return read_png_as_array_(src_, rgba_, flags_, avoid_transpose_);
+    return read_png_as_array_(src_, rgba_, flags_, avoid_transpose_, array_type_);
   } else if (strcmp(image_type, "indexed") == 0) {
     return read_indexed_png_as_indexed_(src_, rgba_, flags_, avoid_transpose_);
   } else if (strcmp(image_type, "raw") == 0) {

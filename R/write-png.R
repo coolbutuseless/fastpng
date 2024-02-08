@@ -21,7 +21,7 @@
 #'        the R data to match what PNG requires.  If this option is set 
 #'        to \code{TRUE} then the image is written without this transposition and 
 #'        should speed up PNG creation.  Currently this option is only
-#'        used when writing greyscale PNGs from 2D matrix data.
+#'        used when reading/writing greyscale PNGs with 2D matrix data.
 #' @param palette character vector of up to 256 colours in RGB hex format
 #'        i.e. \code{#RRGGBB}
 #' @param bits bit depth. default 8.  Valid values are 8 and 16.  This option
