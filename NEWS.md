@@ -1,7 +1,7 @@
 
 # fastpng 0.1.3.9006 2024-02-09
 
-* Support 16-bit raw vectors (read only)
+* Support 16-bit raw vectors 
 
 # fastpng 0.1.3.9005 2024-02-08
 
