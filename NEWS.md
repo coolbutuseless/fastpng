@@ -1,4 +1,11 @@
 
+
+# fastpng 0.1.3.9007 2024-02-10
+
+* Fix a couple of bugs reading 16 bit PNGs
+* Fix some bugs when setting `rgba = TRUE`
+* More tests 
+
 # fastpng 0.1.3.9006 2024-02-09
 
 * Support 16-bit raw vectors 

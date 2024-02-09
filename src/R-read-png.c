@@ -13,9 +13,26 @@
 #define R_IMAGE_ARRAY 2
 #define R_IMAGE_INDEXED 3
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Initialise a context
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
+// Core PNG Read function (used by all readers)
+//
+// * Create a context
+// * Set source to data in memory or file
+// * Read the image header to determine metainformation
+//       * width, height
+//       * number of bits
+//       * number of channels
+//       * colour format
+//       * total decoded size
+//
+// @param src_ raw vector or filename
+// @param **fp pointer to a file pointer - populated if `src_` is a filename, 
+//        otherwise NULL
+// @param rgba boolean. Should read mode be forced to be TRUECOLOR RGBA?
+// @param *fmt detected image format to be filled in here
+// @param image_type the coded image type i.e. R_IMAGE_NARA etc
+// @return spng_ctx
+//=============================================================================
 spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type, 
                         uint32_t *width, uint32_t *height, size_t *out_size,
                         uint8_t *bits, uint32_t *nchannels) {
@@ -104,11 +121,19 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   struct spng_trns trns;
   int has_trns = (spng_get_trns(ctx, &trns) == 0);
   
-  
-  if (rgba || image_type == R_IMAGE_NARA) {
-    // Set to RGBA if asked
+  if (image_type == R_IMAGE_NARA) {
     // NativeRaster can only be RGBA
     *fmt = SPNG_FMT_RGBA8;
+  } else if (rgba) {
+    // Set to RGBA if asked
+    if (*bits == 16) {
+      *fmt = SPNG_FMT_RGBA16;  
+    } else {
+      *fmt = SPNG_FMT_RGBA8;
+    }
+    if (nchannels) {
+      *nchannels = 4;
+    }
   } else if (image_type == R_IMAGE_RASTER) {
     // Raster can only process RGBA or RGB
     if (ihdr.color_type == SPNG_COLOR_TYPE_TRUECOLOR_ALPHA || ihdr.color_type == SPNG_COLOR_TYPE_GRAYSCALE_ALPHA || has_trns) {
@@ -169,9 +194,9 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // Read PNG as raw() vector
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
   
   FILE *fp = NULL;
@@ -250,9 +275,9 @@ SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // Read PNG as a nativeraster
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   
   FILE *fp = NULL;
@@ -309,9 +334,9 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // Read PNG as RGBA array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
   
   FILE *fp = NULL;
@@ -416,9 +441,9 @@ SEXP read_png_as_raster_(SEXP src_, SEXP rgba_, SEXP flags_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_);
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // Read PNG as RGBA array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_) {
   
   FILE *fp = NULL;
@@ -426,6 +451,8 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   uint8_t bits  = 8; 
   int flags = asInteger(flags_);
   uint32_t nchannels;
+  
+  // Rprintf(">> read_png_as_array_()\n");
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Create a context 
@@ -573,9 +600,9 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // Read PNG as RGBA array.  16 bits
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_, SEXP array_type_) {
   
   FILE *fp = NULL;
@@ -729,9 +756,9 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Read PNG as RGBA array
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
+// Read PNG as Indexed
+//=============================================================================
 SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_) {
   
   FILE *fp = NULL;
@@ -886,9 +913,9 @@ SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 // C function called from R
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//=============================================================================
 SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose_,
                SEXP array_type_) {
   
@@ -906,6 +933,6 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
     return read_png_as_raw_(src_, rgba_, flags_);
   }
   
-  error("image type not understood: %s", image_type);
+  error("read_png(): Image type not understood: '%s'", image_type);
   return R_NilValue;
 }

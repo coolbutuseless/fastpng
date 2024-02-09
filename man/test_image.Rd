@@ -6,7 +6,7 @@
 \title{A named list of test images arranged by storage type: array, raster, 
 native_raster}
 \format{
-An object of class \code{list} of length 5.
+An object of class \code{list} of length 7.
 }
 \usage{
 test_image
