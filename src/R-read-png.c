@@ -807,8 +807,6 @@ SEXP read_indexed_png_as_indexed_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid
   struct spng_trns trns;
   int trns_err = spng_get_trns(ctx, &trns); 
   
-  Rprintf("trns_err: %i\n", trns_err);
-  
   char hex_lookup[]= "0123456789ABCDEF"; // Lookup table
   SEXP palette_ = PROTECT(allocVector(STRSXP, plte.n_entries));
   char col[10] = "#000000FF"; // template

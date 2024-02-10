@@ -16,6 +16,14 @@ knitr::opts_chunk$set(
 
 library(fastpng)
 
+
+if (FALSE) {
+  covr::report(covr::package_coverage(
+    line_exclusions = list('src/spng.c', 'src/spng.h')
+  ))
+}
+
+
 # Makevars options to do some deep testing for CRAN
 
 # Type conversions are sane
