@@ -1,5 +1,11 @@
 
 
+# fastpng 0.1.3.9008 2024-02-10
+
+* Adding `raw()` test images
+* More tests
+* some bug fixes for 16 bit read/write
+
 # fastpng 0.1.3.9007 2024-02-10
 
 * Fix a couple of bugs reading 16 bit PNGs

@@ -306,13 +306,18 @@ SEXP write_png_from_raw_vec_(SEXP image_, SEXP file_, SEXP use_filter_,
   uint32_t depth  = asInteger(VECTOR_ELT(raw_spec_, 2));
   uint32_t bits   = asInteger(VECTOR_ELT(raw_spec_, 3));
   
-  if (bits != 8) {
-    error("Only 8-bit currently supported for writing raw vectors to PNG");
+  // if (bits != 8) {
+  //   error("Only 8-bit currently supported for writing raw vectors to PNG");
+  // }
+  
+  int size = height * width * depth;
+  if (bits == 16) {
+    size *= 2; 
   }
   
-  if (height * width * depth != length(image_)) {
-    error("Mismatch between length of raw vector (%i) and raw_spec (%i x %i x %i)", 
-          length(image_), width, height, depth);
+  if (size != length(image_)) {
+    error("Mismatch between length of raw vector (%i) and raw_spec (%i x %i x %i x %i/8)", 
+          length(image_), width, height, depth, bits);
   }
   
   enum spng_color_type color_type = SPNG_COLOR_TYPE_TRUECOLOR_ALPHA;
@@ -627,6 +632,8 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
 SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_, 
                            SEXP avoid_transpose_) {
   
+  // Rprintf("write_png_from_array16_()  %i\n", isReal(arr_));
+  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Options
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -722,6 +729,7 @@ SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compr
           switch(nchannels) {
           case 4:
             im_ptr[3] = (uint16_t)(*p3);
+            // Rprintf("%i %i\n", im_ptr[3], (uint16_t)(*p3));
           case 3:
             im_ptr[2] = (uint16_t)(*p2);
           case 2:

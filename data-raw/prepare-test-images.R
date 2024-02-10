@@ -1,8 +1,8 @@
 
 library(grid)
 
-w <- 400
-h <- 300
+w <- 300L
+h <- 200L
 
 
 
@@ -11,7 +11,7 @@ h <- 300
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 test_image_gray16 <- outer(1:h, 1:w) 
 test_image_gray16 <- test_image_gray16 / max(test_image_gray16)
-test_image_gray16 <- (round(test_image_gray16 * 2^18) %% (2^16)) / 2^16
+test_image_gray16 <- (round(test_image_gray16 * 2^18) %% (2^16)) / (2^16 - 1)
 grid.raster(test_image_gray16)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,6 +137,7 @@ igray <- outer(1:h, 1:w)
 igray <- igray / max(igray)
 igray <- round(igray * 1024) %% 256
 igray[] <- as.integer(igray)
+mode(igray) <- 'integer'
 grid.raster(igray/255)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,6 +183,7 @@ igray16 <- outer(1:h, 1:w)
 igray16 <- igray16 / max(igray16)
 igray16 <- (round(igray16 * 2^18) %% (2^16))
 igray16[] <- as.integer(igray16)
+mode(igray16) <- 'integer'
 grid.raster(igray16/65535)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,8 +221,36 @@ dim(iga16) <- c(h, w, 2)
 
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Raw bytes 8 bit
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rgray <- as.raw(t(igray))
+rrgba <- as.raw(as.vector(aperm(irgba, c(3, 2, 1))))
+rrgb  <- as.raw(as.vector(aperm(irgb , c(3, 2, 1))))
+rga   <- as.raw(as.vector(aperm(iga  , c(3, 2, 1))))
+
+attributes(rgray) <- list(width = w, height = h, depth = 1L, bits = 8L)
+attributes(rga)   <- list(width = w, height = h, depth = 2L, bits = 8L)
+attributes(rrgb)  <- list(width = w, height = h, depth = 3L, bits = 8L)
+attributes(rrgba) <- list(width = w, height = h, depth = 4L, bits = 8L)
 
 
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Raw bytes 16bit
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+vec <- as.integer(as.vector(t(igray16)))
+rgray16 <- writeBin(vec, raw(), size = 2, endian = 'little')
+
+rrgba16 <- writeBin(as.integer(as.vector(aperm(irgba16, c(3, 2, 1)))), raw(), size=2, endian='little')
+rrgb16  <- writeBin(as.integer(as.vector(aperm(irgb16 , c(3, 2, 1)))), raw(), size=2, endian='little')
+rga16   <- writeBin(as.integer(as.vector(aperm(iga16  , c(3, 2, 1)))), raw(), size=2, endian='little')
+
+attributes(rgray16) <- list(width = w, height = h, depth = 1L, bits = 16L)
+attributes(rga16)   <- list(width = w, height = h, depth = 2L, bits = 16L)
+attributes(rrgb16)  <- list(width = w, height = h, depth = 3L, bits = 16L)
+attributes(rrgba16) <- list(width = w, height = h, depth = 4L, bits = 16L)
 
 
 
@@ -261,6 +291,18 @@ test_image <- list(
     integer_index = index_int,
     numeric_index = index_dbl,
     palette       = palette
+  ),
+  raw = list(
+    gray       = rgray,
+    gray_alpha = rga,
+    rgb        = rrgb,
+    rgba       = rrgba
+  ),
+  raw_16bit = list(
+    gray       = rgray16,
+    gray_alpha = rga16,
+    rgb        = rrgb16,
+    rgba       = rrgba16
   )
 )
 

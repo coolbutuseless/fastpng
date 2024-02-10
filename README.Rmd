@@ -136,7 +136,7 @@ ggplot(res) +
 
 ## ToDo
 
-* Test reading all PNG formats with `rgba = TRUE` into all R image types
+* Order-independent `raw_spec` list handling within C
 
 
 ## Installation

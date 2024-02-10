@@ -50,7 +50,7 @@ By disabling compression when writing image data to PNG, this can be
 
 ## ToDo
 
-- Test reading all PNG formats with `rgba = TRUE` into all R image types
+- Order-independent `raw_spec` list handling within C
 
 ## Installation
 
@@ -166,19 +166,19 @@ indices <- test_image$indexed$integer_index
 palette <- test_image$indexed$palette
 
 dim(indices)
-#> [1] 300 400
+#> [1] 200 300
 indices[1:10, 1:10]
 #>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 #>  [1,]    0    0    0    0    0    0    0    0    0     0
 #>  [2,]    0    0    0    0    0    0    0    0    0     0
-#>  [3,]    0    0    0    0    0    0    0    0    0     0
-#>  [4,]    0    0    0    0    0    0    0    0    0     0
-#>  [5,]    0    0    0    0    0    0    0    0    0     0
-#>  [6,]    0    0    0    0    0    0    0    0    0     1
-#>  [7,]    0    0    0    0    0    0    0    0    1     1
-#>  [8,]    0    0    0    0    0    0    0    1    1     1
-#>  [9,]    0    0    0    0    0    0    1    1    1     1
-#> [10,]    0    0    0    0    0    1    1    1    1     1
+#>  [3,]    0    0    0    0    0    0    0    0    0     1
+#>  [4,]    0    0    0    0    0    0    0    1    1     1
+#>  [5,]    0    0    0    0    0    1    1    1    1     1
+#>  [6,]    0    0    0    0    1    1    1    1    1     1
+#>  [7,]    0    0    0    0    1    1    1    1    1     1
+#>  [8,]    0    0    0    1    1    1    1    1    1     1
+#>  [9,]    0    0    0    1    1    1    1    1    1     2
+#> [10,]    0    0    1    1    1    1    1    1    2     2
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
