@@ -216,11 +216,11 @@ SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int npixels = (int)(width * height);
+  uint32_t npixels = (uint32_t)(width * height);
   if (bits == 8) {
-    nchannels = out_size / npixels;
+    nchannels = (uint32_t)(out_size / (size_t)npixels);
   } else if (bits == 16) {
-    nchannels = out_size / npixels / 2;
+    nchannels = (uint32_t)(out_size / (size_t)npixels / 2);
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -583,7 +583,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
     SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
     INTEGER(dims_)[0] = (int)height;
     INTEGER(dims_)[1] = (int)width;
-    INTEGER(dims_)[2] = nchannels;
+    INTEGER(dims_)[2] = (int)nchannels;
     
     setAttrib(res_, R_DimSymbol, dims_);
   }
@@ -624,7 +624,7 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  int npixels = (int)(width * height);
+  uint32_t npixels = (uint32_t)(width * height);
 
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -659,7 +659,7 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
   // Need to switch from raw data (row-major) to R array (column-major)
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (strcmp(CHAR(STRING_ELT(array_type_, 0)), "dbl") == 0) {
-    res_ = PROTECT(allocVector(REALSXP, npixels * nchannels));
+    res_ = PROTECT(allocVector(REALSXP, (R_xlen_t)(npixels * nchannels)));
     double *res_ptr = REAL(res_);
     if (nchannels == 1 && asLogical(avoid_transpose_)) {
       double *r   = res_ptr;
@@ -739,7 +739,7 @@ SEXP read_png_as_array16_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpo
     SEXP dims_ = PROTECT(allocVector(INTSXP, 3));
     INTEGER(dims_)[0] = (int)height;
     INTEGER(dims_)[1] = (int)width;
-    INTEGER(dims_)[2] = nchannels;
+    INTEGER(dims_)[2] = (int)nchannels;
     
     setAttrib(res_, R_DimSymbol, dims_);
   }

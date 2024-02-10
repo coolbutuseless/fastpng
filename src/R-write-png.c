@@ -147,7 +147,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
         trns.blue  = (uint16_t)ptr[2]; // B
         has_trns = 1;
       } else {
-        warning("Unknown argument for 'trns' %s\n", type2char(TYPEOF(trns_)));
+        warning("Unknown argument for 'trns' %s\n", type2char((SEXPTYPE)TYPEOF(trns_)));
       }
     } else {
       // Rprintf("trns given and --NOT-- valid for image type\n");
@@ -301,16 +301,16 @@ SEXP write_png_from_raw_vec_(SEXP image_, SEXP file_, SEXP use_filter_,
   if (isNull(raw_spec_) || TYPEOF(raw_spec_) != VECSXP || length(raw_spec_) < 4) {
     error("'raw_spec' must be a 4 element list but missing");
   }
-  uint32_t width  = asInteger(VECTOR_ELT(raw_spec_, 0));
-  uint32_t height = asInteger(VECTOR_ELT(raw_spec_, 1));
-  uint32_t depth  = asInteger(VECTOR_ELT(raw_spec_, 2));
-  uint32_t bits   = asInteger(VECTOR_ELT(raw_spec_, 3));
+  uint32_t width  = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 0));
+  uint32_t height = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 1));
+  uint32_t depth  = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 2));
+  uint32_t bits   = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 3));
   
   // if (bits != 8) {
   //   error("Only 8-bit currently supported for writing raw vectors to PNG");
   // }
   
-  int size = height * width * depth;
+  uint32_t size = height * width * depth;
   if (bits == 16) {
     size *= 2; 
   }
@@ -340,12 +340,12 @@ SEXP write_png_from_raw_vec_(SEXP image_, SEXP file_, SEXP use_filter_,
   }
   
   return write_png_core_(
-    RAW(image_), length(image_), width, height, file_,
+    RAW(image_), (size_t)length(image_), width, height, file_,
     color_type,
     R_NilValue, // Palette
     use_filter_, compression_level_,
     FALSE, // free_image_on_error
-    bits, // bit depth
+    (uint8_t)bits, // bit depth
     trns_ // trns
   );
   
