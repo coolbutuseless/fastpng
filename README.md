@@ -9,48 +9,37 @@
 [![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{fastpng}` provides functions for read/write of PNG image from files
-and raw vectors.
+`{fastpng}` reads and writes PNG images stored as files or `raw()`
+vectors.
 
-By disabling compression when writing image data to PNG, this can be
-~75x faster than standard PNG packages.
+When writing PNG images, the compression level is configurable. Writing
+uncompressed PNG images can be 100x faster than writing with regular
+compression settings.
 
-`{fastpng}`
-
-- Provides explicit support for R images stored as
-  - rasters
-  - native rasters,
-  - numeric arrays (RGBA, RGB, and Grayscale), with values in the range
-    \[0,1\]
-  - integer arrays (RGBA, RGB, and Grayscale), with values in the range
-    \[0, 255\] for 8bit PNGs, and \[0,65535\] for 16bit PNGs
-  - indexed images with a palette
-  - `raw()` vectors with pixel data in row-major packed pixel format
-    e.g. `RGBARGBARGBA...`
-- 8-bits-per-colour supported for all image types
-- 16-bits-per-colour supported
-  - read/write with arrays and raw vectors
-  - read into raster, nativeraster (with only 8 bits precision)
-- Flags to configure reading of PNG
-  - gamma correction
-- Flags to configure writing of PNG
-  - Compression level
-  - PNG filter settings
-- Supports specification of single transparent colour for RGB and
-  Grayscale images. (Cheap transparency using the `tRNS` PNG chunk)
+In certain cases, transposing the data data can be avoided which results
+in even faster PNG creation.
 
 `fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
-- [libspng API docs](https://libspng.org/docs/api/)
+# ToDo Before CRAN Release
+
+- Order-independent `raw_spec` list handling within C
+
+## Features
+
+<img src="man/figures/feature-grid-fastpng-read.png" />
+<img src="man/figures/feature-grid-fastpng-write.png" />
+
+## Benchmarks
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-## ToDo
+## Compression Settings: Speed / size tradeoff
 
-- Order-independent `raw_spec` list handling within C
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
 
 ## Installation
 
@@ -69,20 +58,8 @@ remotes::install_github('coolbutuseless/fastpng')
 - `get_png_info()` - interrogate a vector of raw values containing a PNG
   image to determine image information i.e. width, height, bit_depth,
   color_type, compression_method, filter_method, interlace_method.
-- `test_image` is a named list of different image representations in R:
-  RGBA and RGB numeric arrays, raster, native raster.
-
-Supported R image types:
-
-- Native Raster (integer matrix with class ‘nativeRaster’)
-- Raster (character matrix with class ‘raster’) with hex colour values
-  of the form `#RRGGBBAA` or `#RRGGBB`. Note: R colour names are not
-  supported here.
-- 3D numeric array containing RGBA values in the range \[0, 1\]
-- 3D numeric array containing RGB values in the range \[0, 1\]
-- 2D numeric matrix containing greyscale values in the range \[0, 1\]
-- Integer 2D matrix paired with a colour palette (specified as a
-  character vector of hex colours). Also supports alpha channel.
+- `rimage` is a named list of different image representations in R: RGBA
+  and RGB numeric arrays, raster, native raster.
 
 ## Example: Decompress a PNG from a raw vector
 
@@ -157,13 +134,13 @@ nara[1:10, 1:10]
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ### Write image as indexed PNG
 
 ``` r
-indices <- test_image$indexed$integer_index
-palette <- test_image$indexed$palette
+indices <- rimage$indexed$integer_index
+palette <- rimage$indexed$palette
 
 dim(indices)
 #> [1] 200 300
@@ -186,7 +163,7 @@ palette[1:10]
 
     #> NULL
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 ## Acknowledgements
 

@@ -7,7 +7,7 @@ test_that("get_png_info works", {
   # RGBA File
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   tmp <- tempfile()
-  im <- test_image$array$rgba
+  im <- rimage$array$rgba
   write_png(im, file = tmp) 
   info <- get_png_info(tmp)
   expect_true(inherits(info, 'list'))
@@ -21,7 +21,7 @@ test_that("get_png_info works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # RGBA
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- test_image$array$rgba
+  im <- rimage$array$rgba
   info <- write_png(im) |> get_png_info()
   expect_true(inherits(info, 'list'))
   
@@ -33,7 +33,7 @@ test_that("get_png_info works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # RGB
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- test_image$array$rgb
+  im <- rimage$array$rgb
   info <- write_png(im) |> get_png_info()
   expect_true(inherits(info, 'list'))
   
@@ -45,7 +45,7 @@ test_that("get_png_info works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # gray alpha
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- test_image$array$gray_alpha
+  im <- rimage$array$gray_alpha
   info <- write_png(im) |> get_png_info()
   expect_true(inherits(info, 'list'))
   
@@ -57,7 +57,7 @@ test_that("get_png_info works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # gray 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- test_image$array$gray
+  im <- rimage$array$gray
   info <- write_png(im) |> get_png_info()
   expect_true(inherits(info, 'list'))
   

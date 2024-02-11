@@ -255,7 +255,7 @@ attributes(rrgba16) <- list(width = w, height = h, depth = 4L, bits = 16L)
 
 
 
-test_image <- list(
+rimage <- list(
   array = list(
     gray       = test_image_gray,
     gray_alpha = test_image_array_ga,
@@ -308,4 +308,4 @@ test_image <- list(
 
 
 
-usethis::use_data(test_image, overwrite = TRUE, compress = 'xz')
+usethis::use_data(rimage, overwrite = TRUE, compress = 'xz')

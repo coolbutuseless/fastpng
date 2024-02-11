@@ -4,7 +4,7 @@ test_that("tRNS transparency works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Raster tRNS specification
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im1 <- test_image$raster$rgb
+  im1 <- rimage$raster$rgb
   c1 <- im1[[1,1]] # first colour
     
   im2 <- write_png(im1, trns = c1) |> read_png(type = 'raster')
@@ -15,7 +15,7 @@ test_that("tRNS transparency works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Raster tRNS specification
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im1 <- test_image$raster$rgb
+  im1 <- rimage$raster$rgb
   c1 <- im1[[1,1]] # first colour
   int_c1 <- c(0L, 0L, 3L)
   
@@ -27,7 +27,7 @@ test_that("tRNS transparency works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Raster tRNS specification
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im1 <- test_image$raster$rgb
+  im1 <- rimage$raster$rgb
   c1 <- im1[[1,1]] # first colour
   dbl_c1 <- c(0, 0, 3)
   
@@ -39,7 +39,7 @@ test_that("tRNS transparency works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Grayscale transparency
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im1 <- test_image$array$gray
+  im1 <- rimage$array$gray
   c1 <- im1[[1,1]] 
   
   im2 <- write_png(im1, trns = c1) |> read_png(type = 'raster')
@@ -50,7 +50,7 @@ test_that("tRNS transparency works", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Grayscale transparency
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im1 <- test_image$array_int$gray
+  im1 <- rimage$array_int$gray
   c1 <- im1[[1,1]] 
   
   im2 <- write_png(im1, trns = c1) |> read_png(type = 'raster')
