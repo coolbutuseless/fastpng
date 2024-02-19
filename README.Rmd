@@ -58,11 +58,6 @@ even faster PNG creation.
 `fastpng` is an R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 
-# ToDo Before CRAN Release
-
-* Order-independent `raw_spec` list handling within C
-
-
 ## Features 
 
 <img src="man/figures/feature-grid-fastpng-read.png" />
