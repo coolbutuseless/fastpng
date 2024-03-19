@@ -299,18 +299,46 @@ SEXP write_png_from_raw_vec_(SEXP image_, SEXP file_, SEXP use_filter_,
                              SEXP compression_level_, SEXP trns_, 
                              SEXP raw_spec_) {
   
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Unpack the 'raw_spec' list into variables
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (isNull(raw_spec_) || TYPEOF(raw_spec_) != VECSXP || length(raw_spec_) < 4) {
-    error("'raw_spec' must be a 4 element list but missing");
+    error("'raw_spec' must be a named list with 4 elements");
   }
-  uint32_t width  = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 0));
-  uint32_t height = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 1));
-  uint32_t depth  = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 2));
-  uint32_t bits   = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, 3));
   
-  // if (bits != 8) {
-  //   error("Only 8-bit currently supported for writing raw vectors to PNG");
-  // }
+  uint32_t width  = 0;
+  uint32_t height = 0;
+  uint32_t depth  = 0;
+  uint32_t bits   = 0;
   
+  SEXP nms_ = getAttrib(raw_spec_, R_NamesSymbol);
+  if (isNull(nms_) || length(nms_) != length(raw_spec_)) {
+    error("'raw_spec' must be a named list with 4 elements.");
+  }
+  
+  for (int i = 0; i < length(nms_); i++) {
+    const char *nm = CHAR(STRING_ELT(nms_, i));
+    if (strcmp(nm, "width") == 0) {
+      width = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, i));
+    } else if (strcmp(nm, "height") == 0) {
+      height = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, i));
+    } else if (strcmp(nm, "depth") == 0) {
+      depth = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, i));
+    } else if (strcmp(nm, "bits") == 0) {
+      bits = (uint32_t)asInteger(VECTOR_ELT(raw_spec_, i));
+    }
+  }
+  
+  if (width == 0 || height == 0 || depth == 0 || bits == 0) {
+    error("'raw_spec' must contain 'width', 'height', 'depth', 'bits'");
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Calculate number of bytes specified by the 'raw_spec'
+  // And sanity check against the actual data provided
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   uint32_t size = height * width * depth;
   if (bits == 16) {
     size *= 2; 
