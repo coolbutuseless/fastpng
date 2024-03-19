@@ -1,4 +1,7 @@
 
+# fastpng 0.1.3.9009 2024-03-19
+
+* normlize pathnames
 
 # fastpng 0.1.3.9008 2024-02-10
 
