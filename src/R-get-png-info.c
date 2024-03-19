@@ -41,7 +41,7 @@ SEXP get_png_info_(SEXP src_) {
     buf = (unsigned char *)RAW(src_);
     spng_set_png_buffer(ctx, buf, buf_size);
   } else if (TYPEOF(src_) == STRSXP) {
-    const char *filename = CHAR(STRING_ELT(src_, 0));
+    const char *filename = R_ExpandFileName(CHAR(STRING_ELT(src_, 0)));
     fp = fopen(filename, "rb");
     if (fp == NULL) {
       spng_ctx_free(ctx);

@@ -67,18 +67,19 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
   if (isNull(file_)) {
     spng_set_option(ctx, SPNG_ENCODE_TO_BUFFER, 1);
   } else {
-    fp = fopen(CHAR(STRING_ELT(file_, 0)), "wb");
+    const char *filename = R_ExpandFileName(CHAR(STRING_ELT(file_, 0)));
+    fp = fopen(filename, "wb");
     if (fp == NULL) {
       if (free_image_on_error) free(image);
       spng_ctx_free(ctx);
-      error("Couldn't open file: %s", CHAR(STRING_ELT(file_, 0)));
+      error("Couldn't open file: %s", filename);
     }
     err = spng_set_png_file(ctx, fp); 
     if (err) {
       fclose(fp);
       if (free_image_on_error) free(image);
       spng_ctx_free(ctx);
-      error("Couldn't set file for output: %s", CHAR(STRING_ELT(file_, 0)));
+      error("Couldn't set file for output: %s", filename);
     }
   } 
   

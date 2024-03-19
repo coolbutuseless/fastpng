@@ -193,7 +193,7 @@ remotes::install_github('coolbutuseless/fastpng')
 ## What's in the box
 
 * `read_png()` to read a PNG from a file or a raw vector
-* `write_png()` to write data as a PNG file or PNG data in a raw vector
+* `write_png()` to write an R image as a PNG file or PNG data in a raw vector
 * `get_png_info()` - interrogate a vector of raw values containing a PNG image
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
