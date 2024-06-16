@@ -9,7 +9,7 @@
 #' @param rgba Should the result be forced into RGBA?  Default: FALSE  
 #'        means to use the most appropriate format of the given R image type 
 #'        to store the data.  If \code{TRUE}, then the image will be forced
-#'        into RGBA colour mode.
+#'        into RGBA color mode.
 #' @param flags Flags to apply when reading PNG. Default: 1 (always decode transparency from tRNS chunks). 
 #'        See \code{?spng_decode_flags} for other options.  Must be an integer.
 #' @param avoid_transpose Default: FALSE. If \code{TRUE}, then transposing the image
@@ -23,7 +23,15 @@
 #'        [0,65535] (for 16 bit images).
 #'
 #' @return R image object of the specified type
-#'
+#' @examples
+#' # create a small greyscale matrix, and write it to a PNG file
+#' ras <- matrix(c('#880000', '#000088'), 3, 4) 
+#' ras <- grDevices::as.raster(ras)
+#' pngfile <- tempfile()
+#' write_png(ras, file = pngfile)
+#' ras2 <- read_png(pngfile, type = 'raster')
+#' plot(ras2, interpolate = FALSE)
+#' @importFrom grDevices as.raster
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 read_png <- function(src, type = c('array', 'raster', 'native_raster', 'indexed', 'raw'), 
@@ -31,3 +39,4 @@ read_png <- function(src, type = c('array', 'raster', 'native_raster', 'indexed'
                      array_type = c('dbl', 'int')) {
   .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose, array_type)
 }
+

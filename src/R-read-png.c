@@ -22,7 +22,7 @@
 //       * width, height
 //       * number of bits
 //       * number of channels
-//       * colour format
+//       * color format
 //       * total decoded size
 //
 // @param src_ raw vector or filename

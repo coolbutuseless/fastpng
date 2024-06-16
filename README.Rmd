@@ -68,7 +68,7 @@ even faster PNG creation.
 ```{r warning=FALSE, echo=FALSE}
 library(ggplot2)
 
-image <- rimage$array$rgba
+image <- test_image$array$rgba
 
 res <- bench::mark(
   png::writePNG(image),
@@ -95,7 +95,7 @@ ggplot(res) +
 ```{r warning=FALSE, echo=FALSE}
 library(ggplot2)
 
-test_image_gray8 <- rimage$array$gray
+test_image_gray8 <- test_image$array$gray
 
 res <- bench::mark(
   png::writePNG(test_image_gray8),
@@ -125,7 +125,7 @@ ggplot(res) +
 
 
 ```{r echo=FALSE}
-im <- rimage$array$rgba
+im <- test_image$array$rgba
 
 res <- bench::mark(
   fastpng::write_png(im, compression_level =  0),
@@ -192,7 +192,8 @@ remotes::install_github('coolbutuseless/fastpng')
 * `get_png_info()` - interrogate a vector of raw values containing a PNG image
   to determine image information i.e. width, height, bit_depth, color_type, 
   compression_method, filter_method, interlace_method.
-* `rimage` is a named list of different image representations in R:
+* `test_image` is a list of images.  These are images contained in different 
+  datastructures and of differing bitdepth etc:
   RGBA and RGB numeric arrays, raster, native raster.
   
 
@@ -255,8 +256,8 @@ grid.raster(im)
 ### Write image as indexed PNG
 
 ```{r}
-indices <- rimage$indexed$integer_index
-palette <- rimage$indexed$palette
+indices <- test_image$indexed$integer_index
+palette <- test_image$indexed$palette
 
 dim(indices)
 indices[1:10, 1:10]

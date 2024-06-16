@@ -50,12 +50,14 @@ remotes::install_github('coolbutuseless/fastpng')
 ## What’s in the box
 
 - `read_png()` to read a PNG from a file or a raw vector
-- `write_png()` to write data as a PNG file or PNG data in a raw vector
+- `write_png()` to write an R image as a PNG file or PNG data in a raw
+  vector
 - `get_png_info()` - interrogate a vector of raw values containing a PNG
   image to determine image information i.e. width, height, bit_depth,
   color_type, compression_method, filter_method, interlace_method.
-- `rimage` is a named list of different image representations in R: RGBA
-  and RGB numeric arrays, raster, native raster.
+- `test_image` is a list of images. These are images contained in
+  different datastructures and of differing bitdepth etc: RGBA and RGB
+  numeric arrays, raster, native raster.
 
 ## Example: Decompress a PNG from a raw vector
 
@@ -127,6 +129,9 @@ nara[1:10, 1:10]
 #>  [8,]    0    0  -126846604    -8551039    0    0 -8814211 -7235436    0     0
 #>  [9,]    0    0  -663651979    -8616832    0    0 -9011590 -7169644    0     0
 #> [10,]    0    0 -1317963403    -8617088    0    0 -9143177 -7169643    0     0
+```
+
+``` r
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
@@ -135,11 +140,14 @@ grid::grid.raster(nara, interpolate = FALSE)
 ### Write image as indexed PNG
 
 ``` r
-indices <- rimage$indexed$integer_index
-palette <- rimage$indexed$palette
+indices <- test_image$indexed$integer_index
+palette <- test_image$indexed$palette
 
 dim(indices)
 #> [1] 200 300
+```
+
+``` r
 indices[1:10, 1:10]
 #>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 #>  [1,]    0    0    0    0    0    0    0    0    0     0
@@ -152,12 +160,13 @@ indices[1:10, 1:10]
 #>  [8,]    0    0    0    1    1    1    1    1    1     1
 #>  [9,]    0    0    0    1    1    1    1    1    1     2
 #> [10,]    0    0    1    1    1    1    1    1    2     2
+```
+
+``` r
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
 ```
-
-    #> NULL
 
 <img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 

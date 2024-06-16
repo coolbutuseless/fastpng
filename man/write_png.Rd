@@ -23,7 +23,7 @@ write_png(
 \item{file}{If NULL then return result as raw vector, otherwise write
 to the given filepath.}
 
-\item{palette}{character vector of up to 256 colours in RGB hex format
+\item{palette}{character vector of up to 256 colors in RGB hex format
 i.e. \code{#RRGGBB}}
 
 \item{use_filter}{Use PNG filtering to help reduce size. Default: TRUE.
@@ -39,7 +39,7 @@ to 0 to completely disable compression.}
 
 \item{avoid_traanspose}{Should transposition be avoided if possible so as to 
 maximise the speed of writing the PNG?  Default: FALSE.  
-PNG is a row-major image format, where R stored data in column-major
+PNG is a row-major image format, but R stores data in column-major
 ordering.  When writing data to PNG, it is often necessary to transpose
 the R data to match what PNG requires.  If this option is set 
 to \code{TRUE} then the image is written without this transposition and 
@@ -49,24 +49,36 @@ used when reading/writing greyscale PNGs with 2D matrix data.}
 \item{bits}{bit depth. default 8.  Valid values are 8 and 16.  This option
 only has an effect when image to output is a numeric array.}
 
-\item{trns}{Colour to be treated as transparent
+\item{trns}{color to be treated as transparent
 in RGB and Greyscale images - without specifying a full alpha channel.  
-Only a single colour can be specified and it will be treated as a 
-fully transparent colour in the image.  This setting is only used 
+Only a single color can be specified and it will be treated as a 
+fully transparent color in the image.  This setting is only used 
 when writing RGB and Greyscale images.  For 8-bit RGB images, the value
-may be a hex colour value i.e. \code{"#RRGGBB"} or a vector of 3 numeric
+may be a hex color value i.e. \code{"#RRGGBB"} or a vector of 3 numeric
 values in the range [0, 255].  For 8-bit greyscale images,
 must be a single integer value in the range [0, 255].
 For 16-bit RGB images, the value
 may be a vector of 3 numeric
 values in the range [0, 65535].  For 16-bit greyscale images,
 must be a single integer value in the range [0, 65535].
-Default: NULL - means to not add a transparency colour.}
+Default: NULL - means to not add a transparency color.}
 
 \item{raw_spec}{list of image specifications for encoding a raw vector
 to PNG. This list must contain the following elements in this order:
 width, height, nchannels, bits e.g. \code{raw_spec = list(400, 300, 4, 8)}}
 }
+\value{
+If \code{file} argument provided, function writes to file and returns 
+        nothing, otherwise it returns a raw vector holding the PNG
+        encoded data.
+}
 \description{
 Write PNG
+}
+\examples{
+# create a small greyscale matrix, and write it to a PNG file
+mat <- matrix(c(0L, 255L), 3, 4)
+pngfile <- tempfile()
+write_png(mat, file = pngfile)
+
 }

@@ -24,8 +24,24 @@ spng_interlace_method <- list(
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Get information about a PNG file
 #'
-#' @param src filename or raw vector containing PNG data
-#'
+#' @param src PNG filename or raw vector containing PNG data
+#' 
+#' @return Name list of information about the PNG image:
+#' \describe{
+#'   \item{width,height}{Dimensions of PNG}
+#'   \item{bit_depth}{Bit depth. 8 or 16 bits}
+#'   \item{color_type,color_desc}{color type and its description}
+#'   \item{compression_method}{Compression setting}
+#'   \item{filter_method,filter_desc}{Filter method and description}
+#'   \item{interlace_method,interlace_desc}{Interlace method and description}
+#' }
+#' 
+#' @examples
+#' # Create a small grayscale PNG image and fetch its PNG info
+#' mat <- matrix(c(0L, 255L), 3, 4)
+#' png_data <- write_png(mat)
+#' get_png_info(png_data)
+#' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_png_info <- function(src) {

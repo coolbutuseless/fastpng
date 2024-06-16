@@ -107,7 +107,7 @@ library(nara)
 # test_image_nativeraster <- nara::raster_to_nr(test_image_raster_rgba)
 
 ras <- test_image_raster_rgba
-nr <- matrix(colour_to_integer((ras)), nrow = nrow(ras), ncol = ncol(ras))
+nr <- matrix(str_cols_to_packed_cols((ras)), nrow = nrow(ras), ncol = ncol(ras))
 class(nr) <- 'nativeRaster'
 attr(nr, 'channels') <- 4L
 grid.newpage(); grid.raster(nr)
@@ -255,7 +255,7 @@ attributes(rrgba16) <- list(width = w, height = h, depth = 4L, bits = 16L)
 
 
 
-rimage <- list(
+test_image <- list(
   array = list(
     gray       = test_image_gray,
     gray_alpha = test_image_array_ga,
@@ -308,4 +308,4 @@ rimage <- list(
 
 
 
-usethis::use_data(rimage, overwrite = TRUE, compress = 'xz')
+usethis::use_data(test_image, overwrite = TRUE, compress = 'xz')

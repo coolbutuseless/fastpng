@@ -1,7 +1,82 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' A named list of test images arranged by storage type: array, raster, 
-#' native_raster
+#' Test images in various R formats
+#' 
+#' A nested named list of test images (300 x 200 pixels).
+#' 
+#' Possible image color spaces within each image type
+#' \describe{
+#'   \item{$gray}{Gray pixels representing intensity only}
+#'   \item{$gray_alpha}{Gray pixels with an alpha channel}
+#'   \item{$rgb}{RGB color image}
+#'   \item{$rgba}{RGB color image with alpha channel}
+#' }
+#' 
+#' A description of the image data within each image type
+#' 
+#' \describe{
+#'   \item{test_image$array}{ 
+#'     Arrays of numeric values in the range [0, 1]
+#'     \describe{
+#'       \item{$gray}{A 2D matrix}
+#'       \item{$gray_alpha}{A 3D array with 2 planes i.e. \code{dim(x)[3] == 2}}
+#'       \item{$rgb}{A 3D array with 3 planes i.e. \code{dim(x)[3] == 2}}
+#'       \item{$rgba}{A 3D array with 4 planes i.e. \code{dim(x)[3] == 2}}
+#'     }
+#'   }
+#'   \item{test_image$array_16bit}{ 
+#'     Same as \code{test_image$array} data except values contain 16 bits of 
+#'     signficant color information.
+#'   }
+#'   \item{test_image$array_int}{ 
+#'   Arrays of integer values in the range [0, 255]
+#'     \describe{
+#'       \item{$gray}{A 2D matrix}
+#'       \item{$gray_alpha}{A 3D array with 2 planes i.e. \code{dim(x)[3] == 2}}
+#'       \item{$rgb}{A 3D array with 3 planes i.e. \code{dim(x)[3] == 2}}
+#'       \item{$rgba}{A 3D array with 4 planes i.e. \code{dim(x)[3] == 2}}
+#'     }
+#'   }
+#'   \item{test_image$array_int_16bit}{ 
+#'     Same as \code{test_image$array_int} data except values are in the 
+#'     range [0, 65535]
+#'   }
+#'   \item{test_image$raster}{ 
+#'     \describe{
+#'       \item{$rgb}{Character matrix of color values given as hex codes \code{#RRGGBB}}
+#'       \item{$rgba}{Character matrix of color values given as hex codes \code{#RRGGBBAA}}
+#'     }
+#'   }
+#'   \item{test_image$native_raster}{ 
+#'   Integer matrix of integer values. Each 32-bit numeric value holds a
+#'   packed RGBA pixel
+#'     \describe{
+#'       \item{$rgba}{}
+#'     }
+#'   }
+#'   \item{test_image$indexed}{ 
+#'     \describe{
+#'       \item{$integer_index}{An integer matrix. Each value is an index into a
+#'       separately specified color-lookup table}
+#'       \item{$numeric_index}{A numeric matrix. Each value is an index into a
+#'       separately specified color-lookup table}
+#'       \item{$palette}{An example color palette to use with indexed images. 256 colors.}
+#'     }
+#'   }
+#'   \item{test_image$raw}{
+#'   Sequences of raw bytes with attributes specifying 'width', 'height', 'depth' 
+#'   (i.e. number of colors) and 'bits' (number of bits for each color)
+#'     \describe{
+#'       \item{$gray}{Sequence of gray pixels i.e. GGGG}
+#'       \item{$gray_alpha}{Sequence of GA pixels i.e. GAGAGA...}
+#'       \item{$rgb}{Sequence of RGB pixels i.e. RGBRGBRGB...}
+#'       \item{$rgba}{Sequence of RGB pixels i.e. RGBARGBARGBA...}
+#'     }
+#'   }
+#'   \item{test_image$raw_16_bit}{ 
+#'   The same as \code{test_image$raw} except each color takes 2 raw bytes.
+#'   }
+#' }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"rimage"
+"test_image"

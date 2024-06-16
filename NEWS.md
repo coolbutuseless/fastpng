@@ -1,7 +1,7 @@
 
 # fastpng 0.1.3.9009 2024-03-19
 
-* normlize pathnames
+* normalize pathnames
 
 # fastpng 0.1.3.9008 2024-02-10
 
@@ -33,7 +33,7 @@
 
 # fastpng 0.1.3.9003 2024-02-07
 
-* Writing now supports specification of a single colour for transparency 
+* Writing now supports specification of a single color for transparency 
  in RGB and GrayScale images.  New argument: `trns` 
 
 # fastpng 0.1.3.9002 2024-02-06
@@ -62,8 +62,8 @@
 Supported R image types:
 
 * Native Raster (integer matrix with class 'nativeRaster')
-* Raster (character matrix with class 'raster') with hex colour values of the 
-  form `#RRGGBBAA` or `#RRGGBB`.  Note: R colour names are not supported here.
+* Raster (character matrix with class 'raster') with hex color values of the 
+  form `#RRGGBBAA` or `#RRGGBB`.  Note: R color names are not supported here.
 * 3D numeric array containing RGBA values in the range [0, 1]
 * 3D numeric array containing RGB values in the range [0, 1]
 * 2D numeric matrix containing greyscale values in the range [0, 1] 

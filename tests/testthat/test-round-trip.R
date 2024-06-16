@@ -4,7 +4,7 @@ test_that("write/read round trip is idempotent", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test write/read cycle for nativeraster
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  for (im in rimage$native_raster) {
+  for (im in test_image$native_raster) {
     raw_vec <- write_png(im)
     im2 <- read_png(raw_vec, type = 'native_raster')
     
@@ -16,9 +16,9 @@ test_that("write/read round trip is idempotent", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test write/read cycle for raster
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- rimage$raster$rgba
+  im <- test_image$raster$rgba
 
-  for (im in rimage$raster) {
+  for (im in test_image$raster) {
     raw_vec <- write_png(im)
     im2 <- read_png(raw_vec, type = 'raster')
 
@@ -30,12 +30,12 @@ test_that("write/read round trip is idempotent", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test write/read cycle for array
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  im <- rimage$array$rgba
+  im <- test_image$array$rgba
   
-  for (nm in names(rimage$array)) {
+  for (nm in names(test_image$array)) {
     # print(nm)
     # if (nm == 'gray_alpha') next
-    im <- rimage$array[[nm]]
+    im <- test_image$array[[nm]]
     
     raw_vec <- write_png(im)
     im2 <- read_png(raw_vec, type = 'array')
@@ -45,12 +45,12 @@ test_that("write/read round trip is idempotent", {
   }
   
   
-  im <- rimage$array16$gray
+  im <- test_image$array16$gray
   
-  for (nm in names(rimage$array16)) {
+  for (nm in names(test_image$array16)) {
     # print(nm)
     # if (nm == 'gray_alpha') next
-    im <- rimage$array16[[nm]]
+    im <- test_image$array16[[nm]]
     
     raw_vec <- write_png(im, bits = 16)
     im2 <- read_png(raw_vec, type = 'array')
@@ -67,7 +67,7 @@ test_that("write/read round trip is idempotent", {
 
 if (FALSE) {
   
-  im <- rimage$array$gray_alpha
+  im <- test_image$array$gray_alpha
   raw_vec <- write_png(im)
   im2 <- read_png(raw_vec, type = 'array', rgba = FALSE)
   

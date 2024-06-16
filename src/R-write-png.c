@@ -20,7 +20,7 @@ static unsigned char hexdigit(int digit) {
   if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
   if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
   if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
-  error("Invalid hex: %i.  Only 6-char and 8 char hex colours supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colours in a raster image (e.g. 'white') are not supported", digit);
+  error("Invalid hex: %i.  Only 6-char and 8 char hex colors supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colors in a raster image (e.g. 'white') are not supported", digit);
   return (unsigned char)digit; 
 }
 
@@ -125,7 +125,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
     } else if (color_type == SPNG_COLOR_TYPE_TRUECOLOR) {
       // Rprintf("trns given and valid for image type RGB\n");
       if (TYPEOF(trns_) == STRSXP) {
-        // Rprintf("Hex colour for trns\n");
+        // Rprintf("Hex color for trns\n");
         const char *col = CHAR(STRING_ELT(trns_, 0));
         if (col[0] == '#' && (strlen(col) == 7 || strlen(col) == 9)) {
           trns.red   = (uint16_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
@@ -194,7 +194,7 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
     for (int i = 0; i < length(palette_); i++) {
       const char *col = CHAR(STRING_ELT(palette_, i));
       if (col[0] != '#') {
-        error("Palettes may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+        error("Palettes may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'");
       }
       plte.entries[i].red   = (uint8_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
       plte.entries[i].green = (uint8_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
@@ -432,7 +432,8 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
   for (int i = 0; i < Rf_xlength(ras_); i++) {
     const char *col = CHAR(STRING_ELT(ras_, i));
     if (col[0] != '#') {
-      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+      error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
+Try removing any named R colors using 'normalize_colors()'");  
     }
     *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
     *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
@@ -464,7 +465,7 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Write image data stored as hex colours in a character matrix
+// Write image data stored as hex colors in a character matrix
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compression_level_,
                                 SEXP trns_) {
@@ -488,7 +489,8 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
   for (int i = 0; i < Rf_xlength(ras_); i++) {
     const char *col = CHAR(STRING_ELT(ras_, i));
     if (col[0] != '#') {
-      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");
+      error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
+Try removing any named R colors using 'normalize_colors()'");  
     }
     *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
     *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
@@ -908,7 +910,7 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
       error("write_png(): When writing paletted PNG, image must be integer or numeric matrix with values in range [0, 255]");
     }
     if (length(palette_) > 256 || TYPEOF(palette_) != STRSXP) {
-      error("Palette must be a character vector of hex colours. length <= 256 elements");
+      error("Palette must be a character vector of hex colors. length <= 256 elements");
     }
     return write_png_indexed_(image_, file_, palette_, use_filter_, compression_level_, avoid_transpose_);
   } else if (inherits(image_, "nativeRaster")) {
@@ -919,14 +921,15 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     }
     const char *first_elem = CHAR(STRING_ELT(image_, 0));
     if (first_elem[0] != '#') {
-      error("Valid rasters may only contain hex colours of the form '#RRGGBB' or '#RRGGBBAA'");  
+      error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
+Try removing any named R colors using 'normalize_colors()'");  
     }
     if (strlen(first_elem) == 9) {
       return write_png_from_raster_(image_, file_, use_filter_, compression_level_);
     } else if (strlen(first_elem) == 7) {
       return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_, trns_);
     } else {
-      error("Raster encoding not understood");
+      error("Raster encoding not understood. Only hex colors of the from '#RRGGBB' or '#RRGGBBAA' are allowed");
     }
   } else if ((isArray(image_) || isMatrix(image_)) && (isReal(image_) || isInteger(image_))) {
     if (asInteger(bits_) == 16) {
