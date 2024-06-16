@@ -1,4 +1,8 @@
 
+# fastpng 0.1.3.9011 2024-06-17
+
+* use `hex2nibble()` from `{colourlookup}`
+
 # fastpng 0.1.3.9010 2024-06-16
 
 * Complete roxygen documentation for CRAN

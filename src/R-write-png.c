@@ -16,14 +16,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static unsigned char hexdigit(int digit) {
-  if('0' <= digit && digit <= '9') return (unsigned char)(     digit - '0');
-  if('A' <= digit && digit <= 'F') return (unsigned char)(10 + digit - 'A');
-  if('a' <= digit && digit <= 'f') return (unsigned char)(10 + digit - 'a');
-  error("Invalid hex: %i.  Only 6-char and 8 char hex colors supported e.g. '#RRGGBB' and '#RRGGBBAA' \nR colors in a raster image (e.g. 'white') are not supported", digit);
-  return (unsigned char)digit; 
-}
-
+#define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,9 +121,9 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
         // Rprintf("Hex color for trns\n");
         const char *col = CHAR(STRING_ELT(trns_, 0));
         if (col[0] == '#' && (strlen(col) == 7 || strlen(col) == 9)) {
-          trns.red   = (uint16_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
-          trns.green = (uint16_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
-          trns.blue  = (uint16_t)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+          trns.red   = (uint16_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+          trns.green = (uint16_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+          trns.blue  = (uint16_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
           has_trns = 1;
         }
       } else if (isInteger(trns_) && length(trns_) == 3) {
@@ -196,11 +189,11 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
       if (col[0] != '#') {
         error("Palettes may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'");
       }
-      plte.entries[i].red   = (uint8_t)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
-      plte.entries[i].green = (uint8_t)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
-      plte.entries[i].blue  = (uint8_t)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+      plte.entries[i].red   = (uint8_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+      plte.entries[i].green = (uint8_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+      plte.entries[i].blue  = (uint8_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
       if (strlen(col) == 9) {
-        trns.type3_alpha[i] = (uint8_t)( (hexdigit(col[7]) << 4) + hexdigit(col[8]) ); // A
+        trns.type3_alpha[i] = (uint8_t)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
       } else {
         trns.type3_alpha[i] = 255; // opaque
       }
@@ -435,10 +428,10 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
       error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
 Try removing any named R colors using 'normalize_colors()'");  
     }
-    *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
-    *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
-    *im_ptr++ = (unsigned char)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
-    *im_ptr++ = (unsigned char)( (hexdigit(col[7]) << 4) + hexdigit(col[8]) ); // A
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -492,9 +485,9 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
       error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
 Try removing any named R colors using 'normalize_colors()'");  
     }
-    *im_ptr++ = (unsigned char)( (hexdigit(col[1]) << 4) + hexdigit(col[2]) ); // R
-    *im_ptr++ = (unsigned char)( (hexdigit(col[3]) << 4) + hexdigit(col[4]) ); // G
-    *im_ptr++ = (unsigned char)( (hexdigit(col[5]) << 4) + hexdigit(col[6]) ); // B
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+    *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
