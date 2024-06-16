@@ -1,4 +1,10 @@
 
+# fastpng 0.1.3.9010 2024-06-16
+
+* Complete roxygen documentation for CRAN
+* Add `normalize_colors()`
+* Standardise on spelling of `color`
+
 # fastpng 0.1.3.9009 2024-03-19
 
 * normalize pathnames
