@@ -115,6 +115,7 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   // };
   
   if (image_type == R_IMAGE_INDEXED && ihdr.color_type != SPNG_COLOR_TYPE_INDEXED) {
+    spng_ctx_free(ctx);
     error("type='indexed' cannot be used as this is not an indexed PNG");
   }
   
@@ -180,6 +181,7 @@ spng_ctx *read_png_core(SEXP src_, FILE **fp, int rgba, int *fmt, int image_type
   } else if (ihdr.color_type == SPNG_COLOR_TYPE_INDEXED) {
     *fmt = SPNG_FMT_PNG;
   } else {
+    spng_ctx_free(ctx);
     error("Image type not understood: %i", image_type);
   }
   
@@ -463,6 +465,7 @@ SEXP read_png_as_array_(SEXP src_, SEXP rgba_, SEXP flags_, SEXP avoid_transpose
   spng_ctx *ctx = read_png_core(src_, &fp, asInteger(rgba_), &fmt, R_IMAGE_ARRAY, &width, &height, &out_size, &bits, &nchannels);
   
   if (bits == 16) {
+    spng_ctx_free(ctx);
     return read_png_as_array16_(src_, rgba_, flags_, avoid_transpose_, array_type_);
   }
   
