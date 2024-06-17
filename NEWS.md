@@ -2,6 +2,7 @@
 # fastpng 0.1.3.9012 2024-06-17
 
 * Support named R colours for raster output
+* Removed `normalize_colors()`
 
 # fastpng 0.1.3.9011 2024-06-17
 
