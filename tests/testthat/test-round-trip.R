@@ -14,13 +14,16 @@ test_that("write/read round trip is idempotent", {
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Test write/read cycle for raster
+  # Test write/read cycle for raster RGBA
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   im <- test_image$raster$rgba
   raw_vec <- write_png(im)
   im2 <- read_png(raw_vec, type = 'raster')
   expect_identical(im, im2)
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Test write/read cycle for raster RGB
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # RGB raster written as RGBA unless 'trns' is set
   im <- im_orig <- test_image$raster$rgb
   raw_vec <- write_png(im)
@@ -34,6 +37,19 @@ test_that("write/read round trip is idempotent", {
   expect_identical(im, im2)
   
   
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Test write/read cycle for raster of named colours
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  im <- test_image$raster$named
+  raw_vec <- write_png(im)
+  im2 <- read_png(raw_vec, type = 'raster')
+  
+  im_hex <- as.vector(im)
+  im_hex <- rgb(t(col2rgb(im_hex)), alpha = 255, maxColorValue = 255)
+  
+  im2_hex <- as.vector(im2)
+  expect_identical(im_hex, im2_hex)
+
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test write/read cycle for array
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,6 +83,7 @@ test_that("write/read round trip is idempotent", {
   }
   
 })
+
 
 
 

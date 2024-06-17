@@ -53,8 +53,9 @@ A description of the image data within each image type
   }
   \item{test_image$raster}{ 
     \describe{
-      \item{$rgb}{Character matrix of color values given as hex codes \code{#RRGGBB}}
-      \item{$rgba}{Character matrix of color values given as hex codes \code{#RRGGBBAA}}
+      \item{$rgb}{Raster image of color values given as hex codes \code{#RRGGBB}}
+      \item{$rgba}{Raster image of color values given as hex codes \code{#RRGGBBAA}}
+      \item{$named}{Raster image of color values given as R color names e.g. 'red', 'blue'}
     }
   }
   \item{test_image$native_raster}{ 

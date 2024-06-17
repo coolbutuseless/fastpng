@@ -100,6 +100,10 @@ dim(test_image_array_ga) <- c(h, w, 2)
 test_image_raster_rgb  <- as.raster(test_image_array_rgb )
 test_image_raster_rgba <- as.raster(test_image_array_rgba)
 
+set.seed(1)
+test_image_raster_named <- as.raster(matrix(sample(colours(), h * w, T), h, w))
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Native raster
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -282,7 +286,8 @@ test_image <- list(
   ),
   raster = list(
     rgb  = test_image_raster_rgb,
-    rgba = test_image_raster_rgba
+    rgba = test_image_raster_rgba,
+    named = test_image_raster_named
   ),
   native_raster = list(
     rgba = test_image_nativeraster

@@ -1,4 +1,8 @@
 
+# fastpng 0.1.3.9012 2024-06-17
+
+* Support named R colours for raster output
+
 # fastpng 0.1.3.9011 2024-06-17
 
 * use `hex2nibble()` from `{colourlookup}`
