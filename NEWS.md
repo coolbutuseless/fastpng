@@ -2,6 +2,7 @@
 # fastpng 0.1.3.9011 2024-06-17
 
 * use `hex2nibble()` from `{colourlookup}`
+* expand hex support to include #RGB and #RGBA colour spec.
 
 # fastpng 0.1.3.9010 2024-06-16
 

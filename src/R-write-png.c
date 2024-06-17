@@ -120,11 +120,26 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
       if (TYPEOF(trns_) == STRSXP) {
         // Rprintf("Hex color for trns\n");
         const char *col = CHAR(STRING_ELT(trns_, 0));
-        if (col[0] == '#' && (strlen(col) == 7 || strlen(col) == 9)) {
-          trns.red   = (uint16_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
-          trns.green = (uint16_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
-          trns.blue  = (uint16_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+        if (col[0] == '#') {
+          switch (strlen(col)) {
+          case 9:
+          case 7:
+            trns.red   = (uint16_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+            trns.green = (uint16_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+            trns.blue  = (uint16_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+            break;
+          case 5:
+          case 4:
+            trns.red   = (uint16_t)( hex2nibble(col[1]) * (16 + 1) ); // R
+            trns.green = (uint16_t)( hex2nibble(col[2]) * (16 + 1) ); // G
+            trns.blue  = (uint16_t)( hex2nibble(col[3]) * (16 + 1) ); // B
+            break;
+          default:
+            error("TRNS colour not understood: '%s'", col);
+          }
           has_trns = 1;
+        } else {
+          error("Character colours can only be hex strings, no '%s'", col);
         }
       } else if (isInteger(trns_) && length(trns_) == 3) {
         // Rprintf("Integer vector for trns\n");
@@ -189,13 +204,33 @@ SEXP write_png_core_(void *image, size_t nbytes, uint32_t width, uint32_t height
       if (col[0] != '#') {
         error("Palettes may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'");
       }
-      plte.entries[i].red   = (uint8_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
-      plte.entries[i].green = (uint8_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
-      plte.entries[i].blue  = (uint8_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
-      if (strlen(col) == 9) {
-        trns.type3_alpha[i] = (uint8_t)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
-      } else {
-        trns.type3_alpha[i] = 255; // opaque
+      switch (strlen(col)) {
+      case 9:
+        plte.entries[i].red   = (uint8_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+        plte.entries[i].green = (uint8_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+        plte.entries[i].blue  = (uint8_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+        trns.type3_alpha[i]   = (uint8_t)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
+        break;
+      case 7:
+        plte.entries[i].red   = (uint8_t)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+        plte.entries[i].green = (uint8_t)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+        plte.entries[i].blue  = (uint8_t)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+        trns.type3_alpha[i]   = 255; // opaque
+        break;
+      case 4:
+        plte.entries[i].red   = (uint8_t)( hex2nibble(col[1]) * (16 + 1)); // R
+        plte.entries[i].green = (uint8_t)( hex2nibble(col[2]) * (16 + 1)); // G
+        plte.entries[i].blue  = (uint8_t)( hex2nibble(col[3]) * (16 + 1)); // B
+        trns.type3_alpha[i]   = (uint8_t)( hex2nibble(col[4]) * (16 + 1)); // A
+        break;
+      case 3:
+        plte.entries[i].red   = (uint8_t)( hex2nibble(col[1]) * (16 + 1)); // R
+        plte.entries[i].green = (uint8_t)( hex2nibble(col[2]) * (16 + 1)); // G
+        plte.entries[i].blue  = (uint8_t)( hex2nibble(col[3]) * (16 + 1)); // B
+        trns.type3_alpha[i]   = 255; // opaque
+        break;
+      default:
+        error("Unknown hex colour '%s'", col);
       }
     }
     
@@ -428,10 +463,35 @@ SEXP write_png_from_raster_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP compre
       error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
 Try removing any named R colors using 'normalize_colors()'");  
     }
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
+    switch(strlen(col)) {
+    case 9:
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[7]) << 4) + hex2nibble(col[8]) ); // A
+      break;
+    case 7:
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+      *im_ptr++ = 255; // A
+      // Rprintf("%02X %02X %02X %02X\n", *(im_ptr - 4), *(im_ptr - 3), *(im_ptr - 2), *(im_ptr - 1));
+      break;
+    case 5:
+      *im_ptr++ = (unsigned char)( hex2nibble(col[1]) * (16 + 1) ); // R
+      *im_ptr++ = (unsigned char)( hex2nibble(col[2]) * (16 + 1) ); // G
+      *im_ptr++ = (unsigned char)( hex2nibble(col[3]) * (16 + 1) ); // B
+      *im_ptr++ = (unsigned char)( hex2nibble(col[4]) * (16 + 1) ); // A
+      break;
+    case 4:
+      *im_ptr++ = (unsigned char)( hex2nibble(col[1]) * (16 + 1) ); // R
+      *im_ptr++ = (unsigned char)( hex2nibble(col[2]) * (16 + 1) ); // G
+      *im_ptr++ = (unsigned char)( hex2nibble(col[3]) * (16 + 1) ); // B
+      *im_ptr++ = 255; // A
+      break;
+    default:
+      error("hex colour in raster not understood: '%s'", col);
+    }
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -485,9 +545,22 @@ SEXP write_png_from_raster_rgb_(SEXP ras_, SEXP file_, SEXP use_filter_, SEXP co
       error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
 Try removing any named R colors using 'normalize_colors()'");  
     }
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
-    *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+    switch(strlen(col)) {
+    case 9:
+    case 7:
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[1]) << 4) + hex2nibble(col[2]) ); // R
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[3]) << 4) + hex2nibble(col[4]) ); // G
+      *im_ptr++ = (unsigned char)( (hex2nibble(col[5]) << 4) + hex2nibble(col[6]) ); // B
+      break;
+    case 5:
+    case 4:
+      *im_ptr++ = (unsigned char)( hex2nibble(col[1]) * (16 + 1) ); // R
+      *im_ptr++ = (unsigned char)( hex2nibble(col[2]) * (16 + 1) ); // G
+      *im_ptr++ = (unsigned char)( hex2nibble(col[3]) * (16 + 1) ); // B
+      break;
+    default:
+      error("write_png_from_raster_rgb_(): hex colour not understood: '%s'", col);
+    }
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -654,7 +727,7 @@ SEXP write_png_from_array_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compres
 // Write image data stored as RGBA numeric array
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SEXP write_png_from_array16_(SEXP arr_, SEXP file_, SEXP use_filter_, SEXP compression_level_, 
-                           SEXP avoid_transpose_) {
+                             SEXP avoid_transpose_) {
   
   // Rprintf("write_png_from_array16_()  %i\n", isReal(arr_));
   
@@ -854,7 +927,7 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
   } else {
     error("Index type not understood");
   }
-
+  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // No tranposition, so swap width/height value
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -894,7 +967,7 @@ SEXP write_png_indexed_(SEXP arr_, SEXP file_, SEXP palette_, SEXP use_filter_,
 SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_, 
                 SEXP compression_level_, SEXP avoid_transpose_, SEXP bits_,
                 SEXP trns_, SEXP raw_spec_) {
-
+  
   if (!isNull(palette_)) {
     if (!isMatrix(image_)) {
       error("write_png(): When palette provided image must be a matrix.");
@@ -912,18 +985,11 @@ SEXP write_png_(SEXP image_, SEXP file_, SEXP palette_, SEXP use_filter_,
     if (length(image_) == 0) {
       error("Zero length rasters not valid");
     }
-    const char *first_elem = CHAR(STRING_ELT(image_, 0));
-    if (first_elem[0] != '#') {
-      error("Valid rasters may only contain hex colors of the form '#RRGGBB' or '#RRGGBBAA'. \
-Try removing any named R colors using 'normalize_colors()'");  
-    }
-    if (strlen(first_elem) == 9) {
+    if (isNull(trns_)) {
       return write_png_from_raster_(image_, file_, use_filter_, compression_level_);
-    } else if (strlen(first_elem) == 7) {
-      return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_, trns_);
     } else {
-      error("Raster encoding not understood. Only hex colors of the from '#RRGGBB' or '#RRGGBBAA' are allowed");
-    }
+      return write_png_from_raster_rgb_(image_, file_, use_filter_, compression_level_, trns_);
+    } 
   } else if ((isArray(image_) || isMatrix(image_)) && (isReal(image_) || isInteger(image_))) {
     if (asInteger(bits_) == 16) {
       return write_png_from_array16_(image_, file_, use_filter_, compression_level_, avoid_transpose_);
