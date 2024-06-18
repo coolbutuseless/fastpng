@@ -47,8 +47,8 @@ spng_interlace_method <- list(
 get_png_info <- function(src) {
   res <- .Call('get_png_info_', src)
 
-  res$color_desc <- spng_color_type[[res$color_type + 1L]]
-  res$filter_desc <- spng_filter[[res$filter_method + 1L]]
+  res$color_desc     <- spng_color_type[[res$color_type + 1L]]
+  res$filter_desc    <- spng_filter[[res$filter_method + 1L]]
   res$interlate_desc <- spng_interlace_method[[res$interlace_method + 1L]]
 
   res

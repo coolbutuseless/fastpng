@@ -101,7 +101,7 @@ res <- bench::mark(
   png::writePNG(test_image_gray8),
   fastpng::write_png(test_image_gray8),
   fastpng::write_png(test_image_gray8, compression_level = 0),
-  fastpng::write_png(test_image_gray8, compression_level = 0, avoid_traanspose = TRUE),
+  fastpng::write_png(test_image_gray8, compression_level = 0, avoid_transpose = TRUE),
   check = FALSE,
   relative = TRUE
 )

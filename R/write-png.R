@@ -2,19 +2,19 @@
 #' Write PNG
 #' 
 #' @param image image data.  raster, rgba array, rgb array, nativeraster object,
-#'        2D grayscale matrix
-#' @param file If NULL then return result as raw vector, otherwise write
-#'        to the given filepath.
-#' @param use_filter Use PNG filtering to help reduce size. Default: TRUE.
+#'        2D grayscale matrix (integers in [0,255] or [0,65535], or numeric in [0, 1]) 
+#' @param file If NULL (the default) then return PNG data as raw vector, otherwise write
+#'        to the given file path.
+#' @param use_filter Use PNG filtering to help reduce size? Default: TRUE.
 #'        If FALSE, then filtering will be disabled which can make 
 #'        image writing faster.
-#' @param compression_level compression level for zlib.  Default: -1 means
+#' @param compression_level compression level for PNG. Default: -1 means
 #'        to use the default compression level.  Other valid
 #'        values are in range [0, 9].  In general, lower compression levels
 #'        result in faster compression, but larger image sizes.  For fastest
 #'        image writing, set \code{compression_level}
 #'        to 0 to completely disable compression.
-#' @param avoid_traanspose Should transposition be avoided if possible so as to 
+#' @param avoid_transpose Should transposition be avoided if possible so as to 
 #'        maximise the speed of writing the PNG?  Default: FALSE.  
 #'        PNG is a row-major image format, but R stores data in column-major
 #'        ordering.  When writing data to PNG, it is often necessary to transpose
@@ -22,8 +22,11 @@
 #'        to \code{TRUE} then the image is written without this transposition and 
 #'        should speed up PNG creation.  Currently this option is only
 #'        used when reading/writing greyscale PNGs with 2D matrix data.
-#' @param palette character vector of up to 256 colors in RGB hex format
-#'        i.e. \code{#RRGGBB}
+#' @param palette character vector of up to 256 colors. IF specified, and the
+#'        image is a 2D matrix of integer or numeric values, then an indexed 
+#'        PNG is written where the matrix values indicate the colour palette
+#'        value to use. The values in the matrix must range from 0 (for the 
+#'        first colour)
 #' @param bits bit depth. default 8.  Valid values are 8 and 16.  This option
 #'        only has an effect when image to output is a numeric array.
 #' @param trns color to be treated as transparent
@@ -39,30 +42,57 @@
 #'        values in the range [0, 65535].  For 16-bit greyscale images,
 #'        must be a single integer value in the range [0, 65535].
 #'        Default: NULL - means to not add a transparency color. 
-#' @param raw_spec list of image specifications for encoding a raw vector
-#'        to PNG. This list must contain the following elements in this order:
-#'        width, height, nchannels, bits e.g. \code{raw_spec = list(400, 300, 4, 8)}
+#' @param raw_spec named list of image specifications for encoding a raw vector
+#'        to PNG. Use \code{raw_spec()} to create such a list in the corrent format.
+#'        This argument is only required if the \code{image} argument is a 
+#'        raw vector.
 #' 
 #' @return If \code{file} argument provided, function writes to file and returns 
 #'         nothing, otherwise it returns a raw vector holding the PNG
 #'         encoded data.
 #'         
 #' @examples
-#' # create a small greyscale matrix, and write it to a PNG file
+#' # create a small greyscale integer matrix, and write it to a PNG file
 #' mat <- matrix(c(0L, 255L), 3, 4)
 #' pngfile <- tempfile()
 #' write_png(mat, file = pngfile)
-#' 
+#' im <- read_png(pngfile, type = 'raster') 
+#' plot(im, interpolate = FALSE)
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 
-                      compression_level = -1L, avoid_traanspose = FALSE, bits=8, 
+                      compression_level = -1L, avoid_transpose = FALSE, bits=8, 
                       trns = NULL, raw_spec = NULL) {
   res <- .Call(write_png_, image, file, palette, use_filter, compression_level, 
-        avoid_traanspose, bits, trns, raw_spec)
+        avoid_transpose, bits, trns, raw_spec)
   if (is.null(file)) {
     res
   } else {
     invisible(file)
   }
 }
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Create a specification for how raw bytes should be interpreted when passed
+#' to \code{write_png()}
+#' 
+#' @param width,height image dimensions
+#' @param nchannels number of colour channels. Integer value in range [1, 4]
+#' @param bits number of bits for each colour channel. Either 8 or 16.
+#' 
+#' @return named list to pass to the \code{write_png(..., raw_spec = )}
+#' @examples
+#' raw_spec(100, 20, 3, 8)
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+raw_spec <- function(width, height, nchannels, bits) {
+  list(
+    width     = width,
+    height    = height,
+    nchannels = nchannels,
+    bits      = bits
+  )  
+}
+
+

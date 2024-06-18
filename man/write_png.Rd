@@ -10,7 +10,7 @@ write_png(
   palette = NULL,
   use_filter = TRUE,
   compression_level = -1L,
-  avoid_traanspose = FALSE,
+  avoid_transpose = FALSE,
   bits = 8,
   trns = NULL,
   raw_spec = NULL
@@ -18,26 +18,29 @@ write_png(
 }
 \arguments{
 \item{image}{image data.  raster, rgba array, rgb array, nativeraster object,
-2D grayscale matrix}
+2D grayscale matrix (integers in [0,255] or [0,65535], or numeric in [0, 1])}
 
-\item{file}{If NULL then return result as raw vector, otherwise write
-to the given filepath.}
+\item{file}{If NULL (the default) then return PNG data as raw vector, otherwise write
+to the given file path.}
 
-\item{palette}{character vector of up to 256 colors in RGB hex format
-i.e. \code{#RRGGBB}}
+\item{palette}{character vector of up to 256 colors. IF specified, and the
+image is a 2D matrix of integer or numeric values, then an indexed 
+PNG is written where the matrix values indicate the colour palette
+value to use. The values in the matrix must range from 0 (for the 
+first colour)}
 
-\item{use_filter}{Use PNG filtering to help reduce size. Default: TRUE.
+\item{use_filter}{Use PNG filtering to help reduce size? Default: TRUE.
 If FALSE, then filtering will be disabled which can make 
 image writing faster.}
 
-\item{compression_level}{compression level for zlib.  Default: -1 means
+\item{compression_level}{compression level for PNG. Default: -1 means
 to use the default compression level.  Other valid
 values are in range [0, 9].  In general, lower compression levels
 result in faster compression, but larger image sizes.  For fastest
 image writing, set \code{compression_level}
 to 0 to completely disable compression.}
 
-\item{avoid_traanspose}{Should transposition be avoided if possible so as to 
+\item{avoid_transpose}{Should transposition be avoided if possible so as to 
 maximise the speed of writing the PNG?  Default: FALSE.  
 PNG is a row-major image format, but R stores data in column-major
 ordering.  When writing data to PNG, it is often necessary to transpose
@@ -63,9 +66,10 @@ values in the range [0, 65535].  For 16-bit greyscale images,
 must be a single integer value in the range [0, 65535].
 Default: NULL - means to not add a transparency color.}
 
-\item{raw_spec}{list of image specifications for encoding a raw vector
-to PNG. This list must contain the following elements in this order:
-width, height, nchannels, bits e.g. \code{raw_spec = list(400, 300, 4, 8)}}
+\item{raw_spec}{named list of image specifications for encoding a raw vector
+to PNG. Use \code{raw_spec()} to create such a list in the corrent format.
+This argument is only required if the \code{image} argument is a 
+raw vector.}
 }
 \value{
 If \code{file} argument provided, function writes to file and returns 
@@ -76,9 +80,10 @@ If \code{file} argument provided, function writes to file and returns
 Write PNG
 }
 \examples{
-# create a small greyscale matrix, and write it to a PNG file
+# create a small greyscale integer matrix, and write it to a PNG file
 mat <- matrix(c(0L, 255L), 3, 4)
 pngfile <- tempfile()
 write_png(mat, file = pngfile)
-
+im <- read_png(pngfile, type = 'raster') 
+plot(im, interpolate = FALSE)
 }

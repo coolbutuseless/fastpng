@@ -8,9 +8,12 @@ Authors@R: c(
            comment = "Author of bundled libspng")
   )
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
-Description: Read and write image data in R to and from raw vectors and
-    files.  Compression level when writing is configurable, allowing for a
-    tradeoff between file size and writing speed.  This implementation is
+Description: Read and write image data to and from raw vectors and
+    files.  This PNG encoder exposes configurable internal options enabling the
+    user to select a speed-size tradeoff.  For example, disabling compression 
+    can speed up writing PNG by a factor of 50. Multiple image formats are supported
+    including raster, native rasters, and integer and numeric arrays at color depths
+    of 1, 2, 3 or 4. 16-bit iamges are also supported. This implementation is
     a wrapper around the 'libspng' 'C' library which is available from
     <https://github.com/randy408/libspng/>.
 License: MIT + file LICENSE
