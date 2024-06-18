@@ -67,7 +67,7 @@ must be a single integer value in the range [0, 65535].
 Default: NULL - means to not add a transparency color.}
 
 \item{raw_spec}{named list of image specifications for encoding a raw vector
-to PNG. Use \code{raw_spec()} to create such a list in the corrent format.
+to PNG. Use \code{raw_spec()} to create such a list in the correct format.
 This argument is only required if the \code{image} argument is a 
 raw vector.}
 }

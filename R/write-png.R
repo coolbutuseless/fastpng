@@ -43,7 +43,7 @@
 #'        must be a single integer value in the range [0, 65535].
 #'        Default: NULL - means to not add a transparency color. 
 #' @param raw_spec named list of image specifications for encoding a raw vector
-#'        to PNG. Use \code{raw_spec()} to create such a list in the corrent format.
+#'        to PNG. Use \code{raw_spec()} to create such a list in the correct format.
 #'        This argument is only required if the \code{image} argument is a 
 #'        raw vector.
 #' 
@@ -78,7 +78,7 @@ write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE,
 #' to \code{write_png()}
 #' 
 #' @param width,height image dimensions
-#' @param nchannels number of colour channels. Integer value in range [1, 4]
+#' @param depth number of colour channels. Integer value in range [1, 4]
 #' @param bits number of bits for each colour channel. Either 8 or 16.
 #' 
 #' @return named list to pass to the \code{write_png(..., raw_spec = )}
@@ -88,10 +88,10 @@ write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE,
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 raw_spec <- function(width, height, nchannels, bits) {
   list(
-    width     = width,
-    height    = height,
-    nchannels = nchannels,
-    bits      = bits
+    width  = width,
+    height = height,
+    depth  = depth,
+    bits   = bits
   )  
 }
 

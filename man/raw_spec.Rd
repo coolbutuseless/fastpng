@@ -10,9 +10,9 @@ raw_spec(width, height, nchannels, bits)
 \arguments{
 \item{width, height}{image dimensions}
 
-\item{nchannels}{number of colour channels. Integer value in range [1, 4]}
-
 \item{bits}{number of bits for each colour channel. Either 8 or 16.}
+
+\item{depth}{number of colour channels. Integer value in range [1, 4]}
 }
 \value{
 named list to pass to the \code{write_png(..., raw_spec = )}
