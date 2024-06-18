@@ -5,14 +5,14 @@
 \title{Create a specification for how raw bytes should be interpreted when passed
 to \code{write_png()}}
 \usage{
-raw_spec(width, height, nchannels, bits)
+raw_spec(width, height, depth, bits)
 }
 \arguments{
 \item{width, height}{image dimensions}
 
-\item{bits}{number of bits for each colour channel. Either 8 or 16.}
-
 \item{depth}{number of colour channels. Integer value in range [1, 4]}
+
+\item{bits}{number of bits for each colour channel. Either 8 or 16.}
 }
 \value{
 named list to pass to the \code{write_png(..., raw_spec = )}

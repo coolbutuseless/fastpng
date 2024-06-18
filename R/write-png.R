@@ -1,8 +1,24 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Write PNG
 #' 
-#' @param image image data.  raster, rgba array, rgb array, nativeraster object,
-#'        2D grayscale matrix (integers in [0,255] or [0,65535], or numeric in [0, 1]) 
+#' @param image image.  Supported image types:  
+#' \describe{
+#'   \item{Numeric arrays}{Numeric arrays with values in the range [0, 1], with
+#'   1, 2, 3 or 4 colour planes to represent gray, gray+alpha, rgb
+#'   and rgba pixels, respectively}
+#'   \item{Rasters}{Rasters with a mixture of named colours (e.g. 'red'),
+#'   and hex colours of the form #RGB, #RGBA, #RRGGBB and #RRGGBBAA}
+#'   \item{Integer arrays}{Integer arrays with values in [0,255] treated as
+#'   8-bit image data.  Integer arrays with values in [0, 65535] treated as
+#'   16-bit image data}
+#'   \item{Native rasters}{Integer matrices containing colurs in native format
+#'   i.e. 8-bit RGBA values packed into a single integer}
+#'   \item{Integer matrix + an indexed palette of colors}{Can be saved as 
+#'   an indexed PNG}
+#'   \item{Raw vectors}{Vectors of raw bytes must be accompanied by a 
+#'   \code{raw_spec} which details how the bytes are to be interpreted
+#'   e.g. colour depth, width and height}
+#' }
 #' @param file If NULL (the default) then return PNG data as raw vector, otherwise write
 #'        to the given file path.
 #' @param use_filter Use PNG filtering to help reduce size? Default: TRUE.
@@ -20,9 +36,9 @@
 #'        ordering.  When writing data to PNG, it is often necessary to transpose
 #'        the R data to match what PNG requires.  If this option is set 
 #'        to \code{TRUE} then the image is written without this transposition and 
-#'        should speed up PNG creation.  Currently this option is only
-#'        used when reading/writing greyscale PNGs with 2D matrix data.
-#' @param palette character vector of up to 256 colors. IF specified, and the
+#'        should speed up PNG creation.  This option only has an effect
+#'        for 2D integer and numeric matrix formats.
+#' @param palette character vector of up to 256 colors. If specified, and the
 #'        image is a 2D matrix of integer or numeric values, then an indexed 
 #'        PNG is written where the matrix values indicate the colour palette
 #'        value to use. The values in the matrix must range from 0 (for the 
@@ -86,7 +102,7 @@ write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE,
 #' raw_spec(100, 20, 3, 8)
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-raw_spec <- function(width, height, nchannels, bits) {
+raw_spec <- function(width, height, depth, bits) {
   list(
     width  = width,
     height = height,

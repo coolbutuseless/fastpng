@@ -14,6 +14,9 @@ knitr::opts_chunk$set(
   fig.height = 6
 )
 
+library(png)
+library(ggplot2)
+library(dplyr)
 library(fastpng)
 
 
@@ -45,86 +48,72 @@ if (FALSE) {
 [![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{fastpng}` reads and writes PNG images stored as files or `raw()` vectors.
+`{fastpng}` reads and writes PNG images.
 
-When writing PNG images, the compression level is configurable.  Writing 
-uncompressed PNG images can be 100x faster than writing with 
+`{fastpng}` exposes configuration options so that the user can make a trade-off
+between speed and size.  These options include:
+
+* Compression level
+* Filter use
+* Image transposition
+
+For example, writing uncompressed PNG images can be 100x faster than writing with 
 regular compression settings.
-
-In certain cases, transposing the data data can be avoided which results in
-even faster PNG creation.
-
 
 `fastpng` is an R wrapper for [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 
 ## Features 
 
-<img src="man/figures/feature-grid-fastpng-read.png" />
-<img src="man/figures/feature-grid-fastpng-write.png" />
+### Supported image data in R
 
-## Benchmarks
+Supported images each have examples in the `test_image` as part of this package.
 
-```{r warning=FALSE, echo=FALSE}
-library(ggplot2)
+* Native rasters
+* Rasters
+    * With hex colour formats: #RGB, #RGBA, #RRGGBB, #RRGGBBAA
+    * Standard R colour names also supported e.g. 'red', 'white'
+* Numeric arrays
+    * Values in range [0,1]
+    * 1-, 2-, 3- and 4-plane numeric arrays (interpreted as gray, gray+alpha,
+      RGB and RGBA images)
+* Integer arrays
+    * Values in range [0,255] treated as 8-bit values
+    * Values in range [0,65535] treated as 16-bit for PNG writing
+* Integer matrix + an indexed palette of colours 
+* Raw vectors with a specification for data layout
 
-image <- test_image$array$rgba
 
-res <- bench::mark(
-  png::writePNG(image),
-  fastpng::write_png(image),
-  fastpng::write_png(image, compression_level = 0),
-  check = FALSE,
-  relative = TRUE
-)
+### Supported PNG image types
 
-res$name <- c("{png}", "{fastpng}", "{fastpng}\nNo compression")
-res$name <- factor(res$name, levels = res$name)
+* 8-bit and 16-bit PNGs
+* RGBA, RGB, Gray + Alpha, Gray PNGs
+* Indexed colour PNGs
+* RGB PNGs with a specified transparency colour (using [tRNS chunk](https://www.w3.org/TR/PNG-Chunks))
 
-ggplot(res) + 
-  geom_col(aes(name, `itr/sec`)) + 
-  theme_bw(14) + 
-  labs(
-    title = "Relative speed of writing 300x400 RGBA array to PNG",
-    subtitle = "Bigger is better",
-    y = "Relative speed",
-    x = NULL
-  )
-```
+### Comparison to standard `{png}` library
 
-```{r warning=FALSE, echo=FALSE}
-library(ggplot2)
-
-test_image_gray8 <- test_image$array$gray
-
-res <- bench::mark(
-  png::writePNG(test_image_gray8),
-  fastpng::write_png(test_image_gray8),
-  fastpng::write_png(test_image_gray8, compression_level = 0),
-  fastpng::write_png(test_image_gray8, compression_level = 0, avoid_transpose = TRUE),
-  check = FALSE,
-  relative = TRUE
-)
-
-res$name <- c("{png}", "{fastpng}", "{fastpng}\nNo compression", "{snpg}\nNo compression.\nNo transpose")
-res$name <- factor(res$name, levels = res$name)
-
-ggplot(res) + 
-  geom_col(aes(name, `itr/sec`)) + 
-  theme_bw(14) + 
-  labs(
-    title = "Relative speed of writing 300x400 grey matrix to PNG",
-    subtitle = "Bigger is better",
-    y = "Relative speed",
-    x = NULL
-  )
-```
+|             |  `{fastpng}`    |     `{png}`   |
+|:------------|-----------------|---------------|
+| Numeric arrays              |    Yes        |    Yes       |
+| Native rasters              |    Yes        |    Yes       |
+| Rasters                     |    Yes        |              |
+| Integer Arrays              |    Yes        |              |
+| Indexed PNGs                |    Yes        |              |
+| `tRNS` transparency         |    Yes        |              |
+| Configurable compression    |    Yes        |              |
+| Configurable filtering      |    Yes        |              |
+| Configurable transposition  |    Yes        |              |
 
 
 ## Compression Settings: Speed / size tradeoff
 
 
-```{r echo=FALSE}
+<details>
+<summary> Click to reveal benchmark code and results table </summary>
+
+```{r echo=TRUE}
+library(png)
 im <- test_image$array$rgba
 
 res <- bench::mark(
@@ -139,40 +128,59 @@ res <- bench::mark(
   fastpng::write_png(im, compression_level =  8),
   fastpng::write_png(im, compression_level =  9),
   check = FALSE,
-  relative = TRUE
+  relative = FALSE
 )
 
-res$Compression = 0:9
-
-cols <- c(rep(grey(0.5), 6), 'dodgerblue3', rep(grey(0.5), 3))
-
-res$`itr/sec` <- res$`itr/sec` / res$`itr/sec`[7]
-
-ggplot(res) + 
-  geom_col(aes(Compression, `itr/sec`), fill = cols) + 
-  theme_bw(14) + 
-  labs(
-    title = "Relative speed of writing 300x400 RGBA array to PNG\ncompared to default compression level",
-    subtitle = "Bigger is better.\nBlue bar indicates default PNG compression level",
-    y = "Relative speed",
-    x = "Compression Level"
-  ) +
-  scale_x_continuous(breaks = 0:9) 
+res <- res %>% 
+  select(writes_per_second = `itr/sec`) %>%
+  mutate(
+    compression = 0:9,
+    package = "fastpng"
+  )
 
 
 sizes <- vapply(0:9, \(x) fastpng::write_png(im, compression_level = x) |> length(), integer(1))
 df <- data.frame(compression = 0:9, size = sizes)
 
-ggplot(df) + 
-  geom_col(aes(compression, size), fill = cols) + 
-  theme_bw(14) + 
+
+plot_df <- left_join(res, df, by = 'compression')
+
+
+png_speed <- bench::mark(writePNG(im))$`itr/sec`
+png_size  <- length(writePNG(im))
+
+plot_df <- plot_df %>% 
+  add_row(writes_per_second = png_speed, size = png_size, package = "png") %>%
+  mutate(
+    compression_ratio = prod(dim(im)) * 8 / size
+  )
+
+knitr::kable(plot_df)
+```
+
+</details>
+
+```{r echo=FALSE}
+ggplot(plot_df) +
+  geom_point(aes(compression_ratio, writes_per_second, colour = package)) + 
+  geom_text(aes(compression_ratio, writes_per_second, label = compression), na.rm = TRUE, hjust = -0.5, vjust = -0.5) +
+  theme_bw() + 
+  scale_y_log10(breaks = c(1, 5, 10, 50, 100, 500, 1000, 5000)) +
   labs(
-    title = "300x400 RGBA PNG file size at varying compression levels",
-    subtitle = "Blue bar indicates default PNG compression level",
-    y = "PNG file size (bytes)",
-    x = "Compression Level"
+    x = "Compression Ratio (bigger is better)",
+    y = "Writes per second (bigger is better)",
+    title = "Speed-Compression tradeoff writing PNGs from array data",
+    subtitle = paste(
+      "Numbers indicate 'compression_level' setting in {fastpng}",
+      "Lower `compression_level' settings mean faster writes", 
+      "With compression disabled, {fastpng} can write test image ~6000 times per second",
+      sep = "\n"
+    )
   ) +
-  scale_x_continuous(breaks = 0:9) 
+  theme(
+    legend.position = 'bottom'
+  )
+
 ```
 
 
@@ -265,7 +273,7 @@ palette[1:10]
 ```
 
 
-```{r echo=FALSE}
+```{r eval=FALSE}
 tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
 ```

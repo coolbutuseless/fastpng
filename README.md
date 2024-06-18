@@ -9,33 +9,134 @@
 [![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`{fastpng}` reads and writes PNG images stored as files or `raw()`
-vectors.
+`{fastpng}` reads and writes PNG images.
 
-When writing PNG images, the compression level is configurable. Writing
-uncompressed PNG images can be 100x faster than writing with regular
-compression settings.
+`{fastpng}` exposes configuration options so that the user can make a
+trade-off between speed and size. These options include:
 
-In certain cases, transposing the data data can be avoided which results
-in even faster PNG creation.
+- Compression level
+- Filter use
+- Image transposition
+
+For example, writing uncompressed PNG images can be 100x faster than
+writing with regular compression settings.
 
 `fastpng` is an R wrapper for
 [libspng](https://github.com/randy408/libspng) - current v0.7.4
 
 ## Features
 
-<img src="man/figures/feature-grid-fastpng-read.png" />
-<img src="man/figures/feature-grid-fastpng-write.png" />
+### Supported image data in R
 
-## Benchmarks
+Supported images each have examples in the `test_image` as part of this
+package.
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+- Native rasters
+- Rasters
+  - With hex colour formats: \#RGB, \#RGBA, \#RRGGBB, \#RRGGBBAA
+  - Standard R colour names also supported e.g. ‘red’, ‘white’
+- Numeric arrays
+  - Values in range \[0,1\]
+  - 1-, 2-, 3- and 4-plane numeric arrays (interpreted as gray,
+    gray+alpha, RGB and RGBA images)
+- Integer arrays
+  - Values in range \[0,255\] treated as 8-bit values
+  - Values in range \[0,65535\] treated as 16-bit for PNG writing
+- Integer matrix + an indexed palette of colours
+- Raw vectors with a specification for data layout
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+### Supported PNG image types
+
+- 8-bit and 16-bit PNGs
+- RGBA, RGB, Gray + Alpha, Gray PNGs
+- Indexed colour PNGs
+- RGB PNGs with a specified transparency colour (using [tRNS
+  chunk](https://www.w3.org/TR/PNG-Chunks))
+
+### Comparison to standard `{png}` library
+
+|                            | `{fastpng}` | `{png}` |
+|:---------------------------|-------------|---------|
+| Numeric arrays             | Yes         | Yes     |
+| Native rasters             | Yes         | Yes     |
+| Rasters                    | Yes         |         |
+| Integer Arrays             | Yes         |         |
+| Indexed PNGs               | Yes         |         |
+| `tRNS` transparency        | Yes         |         |
+| Configurable compression   | Yes         |         |
+| Configurable filtering     | Yes         |         |
+| Configurable transposition | Yes         |         |
 
 ## Compression Settings: Speed / size tradeoff
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
+<details>
+<summary>
+Click to reveal benchmark code and results table
+</summary>
+
+``` r
+library(png)
+im <- test_image$array$rgba
+
+res <- bench::mark(
+  fastpng::write_png(im, compression_level =  0),
+  fastpng::write_png(im, compression_level =  1),
+  fastpng::write_png(im, compression_level =  2),
+  fastpng::write_png(im, compression_level =  3),
+  fastpng::write_png(im, compression_level =  4),
+  fastpng::write_png(im, compression_level =  5),
+  fastpng::write_png(im, compression_level =  6),
+  fastpng::write_png(im, compression_level =  7),
+  fastpng::write_png(im, compression_level =  8),
+  fastpng::write_png(im, compression_level =  9),
+  check = FALSE,
+  relative = FALSE
+)
+
+res <- res %>% 
+  select(writes_per_second = `itr/sec`) %>%
+  mutate(
+    compression = 0:9,
+    package = "fastpng"
+  )
+
+
+sizes <- vapply(0:9, \(x) fastpng::write_png(im, compression_level = x) |> length(), integer(1))
+df <- data.frame(compression = 0:9, size = sizes)
+
+
+plot_df <- left_join(res, df, by = 'compression')
+
+
+png_speed <- bench::mark(writePNG(im))$`itr/sec`
+png_size  <- length(writePNG(im))
+
+plot_df <- plot_df %>% 
+  add_row(writes_per_second = png_speed, size = png_size, package = "png") %>%
+  mutate(
+    compression_ratio = prod(dim(im)) * 8 / size
+  )
+
+knitr::kable(plot_df)
+```
+
+| writes_per_second | compression | package |   size | compression_ratio |
+|------------------:|------------:|:--------|-------:|------------------:|
+|        6075.44521 |           0 | fastpng | 240651 |          7.978359 |
+|         291.82937 |           1 | fastpng |  62456 |         30.741642 |
+|         252.59418 |           2 | fastpng |  58017 |         33.093748 |
+|         156.60974 |           3 | fastpng |  54119 |         35.477374 |
+|         181.83016 |           4 | fastpng |  46436 |         41.347231 |
+|         121.05159 |           5 | fastpng |  43177 |         44.468120 |
+|          63.93423 |           6 | fastpng |  41303 |         46.485727 |
+|          41.20458 |           7 | fastpng |  40799 |         47.059977 |
+|          14.12380 |           8 | fastpng |  40758 |         47.107316 |
+|          12.84516 |           9 | fastpng |  40776 |         47.086522 |
+|          67.46672 |          NA | png     |  41303 |         46.485727 |
+
+</details>
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 ## Installation
 
@@ -135,7 +236,7 @@ nara[1:10, 1:10]
 grid::grid.raster(nara, interpolate = FALSE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ### Write image as indexed PNG
 
@@ -168,7 +269,12 @@ palette[1:10]
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+``` r
+tmp <- tempfile()
+write_png(image = indices, palette = palette, file = tmp)
+```
+
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ## Acknowledgements
 
