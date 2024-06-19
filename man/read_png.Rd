@@ -6,7 +6,7 @@
 \usage{
 read_png(
   src,
-  type = c("array", "raster", "native_raster", "indexed", "raw"),
+  type = c("array", "raster", "nativeraster", "indexed", "raw"),
   rgba = FALSE,
   flags = 1L,
   avoid_transpose = FALSE,
@@ -18,7 +18,7 @@ read_png(
 containing encoded PNG data}
 
 \item{type}{type of R object in which to store image data. Valid types are
-'array', 'raster', 'native_raster', 'indexed' and 'raw'.  Note that indexed
+'array', 'raster', "nativeraster", 'indexed' and 'raw'.  Note that indexed
 image objects can only be loaded from indexed PNGs.}
 
 \item{rgba}{Should the result be forced into RGBA?  Default: FALSE

@@ -922,7 +922,7 @@ SEXP read_png_(SEXP src_, SEXP type_, SEXP rgba_, SEXP flags_, SEXP avoid_transp
   
   const char *image_type = CHAR(STRING_ELT(type_, 0));
   
-  if (strcmp(image_type, "native_raster") == 0) {
+  if (strcmp(image_type, "nativeraster") == 0) {
     return read_png_as_nara_(src_, flags_);
   } else if (strcmp(image_type, "raster") == 0) {
     return read_png_as_raster_(src_, rgba_, flags_);

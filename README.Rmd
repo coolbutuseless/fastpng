@@ -231,7 +231,7 @@ png_data[1:100]
 ### Read PNG as native raster
 
 ```{r}
-nara <- read_png(png_data, type = 'native_raster')
+nara <- read_png(png_data, type = "nativeraster")
 nara[1:10, 1:10]
 grid::grid.raster(nara, interpolate = FALSE)
 ```
@@ -241,7 +241,7 @@ grid::grid.raster(nara, interpolate = FALSE)
 library(png)
 bench::mark(
   # read_png(png_data),
-  read_png(png_data, type = 'native_raster'),
+  read_png(png_data, type = "nativeraster"),
   read_png(png_data, type = 'ras'),
   read_png(png_data, type = 'rgba'),
   read_png(png_data, type = 'rgb'),

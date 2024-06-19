@@ -58,7 +58,7 @@ A description of the image data within each image type
       \item{$named}{Raster image of color values given as R color names e.g. 'red', 'blue'}
     }
   }
-  \item{test_image$native_raster}{ 
+  \item{test_image$nativeraster}{ 
   Integer matrix of integer values. Each 32-bit numeric value holds a
   packed RGBA pixel
     \describe{

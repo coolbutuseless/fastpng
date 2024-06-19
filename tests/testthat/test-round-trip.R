@@ -4,9 +4,9 @@ test_that("write/read round trip is idempotent", {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Test write/read cycle for nativeraster
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  for (im in test_image$native_raster) {
+  for (im in test_image$nativeraster) {
     raw_vec <- write_png(im)
-    im2 <- read_png(raw_vec, type = 'native_raster')
+    im2 <- read_png(raw_vec, type = "nativeraster")
     
     # equal except for rounding 
     expect_identical(im, im2)    
@@ -94,7 +94,7 @@ if (FALSE) {
   im2 <- read_png(raw_vec, type = 'array', rgba = FALSE)
   
   im2 <- read_png(raw_vec, type = 'array', rgba = TRUE)
-  im2 <- read_png(raw_vec, type = 'native_raster')
+  im2 <- read_png(raw_vec, type = "nativeraster")
   im2 <- read_png(raw_vec, type = 'raster')
 
   

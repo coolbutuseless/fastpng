@@ -289,7 +289,7 @@ test_image <- list(
     rgba = test_image_raster_rgba,
     named = test_image_raster_named
   ),
-  native_raster = list(
+  nativeraster = list(
     rgba = test_image_nativeraster
   ),
   indexed = list(

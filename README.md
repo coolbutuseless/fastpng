@@ -217,7 +217,7 @@ png_data[1:100]
 ### Read PNG as native raster
 
 ``` r
-nara <- read_png(png_data, type = 'native_raster')
+nara <- read_png(png_data, type = "nativeraster")
 nara[1:10, 1:10]
 #>       [,1] [,2]        [,3]        [,4] [,5] [,6]     [,7]     [,8] [,9] [,10]
 #>  [1,]    0    0    -9406092           0    0    0 -8091002 -7695987    0     0

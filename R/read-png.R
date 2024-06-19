@@ -4,7 +4,7 @@
 #' @param src PNG image provided as either a file path, or a raw vector 
 #'        containing encoded PNG data
 #' @param type type of R object in which to store image data. Valid types are
-#'        'array', 'raster', 'native_raster', 'indexed' and 'raw'.  Note that indexed
+#'        'array', 'raster', "nativeraster", 'indexed' and 'raw'.  Note that indexed
 #'        image objects can only be loaded from indexed PNGs.
 #' @param rgba Should the result be forced into RGBA?  Default: FALSE  
 #'        means to use the most appropriate format of the given R image type 
@@ -34,7 +34,7 @@
 #' @importFrom grDevices as.raster
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-read_png <- function(src, type = c('array', 'raster', 'native_raster', 'indexed', 'raw'), 
+read_png <- function(src, type = c('array', 'raster', "nativeraster", 'indexed', 'raw'), 
                      rgba = FALSE, flags = 1L, avoid_transpose = FALSE,
                      array_type = c('dbl', 'int')) {
   .Call(read_png_, src, match.arg(type), rgba, flags, avoid_transpose, array_type)

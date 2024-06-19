@@ -39,7 +39,7 @@ write_png(
 \item{file}{If NULL (the default) then return PNG data as raw vector, otherwise write
 to the given file path.}
 
-\item{palette}{character vector of up to 256 colors. IF specified, and the
+\item{palette}{character vector of up to 256 colors. If specified, and the
 image is a 2D matrix of integer or numeric values, then an indexed 
 PNG is written where the matrix values indicate the colour palette
 value to use. The values in the matrix must range from 0 (for the 

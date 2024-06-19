@@ -148,20 +148,20 @@ test_that("raw 16bit read/write other formats", {
 
 
 
-test_that("native_raster read/write other formats", {
+test_that("nativeraster read/write other formats", {
   
   expect_identical(
-    write_png(test_image$native_raster$rgba) |> read_png(type = 'native_raster'),
-    test_image$native_raster$rgba
+    write_png(test_image$nativeraster$rgba) |> read_png(type = "nativeraster"),
+    test_image$nativeraster$rgba
   )  
   
   expect_identical(
-    write_png(test_image$native_raster$rgba) |> read_png(type = 'raster'),
+    write_png(test_image$nativeraster$rgba) |> read_png(type = 'raster'),
     test_image$raster$rgba
   )  
   
   expect_identical(
-    write_png(test_image$native_raster$rgba) |> read_png(type = 'array'),
+    write_png(test_image$nativeraster$rgba) |> read_png(type = 'array'),
     test_image$array$rgba
   )    
   
@@ -177,8 +177,8 @@ test_that("raster read/write other formats", {
   )  
   
   expect_identical(
-    write_png(test_image$raster$rgba) |> read_png(type = 'native_raster'),
-    test_image$native_raster$rgba
+    write_png(test_image$raster$rgba) |> read_png(type = "nativeraster"),
+    test_image$nativeraster$rgba
   )  
   
   expect_identical(
@@ -216,13 +216,13 @@ test_that("8bit array: Exhastive check of r/w sanity between formats", {
   )  
   
   expect_identical(
-    write_png(test_image$array$rgba) |> read_png(type = 'native_raster'),
-    test_image$native_raster$rgba
+    write_png(test_image$array$rgba) |> read_png(type = "nativeraster"),
+    test_image$nativeraster$rgba
   )
   
   expect_identical(
     write_png(test_image$array$rgba) |> png::readPNG(native = TRUE),
-    test_image$native_raster$rgba
+    test_image$nativeraster$rgba
   )
   
   
@@ -417,7 +417,7 @@ test_that("16bit array: Exhastive check of r/w sanity between formats", {
 
 
 if (FALSE) {
-  im <- write_png(test_image$native_raster$rgba) 
+  im <- write_png(test_image$nativeraster$rgba) 
   get_png_info(im)
   read_png(im) |> dim()
 }

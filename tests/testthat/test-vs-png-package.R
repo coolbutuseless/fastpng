@@ -25,8 +25,8 @@ test_that("identical writes to PNG package in basic case", {
 
   
   expect_identical(
-    write_png(test_image$native_raster$rgba),
-    png::writePNG(test_image$native_raster$rgba)
+    write_png(test_image$nativeraster$rgba),
+    png::writePNG(test_image$nativeraster$rgba)
   )
   
 })
@@ -59,8 +59,8 @@ test_that("identical reads to PNG package in basic case", {
   
   
   expect_identical(
-    write_png    (test_image$native_raster$rgba) |> read_png(),
-    png::writePNG(test_image$native_raster$rgba) |> png::readPNG()
+    write_png    (test_image$nativeraster$rgba) |> read_png(),
+    png::writePNG(test_image$nativeraster$rgba) |> png::readPNG()
   )
   
 })
