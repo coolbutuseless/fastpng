@@ -51,7 +51,7 @@ if (FALSE) {
 `{fastpng}` reads and writes PNG images.
 
 `{fastpng}` exposes configuration options so that the user can make a trade-off
-between speed and size.  These options include:
+between speed of writing and PNG size.  These options include:
 
 * Compression level
 * Filter use
@@ -69,19 +69,19 @@ regular compression settings.
 
 Supported images each have examples in the `test_image` as part of this package.
 
-* Native rasters
-* Rasters
+* **Native rasters**
+* **Rasters**
     * With hex colour formats: #RGB, #RGBA, #RRGGBB, #RRGGBBAA
     * Standard R colour names also supported e.g. 'red', 'white'
-* Numeric arrays
+* **Numeric arrays**
     * Values in range [0,1]
     * 1-, 2-, 3- and 4-plane numeric arrays (interpreted as gray, gray+alpha,
       RGB and RGBA images)
-* Integer arrays
+* **Integer arrays**
     * Values in range [0,255] treated as 8-bit values
     * Values in range [0,65535] treated as 16-bit for PNG writing
-* Integer matrix + an indexed palette of colours 
-* Raw vectors with a specification for data layout
+* **Integer matrix + an indexed palette of colours** 
+* **Raw vectors** with a specification for data layout
 
 
 ### Supported PNG image types
@@ -205,63 +205,62 @@ remotes::install_github('coolbutuseless/fastpng')
   RGBA and RGB numeric arrays, raster, native raster.
   
 
-## Example: Decompress a PNG from a raw vector
+## Example: Read a PNG into R
 
-```{r example}
+```{r fig.height = 2}
 library(fastpng)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# A PNG file everyone should have!
-# Read in the raw bytes
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 png_file <- system.file("img", "Rlogo.png", package="png")
-png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-png_data[1:100]
+fastpng::get_png_info(png_file)
+
+ras <- read_png(png_file, type = 'raster') 
+grid::grid.raster(ras, interpolate = FALSE)
 ```
 
+
+#### Read as a raster (of hex colours)
 
 ```{r}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get info about the PNG 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(get_png_info <- fastpng::get_png_info(png_data))
+ras <- read_png(png_file, type = "raster")
+ras[7:11, 79:83]
 ```
 
-
-### Read PNG as native raster
+#### Read as a numeric array
 
 ```{r}
-nara <- read_png(png_data, type = "nativeraster")
-nara[1:10, 1:10]
-grid::grid.raster(nara, interpolate = FALSE)
+ras <- read_png(png_file, type = "array")
+ras[7:11, 79:83, 1] # red channel
+```
+
+#### Read as an integer array
+
+```{r}
+ras <- read_png(png_file, type = "array", array_type = 'integer')
+ras[7:11, 79:83, 1] # red channel
+```
+
+#### Read as a native raster
+
+```{r}
+im <- read_png(png_file, type = "nativeraster")
+im[7:11, 79:83]
+```
+
+## Write an image to PNG with/without compression
+
+```{r}
+png_file <- tempfile()
+write_png(im, png_file)  # standard compression
+file.size(png_file)
+```
+
+```{r}
+write_png(im, png_file, compression_level = 0) # no compression, but fast!
+file.size(png_file)
 ```
 
 
-```{r eval=FALSE, echo=FALSE}
-library(png)
-bench::mark(
-  # read_png(png_data),
-  read_png(png_data, type = "nativeraster"),
-  read_png(png_data, type = 'ras'),
-  read_png(png_data, type = 'rgba'),
-  read_png(png_data, type = 'rgb'),
-  readPNG(png_data, native = FALSE),
-  readPNG(png_data, native = FALSE) |> as.raster(),
-  readPNG(png_data, native = TRUE),
-  check = FALSE
-)
-```
 
-
-
-```{r echo=FALSE, eval = FALSE}
-im <- matrix("#445566FF", 100, 150)
-as.raster(im)
-grid.raster(im)
-```
-
-
-### Write image as indexed PNG
+## Write integer matrix as indexed PNG
 
 ```{r}
 indices <- test_image$indexed$integer_index

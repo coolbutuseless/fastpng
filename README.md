@@ -12,7 +12,7 @@
 `{fastpng}` reads and writes PNG images.
 
 `{fastpng}` exposes configuration options so that the user can make a
-trade-off between speed and size. These options include:
+trade-off between speed of writing and PNG size. These options include:
 
 - Compression level
 - Filter use
@@ -31,19 +31,19 @@ writing with regular compression settings.
 Supported images each have examples in the `test_image` as part of this
 package.
 
-- Native rasters
-- Rasters
+- **Native rasters**
+- **Rasters**
   - With hex colour formats: \#RGB, \#RGBA, \#RRGGBB, \#RRGGBBAA
   - Standard R colour names also supported e.g. ‘red’, ‘white’
-- Numeric arrays
+- **Numeric arrays**
   - Values in range \[0,1\]
   - 1-, 2-, 3- and 4-plane numeric arrays (interpreted as gray,
     gray+alpha, RGB and RGBA images)
-- Integer arrays
+- **Integer arrays**
   - Values in range \[0,255\] treated as 8-bit values
   - Values in range \[0,65535\] treated as 16-bit for PNG writing
-- Integer matrix + an indexed palette of colours
-- Raw vectors with a specification for data layout
+- **Integer matrix + an indexed palette of colours**
+- **Raw vectors** with a specification for data layout
 
 ### Supported PNG image types
 
@@ -122,17 +122,17 @@ knitr::kable(plot_df)
 
 | writes_per_second | compression | package |   size | compression_ratio |
 |------------------:|------------:|:--------|-------:|------------------:|
-|        6075.44521 |           0 | fastpng | 240651 |          7.978359 |
-|         291.82937 |           1 | fastpng |  62456 |         30.741642 |
-|         252.59418 |           2 | fastpng |  58017 |         33.093748 |
-|         156.60974 |           3 | fastpng |  54119 |         35.477374 |
-|         181.83016 |           4 | fastpng |  46436 |         41.347231 |
-|         121.05159 |           5 | fastpng |  43177 |         44.468120 |
-|          63.93423 |           6 | fastpng |  41303 |         46.485727 |
-|          41.20458 |           7 | fastpng |  40799 |         47.059977 |
-|          14.12380 |           8 | fastpng |  40758 |         47.107316 |
-|          12.84516 |           9 | fastpng |  40776 |         47.086522 |
-|          67.46672 |          NA | png     |  41303 |         46.485727 |
+|        6279.13219 |           0 | fastpng | 240651 |          7.978359 |
+|         293.24912 |           1 | fastpng |  62456 |         30.741642 |
+|         253.79242 |           2 | fastpng |  58017 |         33.093748 |
+|         159.59145 |           3 | fastpng |  54119 |         35.477374 |
+|         182.61166 |           4 | fastpng |  46436 |         41.347231 |
+|         121.17569 |           5 | fastpng |  43177 |         44.468120 |
+|          63.98832 |           6 | fastpng |  41303 |         46.485727 |
+|          41.11499 |           7 | fastpng |  40799 |         47.059977 |
+|          14.10135 |           8 | fastpng |  40758 |         47.107316 |
+|          12.91560 |           9 | fastpng |  40776 |         47.086522 |
+|          67.35916 |          NA | png     |  41303 |         46.485727 |
 
 </details>
 
@@ -160,29 +160,12 @@ remotes::install_github('coolbutuseless/fastpng')
   different datastructures and of differing bitdepth etc: RGBA and RGB
   numeric arrays, raster, native raster.
 
-## Example: Decompress a PNG from a raw vector
+## Example: Read a PNG into R
 
 ``` r
 library(fastpng)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# A PNG file everyone should have!
-# Read in the raw bytes
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 png_file <- system.file("img", "Rlogo.png", package="png")
-png_data <- readBin(png_file, 'raw', n = file.size(png_file))
-png_data[1:100]
-#>   [1] 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 64 00 00 00 4c 08
-#>  [26] 06 00 00 00 9b 1d 12 0f 00 00 00 06 62 4b 47 44 00 ff 00 ff 00 ff a0 bd a7
-#>  [51] 93 00 00 00 09 70 48 59 73 00 00 2e 23 00 00 2e 23 01 78 a5 3f 76 00 00 00
-#>  [76] 07 74 49 4d 45 07 d5 02 10 10 08 0e 97 b9 27 bc 00 00 20 00 49 44 41 54 78
-```
-
-``` r
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get info about the PNG 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(get_png_info <- fastpng::get_png_info(png_data))
+fastpng::get_png_info(png_file)
 #> $width
 #> [1] 100
 #> 
@@ -214,31 +197,82 @@ png_data[1:100]
 #> [1] "SPNG_INTERLACE_NONE"
 ```
 
-### Read PNG as native raster
+``` r
+
+ras <- read_png(png_file, type = 'raster') 
+grid::grid.raster(ras, interpolate = FALSE)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
+#### Read as a raster (of hex colours)
 
 ``` r
-nara <- read_png(png_data, type = "nativeraster")
-nara[1:10, 1:10]
-#>       [,1] [,2]        [,3]        [,4] [,5] [,6]     [,7]     [,8] [,9] [,10]
-#>  [1,]    0    0    -9406092           0    0    0 -8091002 -7695987    0     0
-#>  [2,]    0    0    -9340300           0    0    0 -8156795 -7630450    0     0
-#>  [3,]    0    0    -9340556    29278912    0    0 -8288124 -7630194    0     0
-#>  [4,]    0    0    -9406349   747804820    0    0 -8353917 -7564401    0     0
-#>  [5,]    0    0    -9472142  1837534601    0    0 -8485503 -7498608    0     0
-#>  [6,]    0    0    -9537678 -1367110777    0    0 -8551296 -7432815    0     0
-#>  [7,]    0    0    -9537679  -410941308    0    0 -8682881 -7301229    0     0
-#>  [8,]    0    0  -126846604    -8551039    0    0 -8814211 -7235436    0     0
-#>  [9,]    0    0  -663651979    -8616832    0    0 -9011590 -7169644    0     0
-#> [10,]    0    0 -1317963403    -8617088    0    0 -9143177 -7169643    0     0
+ras <- read_png(png_file, type = "raster")
+ras[7:11, 79:83]
+#>      [,1]        [,2]        [,3]        [,4]        [,5]       
+#> [1,] "#686D6597" "#7579711F" "#00000000" "#00000000" "#00000000"
+#> [2,] "#5F645CFF" "#5D635AF9" "#63696098" "#7B80781C" "#00000000"
+#> [3,] "#686D64FF" "#61665DFF" "#5B6158FF" "#5C6158F5" "#656A6280"
+#> [4,] "#71766EFF" "#6B6F67FF" "#656A61FF" "#5E635BFF" "#595E55FF"
+#> [5,] "#797D75FF" "#747971FF" "#6E736AFF" "#686D64FF" "#60655DFF"
+```
+
+#### Read as a numeric array
+
+``` r
+ras <- read_png(png_file, type = "array")
+ras[7:11, 79:83, 1] # red channel
+#>           [,1]      [,2]      [,3]      [,4]      [,5]
+#> [1,] 0.4078431 0.4588235 0.0000000 0.0000000 0.0000000
+#> [2,] 0.3725490 0.3647059 0.3882353 0.4823529 0.0000000
+#> [3,] 0.4078431 0.3803922 0.3568627 0.3607843 0.3960784
+#> [4,] 0.4431373 0.4196078 0.3960784 0.3686275 0.3490196
+#> [5,] 0.4745098 0.4549020 0.4313725 0.4078431 0.3764706
+```
+
+#### Read as an integer array
+
+``` r
+ras <- read_png(png_file, type = "array", array_type = 'integer')
+ras[7:11, 79:83, 1] # red channel
+#>      [,1] [,2] [,3] [,4] [,5]
+#> [1,]  104  117    0    0    0
+#> [2,]   95   93   99  123    0
+#> [3,]  104   97   91   92  101
+#> [4,]  113  107  101   94   89
+#> [5,]  121  116  110  104   96
+```
+
+#### Read as a native raster
+
+``` r
+im <- read_png(png_file, type = "nativeraster")
+im[7:11, 79:83]
+#>          [,1] [,2] [,3]     [,4]      [,5]
+#> [1,] -7235693    0    0 -7301485  -7767184
+#> [2,] -7367279    0    0 -7367022  -5864589
+#> [3,] -7498608    0    0 -7301485  -4219764
+#> [4,] -7432815    0    0 -7235692   -995135
+#> [5,] -6648959    0    0 -7501694 -10268343
+```
+
+## Write an image to PNG with/without compression
+
+``` r
+png_file <- tempfile()
+write_png(im, png_file)  # standard compression
+file.size(png_file)
+#> [1] 11938
 ```
 
 ``` r
-grid::grid.raster(nara, interpolate = FALSE)
+write_png(im, png_file, compression_level = 0) # no compression, but fast!
+file.size(png_file)
+#> [1] 30580
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
-
-### Write image as indexed PNG
+## Write integer matrix as indexed PNG
 
 ``` r
 indices <- test_image$indexed$integer_index
@@ -274,7 +308,7 @@ tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 ## Acknowledgements
 
