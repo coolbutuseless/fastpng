@@ -70,7 +70,9 @@ package.
 ## Compression Settings: Speed / size tradeoff
 
 <details>
+
 <summary>
+
 Click to reveal benchmark code and results table
 </summary>
 
@@ -122,19 +124,21 @@ knitr::kable(plot_df)
 
 | writes_per_second | compression | package |   size | compression_ratio |
 |------------------:|------------:|:--------|-------:|------------------:|
-|        6279.13219 |           0 | fastpng | 240651 |          7.978359 |
-|         293.24912 |           1 | fastpng |  62456 |         30.741642 |
-|         253.79242 |           2 | fastpng |  58017 |         33.093748 |
-|         159.59145 |           3 | fastpng |  54119 |         35.477374 |
-|         182.61166 |           4 | fastpng |  46436 |         41.347231 |
-|         121.17569 |           5 | fastpng |  43177 |         44.468120 |
-|          63.98832 |           6 | fastpng |  41303 |         46.485727 |
-|          41.11499 |           7 | fastpng |  40799 |         47.059977 |
-|          14.10135 |           8 | fastpng |  40758 |         47.107316 |
-|          12.91560 |           9 | fastpng |  40776 |         47.086522 |
-|          67.35916 |          NA | png     |  41303 |         46.485727 |
+|        6314.94079 |           0 | fastpng | 240651 |          7.978359 |
+|         293.29542 |           1 | fastpng |  62456 |         30.741642 |
+|         252.60108 |           2 | fastpng |  58017 |         33.093748 |
+|         159.96302 |           3 | fastpng |  54119 |         35.477374 |
+|         182.34735 |           4 | fastpng |  46436 |         41.347231 |
+|         120.91288 |           5 | fastpng |  43177 |         44.468120 |
+|          63.90190 |           6 | fastpng |  41303 |         46.485727 |
+|          41.10316 |           7 | fastpng |  40799 |         47.059977 |
+|          14.08503 |           8 | fastpng |  40758 |         47.107316 |
+|          12.93706 |           9 | fastpng |  40776 |         47.086522 |
+|          67.23393 |          NA | png     |  41303 |         46.485727 |
 
 </details>
+
+    #> Saving 8 x 6 in image
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
@@ -195,9 +199,6 @@ fastpng::get_png_info(png_file)
 #> 
 #> $interlate_desc
 #> [1] "SPNG_INTERLACE_NONE"
-```
-
-``` r
 
 ras <- read_png(png_file, type = 'raster') 
 grid::grid.raster(ras, interpolate = FALSE)
@@ -280,9 +281,6 @@ palette <- test_image$indexed$palette
 
 dim(indices)
 #> [1] 200 300
-```
-
-``` r
 indices[1:10, 1:10]
 #>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 #>  [1,]    0    0    0    0    0    0    0    0    0     0
@@ -295,9 +293,6 @@ indices[1:10, 1:10]
 #>  [8,]    0    0    0    1    1    1    1    1    1     1
 #>  [9,]    0    0    0    1    1    1    1    1    1     2
 #> [10,]    0    0    1    1    1    1    1    1    2     2
-```
-
-``` r
 palette[1:10]
 #>  [1] "#440154FF" "#440256FF" "#450457FF" "#450559FF" "#46075AFF" "#46085CFF"
 #>  [7] "#460A5DFF" "#460B5EFF" "#470D60FF" "#470E61FF"
@@ -309,9 +304,3 @@ write_png(image = indices, palette = palette, file = tmp)
 ```
 
 <img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
-
-## Acknowledgements
-
-- R Core for developing and maintaining the language.
-- CRAN maintainers, for patiently shepherding packages onto CRAN and
-  maintaining the repository

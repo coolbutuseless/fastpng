@@ -161,14 +161,14 @@ knitr::kable(plot_df)
 </details>
 
 ```{r echo=FALSE}
-ggplot(plot_df) +
+p <- ggplot(plot_df) +
   geom_point(aes(compression_ratio, writes_per_second, colour = package)) + 
   geom_text(aes(compression_ratio, writes_per_second, label = compression), na.rm = TRUE, hjust = -0.5, vjust = -0.5) +
   theme_bw() + 
   scale_y_log10(breaks = c(1, 5, 10, 50, 100, 500, 1000, 5000)) +
   labs(
-    x = "Compression Ratio (bigger is better)",
-    y = "Writes per second (bigger is better)",
+    x = "Compression Ratio (Higher values are better)",
+    y = "Writes per second (Bigger is better)",
     title = "Speed-Compression tradeoff writing PNGs from array data",
     subtitle = paste(
       "Numbers indicate 'compression_level' setting in {fastpng}",
@@ -181,6 +181,9 @@ ggplot(plot_df) +
     legend.position = 'bottom'
   )
 
+
+ggsave("vignettes/image/benchmark.png")
+p
 ```
 
 
@@ -277,7 +280,7 @@ tmp <- tempfile()
 write_png(image = indices, palette = palette, file = tmp)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height = 2}
 write_png(image = indices, palette = palette) |>
   read_png() |> 
   grid::grid.raster()
@@ -291,11 +294,3 @@ write_png(image = indices, palette = palette, file = "working/indexed.png")
 
 
 
-
-
-
-## Acknowledgements
-
-* R Core for developing and maintaining the language.
-* CRAN maintainers, for patiently shepherding packages onto CRAN and maintaining
-  the repository

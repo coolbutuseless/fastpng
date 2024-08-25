@@ -1,71 +1,15 @@
 
-# fastpng 0.1.3.9012 2024-06-17
+# fastpng 0.1.4  2024-08-25
 
-* Support named R colours for raster output
-* Removed `normalize_colors()`
-
-# fastpng 0.1.3.9011 2024-06-17
-
-* use `hex2nibble()` from `{colourlookup}`
-* expand hex support to include #RGB and #RGBA colour spec.
-
-# fastpng 0.1.3.9010 2024-06-16
-
-* Complete roxygen documentation for CRAN
-* Add `normalize_colors()`
 * Standardise on spelling of `color`
-
-# fastpng 0.1.3.9009 2024-03-19
-
-* normalize pathnames
-
-# fastpng 0.1.3.9008 2024-02-10
-
-* Adding `raw()` test images
-* More tests
-* some bug fixes for 16 bit read/write
-
-# fastpng 0.1.3.9007 2024-02-10
-
-* Fix a couple of bugs reading 16 bit PNGs
-* Fix some bugs when setting `rgba = TRUE`
-* More tests 
-
-# fastpng 0.1.3.9006 2024-02-09
-
-* Support 16-bit raw vectors 
-
-# fastpng 0.1.3.9005 2024-02-08
-
-* Refactored array transposition to be more compact
-* Support read/write from integer arrays.  For 8bit integer arrays, values should be
-  in range [0,255].  For 16bit integer arrays, values should be in 
-  range [0,65535]
-
-# fastpng 0.1.3.9004 2024-02-08
-
-* Read/Write PNGs with `raw()` vectors.  Raw vectors contain the pixel data in 
-  row-major packed pixel format e.g. `RGBARGBARGBA`.
-
-# fastpng 0.1.3.9003 2024-02-07
-
-* Writing now supports specification of a single color for transparency 
- in RGB and GrayScale images.  New argument: `trns` 
-
-# fastpng 0.1.3.9002 2024-02-06
-
-* Read/write 16-bit PNGs from/to arrays
-* raster and nativeraster will read 16-bit PNGs with 8bit precision.
-* PNG does not support indexed images at 16bits.
-
-# fastpng 0.1.3.9001 2024-02-05
-
-* Indexed PNGs now support alpha by including `tRNS` chunk
-
-# fastpng 0.1.3.9000 2024-02-04
-
-* Read/Write indexed PNG
-* Fix GA8 reading
+* Include fast hashed color lookup when writing rasters
+* Read/write PNGs from `raw` vectors
+* Read/write from integer arrays
+* Read/write indexed PNGs
+* Support `trns` PNG transparency
+* Support for both 8bit and 16bit values when erading/writing with arrays
+* Bug fixes
+* More test images and tests
 
 # fastpng 0.1.3  2024-02-03
 

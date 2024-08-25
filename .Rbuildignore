@@ -7,3 +7,4 @@
 ^LICENSE.md$
 ^data-raw$
 ^.devcontainer$
+^man/figures$
