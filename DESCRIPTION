@@ -1,11 +1,26 @@
 Type: Package
 Package: fastpng
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: c(
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph")),
     person("Randy408", , , "randy408@protonmail.com", role = c("aut", "cph"),
-           comment = "Author of bundled libspng")
+           comment = "Author of bundled libspng"),
+    person("The PNG Reference Library Authors", role = c('aud', 'cph')),
+    person("Cosmin", "Truta", role = 'cph', comment = 
+           "SSE2 optimised filter functions, NEON optimised filter functions, NEON optimised palette expansion functions"),
+    person("Glenn", "Randers-Pehrson", role = 'cph', comment = 
+           "SSE2 optimised filter functions"),
+    person("Andreas", "Dilger", role = 'cph'),
+    person("Guy", "Schalnat", middle = "Eric", role = 'cph'),
+    person("Mike", "Klein", role = "aut", comment = "SSE2 optimised filter functions"),
+    person("Matt", "Sarett", role = "aut", comment = "SSE2 optimised filter functions"),
+    person("James", "Yu", email = "james.yu@linaro.org", role = "aut", 
+           comment = "NEON optimised filter functions"),
+    person("Mars", "Rullgard", role = "aut", comment = "NEON optimised filter functions"),
+    person("Arm Holdings", role = "cph", comment = "NEON optimised palette expansion functions"),
+    person("Richard", "Townsend", role = c('aut'), email = "Richard.Townsend@arm.com", 
+           comment = "NEON optimised palette expansion functions")
   )
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
 Description: Read and write PNG images with arrays, rasters, native
@@ -32,7 +47,11 @@ VignetteBuilder:
     knitr
 Config/testthat/edition: 3
 Copyright: The included 'libspng' code is Copyright (c) 2018-2023, Randy
-    <randy408@protonmail.com>.  See 'COPYRIGHTS' for license information.
+    <randy408@protonmail.com>.  
+    Sections within the 'libspng' code are derived from 'libpng' and copyright
+    attributed to those authors.
+    See 'COPYRIGHTS' for license information and full attribution of 
+    all copyrighted sections of code.
 Encoding: UTF-8
 Language: en-AU
 LazyData: true

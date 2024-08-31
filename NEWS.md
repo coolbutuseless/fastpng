@@ -1,4 +1,9 @@
 
+# fastpng 0.1.5  2024-08-31
+
+* Clarify copyright information.  Sections withing spng.c are attributed 
+  to various authors.
+
 # fastpng 0.1.4  2024-08-25
 
 * Standardise on spelling of `color`
