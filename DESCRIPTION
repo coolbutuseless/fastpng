@@ -12,7 +12,7 @@ Authors@R: c(
     person("Glenn", "Randers-Pehrson", role = 'cph', comment = 
            "SSE2 optimised filter functions"),
     person("Andreas", "Dilger", role = 'cph'),
-    person("Guy", "Schalnat", middle = "Eric", role = 'cph'),
+    person("Guy Eric", "Schalnat", role = 'cph'),
     person("Mike", "Klein", role = "aut", comment = "SSE2 optimised filter functions"),
     person("Matt", "Sarett", role = "aut", comment = "SSE2 optimised filter functions"),
     person("James", "Yu", email = "james.yu@linaro.org", role = "aut", 
