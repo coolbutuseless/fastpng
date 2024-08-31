@@ -6,20 +6,20 @@ Authors@R: c(
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph")),
     person("Randy408", , , "randy408@protonmail.com", role = c("aut", "cph"),
            comment = "Author of bundled libspng"),
-    person("The PNG Reference Library Authors", role = c('aud', 'cph')),
+    person("The PNG Reference Library Authors", role = c('aut', 'cph')),
     person("Cosmin", "Truta", role = 'cph', comment = 
            "SSE2 optimised filter functions, NEON optimised filter functions, NEON optimised palette expansion functions"),
     person("Glenn", "Randers-Pehrson", role = 'cph', comment = 
            "SSE2 optimised filter functions"),
     person("Andreas", "Dilger", role = 'cph'),
     person("Guy Eric", "Schalnat", role = 'cph'),
-    person("Mike", "Klein", role = "aut", comment = "SSE2 optimised filter functions"),
-    person("Matt", "Sarett", role = "aut", comment = "SSE2 optimised filter functions"),
-    person("James", "Yu", email = "james.yu@linaro.org", role = "aut", 
+    person("Mike", "Klein", role = "ctb", comment = "SSE2 optimised filter functions"),
+    person("Matt", "Sarett", role = "ctb", comment = "SSE2 optimised filter functions"),
+    person("James", "Yu", email = "james.yu@linaro.org", role = "ctb", 
            comment = "NEON optimised filter functions"),
-    person("Mars", "Rullgard", role = "aut", comment = "NEON optimised filter functions"),
+    person("Mars", "Rullgard", role = "ctb", comment = "NEON optimised filter functions"),
     person("Arm Holdings", role = "cph", comment = "NEON optimised palette expansion functions"),
-    person("Richard", "Townsend", role = c('aut'), email = "Richard.Townsend@arm.com", 
+    person("Richard", "Townsend", role = c('ctb'), email = "Richard.Townsend@arm.com", 
            comment = "NEON optimised palette expansion functions")
   )
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
