@@ -46,6 +46,7 @@ if (FALSE) {
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 [![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/fastpng)](https://CRAN.R-project.org/package=fastpng)
 <!-- badges: end -->
 
 `{fastpng}` reads and writes PNG images.
@@ -189,7 +190,13 @@ p
 
 ## Installation
 
-You can install from [GitHub](https://github.com/coolbutuseless/fastpng) with:
+Install from [CRAN](https://cran.r-project.org/package=fastpng) with:
+
+``` r
+install.packages('fastpng')
+```
+
+You can install the latest development verion from [GitHub](https://github.com/coolbutuseless/fastpng) with:
 
 ``` r
 # install.package('remotes')

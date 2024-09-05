@@ -7,6 +7,8 @@
 
 ![](https://img.shields.io/badge/cool-useless-green.svg)
 [![R-CMD-check](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/fastpng/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/fastpng)](https://CRAN.R-project.org/package=fastpng)
 <!-- badges: end -->
 
 `{fastpng}` reads and writes PNG images.
@@ -124,17 +126,17 @@ knitr::kable(plot_df)
 
 | writes_per_second | compression | package |   size | compression_ratio |
 |------------------:|------------:|:--------|-------:|------------------:|
-|        6314.94079 |           0 | fastpng | 240651 |          7.978359 |
-|         293.29542 |           1 | fastpng |  62456 |         30.741642 |
-|         252.60108 |           2 | fastpng |  58017 |         33.093748 |
-|         159.96302 |           3 | fastpng |  54119 |         35.477374 |
-|         182.34735 |           4 | fastpng |  46436 |         41.347231 |
-|         120.91288 |           5 | fastpng |  43177 |         44.468120 |
-|          63.90190 |           6 | fastpng |  41303 |         46.485727 |
-|          41.10316 |           7 | fastpng |  40799 |         47.059977 |
-|          14.08503 |           8 | fastpng |  40758 |         47.107316 |
-|          12.93706 |           9 | fastpng |  40776 |         47.086522 |
-|          67.23393 |          NA | png     |  41303 |         46.485727 |
+|        6218.86981 |           0 | fastpng | 240651 |          7.978359 |
+|         291.79719 |           1 | fastpng |  62456 |         30.741642 |
+|         253.02288 |           2 | fastpng |  58017 |         33.093748 |
+|         160.14992 |           3 | fastpng |  54119 |         35.477374 |
+|         182.47226 |           4 | fastpng |  46436 |         41.347231 |
+|         121.51956 |           5 | fastpng |  43177 |         44.468120 |
+|          64.25097 |           6 | fastpng |  41303 |         46.485727 |
+|          41.37887 |           7 | fastpng |  40799 |         47.059977 |
+|          14.08140 |           8 | fastpng |  40758 |         47.107316 |
+|          13.02791 |           9 | fastpng |  40776 |         47.086522 |
+|          67.18115 |          NA | png     |  41303 |         46.485727 |
 
 </details>
 
@@ -144,8 +146,14 @@ knitr::kable(plot_df)
 
 ## Installation
 
-You can install from [GitHub](https://github.com/coolbutuseless/fastpng)
-with:
+Install from [CRAN](https://cran.r-project.org/package=fastpng) with:
+
+``` r
+install.packages('fastpng')
+```
+
+You can install the latest development verion from
+[GitHub](https://github.com/coolbutuseless/fastpng) with:
 
 ``` r
 # install.package('remotes')
