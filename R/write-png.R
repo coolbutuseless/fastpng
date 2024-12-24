@@ -74,6 +74,7 @@
 #' write_png(mat, file = pngfile)
 #' im <- read_png(pngfile, type = 'raster') 
 #' plot(im, interpolate = FALSE)
+#' @import colorfast
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write_png <- function(image, file = NULL, palette = NULL, use_filter = TRUE, 

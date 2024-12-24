@@ -1,4 +1,9 @@
 
+# fastpng 0.1.5.9000 2024-12-24
+
+* Use `{colorfast}` for fast color lookup
+* Set NO_REMAP in C
+
 # fastpng 0.1.5  2024-08-31
 
 * Clarify copyright information.  Sections withing spng.c are attributed 

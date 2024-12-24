@@ -1,7 +1,7 @@
 Type: Package
 Package: fastpng
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
-Version: 0.1.5
+Version: 0.1.5.9000
 Authors@R: c(
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph")),
     person("Randy408", , , "randy408@protonmail.com", role = c("aut", "cph"),
@@ -36,6 +36,12 @@ Description: Read and write PNG images with arrays, rasters, native
 License: MIT + file LICENSE
 URL: https://github.com/coolbutuseless/fastpng
 BugReports: https://github.com/coolbutuseless/fastpng/issues
+LinkingTo:
+    colorfast
+Imports:
+    colorfast (>= 1.0.0.9000)
+Remotes:
+    coolbutuseless/colorfast
 Depends: 
     R (>= 2.10)
 Suggests: 
