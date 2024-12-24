@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Colour names as returned by "colors()"
+// Colour names as returned by "colors()" (with NA + transparent inserted at head)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 char *col_name[] = {
   "NA", "transparent",

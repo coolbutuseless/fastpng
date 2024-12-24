@@ -126,17 +126,17 @@ knitr::kable(plot_df)
 
 | writes_per_second | compression | package |   size | compression_ratio |
 |------------------:|------------:|:--------|-------:|------------------:|
-|        6218.86981 |           0 | fastpng | 240651 |          7.978359 |
-|         291.79719 |           1 | fastpng |  62456 |         30.741642 |
-|         253.02288 |           2 | fastpng |  58017 |         33.093748 |
-|         160.14992 |           3 | fastpng |  54119 |         35.477374 |
-|         182.47226 |           4 | fastpng |  46436 |         41.347231 |
-|         121.51956 |           5 | fastpng |  43177 |         44.468120 |
-|          64.25097 |           6 | fastpng |  41303 |         46.485727 |
-|          41.37887 |           7 | fastpng |  40799 |         47.059977 |
-|          14.08140 |           8 | fastpng |  40758 |         47.107316 |
-|          13.02791 |           9 | fastpng |  40776 |         47.086522 |
-|          67.18115 |          NA | png     |  41303 |         46.485727 |
+|        6025.52192 |           0 | fastpng | 240651 |          7.978359 |
+|         285.47031 |           1 | fastpng |  62456 |         30.741642 |
+|         252.16243 |           2 | fastpng |  58017 |         33.093748 |
+|         159.92475 |           3 | fastpng |  54119 |         35.477374 |
+|         185.32236 |           4 | fastpng |  46436 |         41.347231 |
+|         123.10132 |           5 | fastpng |  43177 |         44.468120 |
+|          64.10639 |           6 | fastpng |  41303 |         46.485727 |
+|          40.87749 |           7 | fastpng |  40799 |         47.059977 |
+|          14.09464 |           8 | fastpng |  40758 |         47.107316 |
+|          12.89703 |           9 | fastpng |  40776 |         47.086522 |
+|          67.93557 |          NA | png     |  41303 |         46.485727 |
 
 </details>
 
@@ -146,18 +146,25 @@ knitr::kable(plot_df)
 
 ## Installation
 
-Install from [CRAN](https://cran.r-project.org/package=fastpng) with:
+This package can be installed from CRAN
 
 ``` r
 install.packages('fastpng')
 ```
 
-You can install the latest development verion from
+You can install the latest development version from
 [GitHub](https://github.com/coolbutuseless/fastpng) with:
 
 ``` r
 # install.package('remotes')
 remotes::install_github('coolbutuseless/fastpng')
+```
+
+Pre-built source/binary versions can also be installed from
+[R-universe](https://r-universe.dev)
+
+``` r
+install.packages('fastpng', repos = c('https://coolbutuseless.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 ## What’s in the box

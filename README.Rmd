@@ -190,17 +190,25 @@ p
 
 ## Installation
 
-Install from [CRAN](https://cran.r-project.org/package=fastpng) with:
+This package can be installed from CRAN
 
 ``` r
 install.packages('fastpng')
 ```
 
-You can install the latest development verion from [GitHub](https://github.com/coolbutuseless/fastpng) with:
+You can install the latest development version from
+[GitHub](https://github.com/coolbutuseless/fastpng) with:
 
 ``` r
 # install.package('remotes')
 remotes::install_github('coolbutuseless/fastpng')
+```
+
+Pre-built source/binary versions can also be installed from
+[R-universe](https://r-universe.dev)
+
+``` r
+install.packages('fastpng', repos = c('https://coolbutuseless.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 ## What's in the box
