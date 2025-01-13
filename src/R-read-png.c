@@ -263,10 +263,10 @@ SEXP read_png_as_raw_(SEXP src_, SEXP rgba_, SEXP flags_) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Set attributes on result
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Rf_setAttrib(res_, Rf_mkString("width") , Rf_ScalarInteger((int)width));
-  Rf_setAttrib(res_, Rf_mkString("height"), Rf_ScalarInteger((int)height));
-  Rf_setAttrib(res_, Rf_mkString("depth") , Rf_ScalarInteger((int)nchannels));
-  Rf_setAttrib(res_, Rf_mkString("bits" ) , Rf_ScalarInteger(bits));
+  Rf_setAttrib(res_, Rf_install("width") , Rf_ScalarInteger((int)width));
+  Rf_setAttrib(res_, Rf_install("height"), Rf_ScalarInteger((int)height));
+  Rf_setAttrib(res_, Rf_install("depth") , Rf_ScalarInteger((int)nchannels));
+  Rf_setAttrib(res_, Rf_install("bits" ) , Rf_ScalarInteger(bits));
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Tidy and return
@@ -324,8 +324,10 @@ SEXP read_png_as_nara_(SEXP src_, SEXP flags_) {
   INTEGER(dims_)[1] = (int)width;
   
   Rf_setAttrib(res_, R_DimSymbol, dims_);
-  Rf_setAttrib(res_, R_ClassSymbol, Rf_mkString("nativeRaster"));
-  Rf_setAttrib(res_, Rf_mkString("channels"), Rf_ScalarInteger(4));
+  SEXP class_name_ = PROTECT(Rf_mkString("nativeRaster"));
+  Rf_setAttrib(res_, R_ClassSymbol, class_name_);
+  UNPROTECT(1);
+  Rf_setAttrib(res_, Rf_install("channels"), Rf_ScalarInteger(4));
   
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

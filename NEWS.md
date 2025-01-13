@@ -1,4 +1,8 @@
 
+# fastpng 0.1.7 2025-01-14
+
+* Address existing `rchk` errors on CRAN for resubmission
+
 # fastpng 0.1.6 2025-01-14
 
 * Use `{colorfast}` for fast color lookup
