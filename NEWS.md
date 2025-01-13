@@ -1,5 +1,5 @@
 
-# fastpng 0.1.5.9000 2024-12-24
+# fastpng 0.1.6 2025-01-14
 
 * Use `{colorfast}` for fast color lookup
 * Set NO_REMAP in C

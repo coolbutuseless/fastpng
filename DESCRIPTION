@@ -1,7 +1,7 @@
 Type: Package
 Package: fastpng
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
-Version: 0.1.5.9000
+Version: 0.1.6
 Authors@R: c(
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph")),
     person("Randy408", , , "randy408@protonmail.com", role = c("aut", "cph"),
@@ -39,9 +39,7 @@ BugReports: https://github.com/coolbutuseless/fastpng/issues
 LinkingTo:
     colorfast
 Imports:
-    colorfast (>= 1.0.0.9000)
-Remotes:
-    coolbutuseless/colorfast
+    colorfast (>= 1.0.1)
 Depends: 
     R (>= 2.10)
 Suggests: 

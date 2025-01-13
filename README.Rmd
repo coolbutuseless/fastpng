@@ -26,6 +26,20 @@ if (FALSE) {
   ))
 }
 
+if (FALSE) {
+  # Check for functions which do not have an @examples block for roxygen
+  system("grep -c examples man/*Rd", intern = TRUE) |> 
+    grep(":0$", x = _, value = TRUE)
+  
+  checkhelper::check_as_cran()
+  checkhelper::find_missing_tags()
+}
+
+
+if (FALSE) {
+  covr::report()
+}
+
 
 # Makevars options to do some deep testing for CRAN
 
