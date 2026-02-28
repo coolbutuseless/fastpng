@@ -1,7 +1,7 @@
 Type: Package
 Package: fastpng
 Title: Read and Write PNG Files with Configurable Decoder/Encoder Options
-Version: 0.1.7
+Version: 0.1.8
 Authors@R: c(
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph")),
     person("Randy408", , , "randy408@protonmail.com", role = c("aut", "cph"),
@@ -60,4 +60,4 @@ Encoding: UTF-8
 Language: en-AU
 LazyData: true
 LazyDataCompression: xz
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

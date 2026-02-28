@@ -1,4 +1,8 @@
 
+# fastpng 0.1.8 2026-02-28
+
+* Address `rchk` issues
+
 # fastpng 0.1.7 2025-01-14
 
 * Address existing `rchk` errors on CRAN for resubmission
