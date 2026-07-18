@@ -1,7 +1,11 @@
 
+# fastpng 0.1.9 2026-07-17
+
+* Address `rchk` issues on CRAN
+
 # fastpng 0.1.8 2026-02-28
 
-* Address `rchk` issues
+* Address `rchk` issues on CRAN
 
 # fastpng 0.1.7 2025-01-14
 
